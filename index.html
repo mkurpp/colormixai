@@ -1585,15 +1585,19 @@ async function initApp() {
 }
 
 /* ── Salon laden ── */
-async function loadSalon() {
-  const { data } = await sb.from('salon_members')
-    .select('salon_id, role, salons(id, name, plan, plan_status, trial_ends_at)')
-    .eq('user_id', currentUser.id)
-    .eq('status', 'active')
-    .single();
-  if (data?.salons) {
-    currentSalon = data.salons;
-    currentSalon.role = data.role;
+async function loadSalon(retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    const { data } = await sb.from('salon_members')
+      .select('salon_id, role, salons(id, name, plan, plan_status, trial_ends_at)')
+      .eq('user_id', currentUser.id)
+      .eq('status', 'active')
+      .single();
+    if (data?.salons) {
+      currentSalon = data.salons;
+      currentSalon.role = data.role;
+      return;
+    }
+    if (i < retries - 1) await new Promise(r => setTimeout(r, 1000));
   }
 }
 
@@ -1688,6 +1692,8 @@ async function completeOnboarding() {
   currentSalon = salon;
   currentSalon.role = 'owner';
   window._pendingSalonName = null;
+  await new Promise(r => setTimeout(r, 1500));
+  await loadSalon();
   renderLandingUserBar();
   go('s-landing');
 }
@@ -1889,6 +1895,10 @@ async function redeemVoucher() {
   currentSalon = salon;
   currentSalon.role = 'owner';
   window._pendingSalonName = null;
+
+  // Kurz warten bis Supabase die Daten bereit hat, dann neu laden
+  await new Promise(r => setTimeout(r, 1500));
+  await loadSalon(); // nochmal laden um sicher zu gehen
 
   // Erfolg anzeigen
   document.getElementById('voucher-error').style.display = 'none';
