@@ -1216,34 +1216,60 @@ function updateSlider(inp) {
 }
 
 /* ═══════════════════ SAVE NEW CLIENT ═══════════════════ */
-function saveNewClientFlow() {
+async function saveNewClientFlow() {
   const name = document.getElementById('fcf-name').value.trim();
   if (!name) { alert('Bitte einen Kundennamen eingeben.'); return; }
-  const c = {
-    id:nextId++, name,
+  const btn = document.querySelector('#s-new-client-flow .btn-pink');
+  btn.textContent = 'Speichern…'; btn.disabled = true;
+  const clientData = {
+    salon_id: currentSalon?.id || null,
+    name,
     notes: document.getElementById('fcf-notes').value.trim(),
-    hairHistory: document.getElementById('fcf-history').value.trim(),
-    hairState: document.querySelector('#fcf-state .seg-btn.active')?.textContent||'Natur',
-    photo: document.getElementById('fcf-data').value
+    hair_history: document.getElementById('fcf-history').value.trim(),
+    hair_state: document.querySelector('#fcf-state .seg-btn.active')?.textContent||'Natur',
+    created_by: currentUser?.id || null,
   };
-  clients.unshift(c);
-  activeClient = c;
+  let savedClient;
+  if (currentSalon?.id) {
+    const { data, error } = await sb.from('clients').insert(clientData).select().single();
+    if (error) { console.error(error); }
+    if (data) {
+      savedClient = { id: data.id, name: data.name, notes: data.notes, hairHistory: data.hair_history, hairState: data.hair_state, photo: '' };
+      clients.unshift(savedClient);
+    }
+  }
+  if (!savedClient) {
+    savedClient = { id: nextId++, name, notes: clientData.notes, hairHistory: clientData.hair_history, hairState: clientData.hair_state, photo: '' };
+    clients.unshift(savedClient);
+  }
+  activeClient = savedClient;
+  btn.textContent = 'Speichern & weiter →'; btn.disabled = false;
   ['fcf-name','fcf-notes','fcf-history'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('fcf-data').value='';
   resetPhotoPreview('fcf-preview');
   go('s-current');
 }
 
-function saveClientStandalone() {
+async function saveClientStandalone() {
   const name = document.getElementById('ncs-name').value.trim();
   if (!name) { alert('Bitte einen Kundennamen eingeben.'); return; }
-  clients.unshift({
-    id:nextId++, name,
+  const btn = document.querySelector('#s-new-client-standalone .btn-pink');
+  btn.textContent = 'Speichern…'; btn.disabled = true;
+  const clientData = {
+    salon_id: currentSalon?.id || null,
+    name,
     notes: document.getElementById('ncs-notes').value.trim(),
-    hairHistory: document.getElementById('ncs-history').value.trim(),
-    hairState: document.querySelector('#ncs-state .seg-btn.active')?.textContent||'Natur',
-    photo: document.getElementById('ncs-data').value
-  });
+    hair_history: document.getElementById('ncs-history').value.trim(),
+    hair_state: document.querySelector('#ncs-state .seg-btn.active')?.textContent||'Natur',
+    created_by: currentUser?.id || null,
+  };
+  if (currentSalon?.id) {
+    const { data } = await sb.from('clients').insert(clientData).select().single();
+    if (data) clients.unshift({ id: data.id, name: data.name, notes: data.notes, hairHistory: data.hair_history, hairState: data.hair_state, photo: '' });
+  } else {
+    clients.unshift({ id: nextId++, name, notes: clientData.notes, hairHistory: clientData.hair_history, hairState: clientData.hair_state, photo: '' });
+  }
+  btn.textContent = '✓ Kunde speichern'; btn.disabled = false;
   ['ncs-name','ncs-notes','ncs-history'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('ncs-data').value='';
   resetPhotoPreview('ncs-preview');
@@ -1598,6 +1624,26 @@ async function loadSalon(retries = 3) {
       return;
     }
     if (i < retries - 1) await new Promise(r => setTimeout(r, 1000));
+  }
+}
+
+
+/* ── Kunden aus Supabase laden ── */
+async function loadClientsFromDB() {
+  if (!currentSalon?.id) return;
+  const { data } = await sb.from('clients')
+    .select('*')
+    .eq('salon_id', currentSalon.id)
+    .order('created_at', { ascending: false });
+  if (data) {
+    clients = data.map(c => ({
+      id: c.id,
+      name: c.name,
+      notes: c.notes || '',
+      hairHistory: c.hair_history || '',
+      hairState: c.hair_state || 'Natur',
+      photo: c.photo_url || ''
+    }));
   }
 }
 
