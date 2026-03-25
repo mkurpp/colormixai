@@ -1207,6 +1207,7 @@ function renderProfile() {
         </div>
         <div style="display:flex;align-items:center;gap:8px">
           <span style="font-size:11px;color:var(--muted)">${s.brand}</span>
+          ${s.afterPhoto ? '<span style="font-size:14px" title="Ergebnis-Foto vorhanden">✨</span>' : ''}
           <span style="color:var(--muted);font-size:16px" id="arr-${s.id}">›</span>
         </div>
       </div>
@@ -1217,10 +1218,87 @@ function renderProfile() {
           <div><strong>Marke:</strong> ${s.brand}</div>
           ${s.notes?`<div><strong>Notizen:</strong> ${s.notes}</div>`:''}
         </div>
-        ${s.hairPhoto?`<img src="${s.hairPhoto}" style="width:100%;border-radius:8px;margin-top:10px;max-height:150px;object-fit:cover"/>`:''}
-        <button class="btn btn-danger btn-full" style="margin-top:12px" onclick="confirmDeleteSess(${s.id})">🗑 Sitzung löschen</button>
+
+        <!-- Fotos nebeneinander wenn vorhanden -->
+        <div style="display:grid;grid-template-columns:${s.hairPhoto && s.afterPhoto ? '1fr 1fr' : '1fr'};gap:8px;margin-top:10px">
+          ${s.hairPhoto ? `
+            <div>
+              <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Vorher</div>
+              <img src="${s.hairPhoto}" style="width:100%;border-radius:8px;aspect-ratio:3/4;object-fit:cover"/>
+            </div>` : ''}
+          ${s.afterPhoto ? `
+            <div>
+              <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Nachher ✨</div>
+              <img src="${s.afterPhoto}" style="width:100%;border-radius:8px;aspect-ratio:3/4;object-fit:cover"/>
+            </div>` : ''}
+        </div>
+
+        <!-- Nachher-Foto hinzufügen wenn noch keines vorhanden -->
+        ${!s.afterPhoto ? `
+        <div style="margin-top:10px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Ergebnis-Foto noch nicht vorhanden:</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <button class="btn btn-outline btn-full" style="height:38px;font-size:12px" onclick="triggerAfterCamera('after-sess-${s.id}')">📷 Kamera</button>
+            <button class="btn btn-outline btn-full" style="height:38px;font-size:12px" onclick="triggerAfterGallery('after-sess-${s.id}')">🖼 Galerie</button>
+          </div>
+          <input type="file" id="after-sess-${s.id}" accept="image/*" onchange="saveAfterPhotoToSession(this,'${s.id}')"/>
+        </div>` : `
+        <div style="margin-top:8px">
+          <button class="btn btn-ghost btn-full" style="height:34px;font-size:11px" onclick="triggerAfterGallery('after-sess-upd-${s.id}')">🔄 Ergebnis-Foto ersetzen</button>
+          <input type="file" id="after-sess-upd-${s.id}" accept="image/*" onchange="saveAfterPhotoToSession(this,'${s.id}')"/>
+        </div>`}
+
+        <!-- ML Feedback wenn noch nicht gegeben -->
+        ${s.resultGood === null || s.resultGood === undefined ? `
+        <div style="margin-top:10px;padding:10px;background:var(--bg);border-radius:var(--rs)">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-align:center">War das Farbergebnis gut?</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <button class="btn btn-outline btn-full" style="height:36px;font-size:12px;border-color:#4A7C59;color:#0A7C55" onclick="saveSessionFeedback('${s.id}',true)">👍 Ja</button>
+            <button class="btn btn-outline btn-full" style="height:36px;font-size:12px;border-color:var(--danger);color:var(--danger)" onclick="saveSessionFeedback('${s.id}',false)">👎 Nein</button>
+          </div>
+        </div>` : `<div style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center">${s.resultGood ? '👍 Als gut bewertet' : '👎 Als verbesserungswürdig markiert'}</div>`}
+
+        <button class="btn btn-danger btn-full" style="margin-top:10px" onclick="confirmDeleteSess('${s.id}')">🗑 Sitzung löschen</button>
       </div>
     </div>`).join('');
+}
+
+function triggerAfterCamera(inputId) {
+  const inp = document.getElementById(inputId);
+  if (!inp) return;
+  inp.setAttribute('capture','environment');
+  inp.click();
+}
+function triggerAfterGallery(inputId) {
+  const inp = document.getElementById(inputId);
+  if (!inp) return;
+  inp.removeAttribute('capture');
+  inp.click();
+}
+
+async function saveAfterPhotoToSession(input, sessionId) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const dataUrl = e.target.result;
+    const sess = sessions.find(s => String(s.id) === String(sessionId));
+    if (sess) sess.afterPhoto = dataUrl;
+    if (currentSalon?.id) {
+      await sb.from('sessions').update({ after_photo_url: dataUrl }).eq('id', sessionId).catch(console.error);
+    }
+    renderProfile();
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveSessionFeedback(sessionId, good) {
+  const sess = sessions.find(s => String(s.id) === String(sessionId));
+  if (sess) sess.resultGood = good;
+  if (currentSalon?.id) {
+    await sb.from('sessions').update({ result_good: good }).eq('id', sessionId).catch(console.error);
+  }
+  renderProfile();
 }
 
 function toggleSess(bodyId, arrId) {
