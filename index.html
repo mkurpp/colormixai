@@ -28,10 +28,10 @@
   --sh-md:0 8px 40px rgba(0,0,0,0.10);
 }
 html,body{height:100%;background:var(--bg);font-family:'Outfit',sans-serif;color:var(--charcoal);-webkit-font-smoothing:antialiased}
-#app{min-height:100vh;display:flex;flex-direction:column;align-items:center}
+#app{min-height:100vh;display:flex;flex-direction:column;align-items:center;width:100%;overflow-x:hidden}
 
 /* ── SCREENS ── */
-.screen{display:none;width:100%;max-width:430px;min-height:100vh;flex-direction:column;background:var(--surface);position:relative}
+.screen{display:none;width:100%;max-width:min(430px,100vw);min-height:100vh;flex-direction:column;background:var(--surface);position:relative}
 .screen.active{display:flex;animation:fadeUp .22s ease}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
@@ -95,7 +95,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 
 /* ── PHOTO ── */
 .photo-area{position:relative}
-.photo-preview{width:100%;aspect-ratio:4/3;background:var(--bg);border-radius:var(--r);overflow:hidden;display:flex;align-items:center;justify-content:center;border:2px dashed var(--border)}
+.photo-preview{width:100%;aspect-ratio:3/4;background:var(--bg);border-radius:var(--r);overflow:hidden;display:flex;align-items:center;justify-content:center;border:2px dashed var(--border)}
 .photo-preview.has-photo{border:none}
 .photo-preview img{width:100%;height:100%;object-fit:cover}
 .photo-placeholder{text-align:center;color:var(--muted)}
@@ -366,22 +366,70 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
     <div class="auth-error" id="voucher-error"></div>
     <div id="voucher-success" style="background:#EAF4EE;border:1.5px solid #4A7C59;color:#0A7C55;font-size:13px;border-radius:var(--rs);padding:12px 14px;margin-bottom:12px;display:none;line-height:1.6"></div>
     <input class="inp" type="text" placeholder="Code eingeben z.B. BETA2024" id="voucher-code-input" style="margin-bottom:12px;text-align:center;letter-spacing:2px;font-weight:700;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"/>
-    <button class="btn btn-pink btn-full" onclick="redeemVoucher()">Gutschein einlösen</button>
+    <button class="btn btn-pink btn-full" id="voucher-redeem-btn" onclick="redeemVoucher()">Gutschein einlösen</button>
     <div style="height:16px"></div>
     <button class="btn btn-ghost btn-full" onclick="go('s-onboarding')">Lieber ein Abo wählen</button>
     <div style="height:24px"></div>
   </div>
 </section>
 
-<!-- ══════════════════ ABO WÄHLEN ══════════════════ -->
-<section class="screen" id="s-onboarding">
+<!-- ══════════════════ ONBOARDING STEP 1: SALON-INFO ══════════════════ -->
+<section class="screen" id="s-onboarding-salon">
   <div class="hdr">
     <span style="width:60px"></span>
+    <span class="hdr-title">Dein Salon</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="prog"><div class="prog-fill" style="width:33%"></div></div>
+  <div class="body">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-size:32px;margin-bottom:8px">✂️</div>
+      <div style="font-size:18px;font-weight:800;letter-spacing:-0.3px">Erzähl uns von deinem Salon</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:6px">Schritt 1 von 3</div>
+    </div>
+
+    <div class="lbl" style="margin-top:0">Salon-Name</div>
+    <input class="inp" type="text" placeholder="z.B. Salon Bella" id="ob-salon-name" style="margin-bottom:8px"/>
+
+    <div class="lbl">Adresse</div>
+    <input class="inp" type="text" placeholder="Straße & Hausnummer" id="ob-street" style="margin-bottom:8px"/>
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-bottom:8px">
+      <input class="inp" type="text" placeholder="PLZ" id="ob-zip"/>
+      <input class="inp" type="text" placeholder="Stadt" id="ob-city"/>
+    </div>
+    <input class="inp" type="text" placeholder="Webseite (optional)" id="ob-website" style="margin-bottom:8px"/>
+    <input class="inp" type="tel" placeholder="Telefon (optional)" id="ob-phone"/>
+
+    <!-- Directory opt-in -->
+    <div style="background:var(--pink-light);border:1.5px solid var(--pink-mid);border-radius:var(--rs);padding:14px;margin-top:16px">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <input type="checkbox" id="ob-directory" style="width:18px;height:18px;margin-top:2px;accent-color:var(--pink);flex-shrink:0" checked/>
+        <div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:4px">📍 Salon auf ColorMixAI-Karte listen</div>
+          <div style="font-size:12px;color:var(--mid);line-height:1.6">Dein Salon wird auf unserer öffentlichen Salon-Karte angezeigt — kostenlos. Kundinnen in deiner Nähe können dich so einfacher finden.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <button class="btn btn-pink btn-full" onclick="onboardingStep2()">Weiter →</button>
+    <div style="height:24px"></div>
+  </div>
+</section>
+
+<!-- ══════════════════ ONBOARDING STEP 2: ABO ══════════════════ -->
+<section class="screen" id="s-onboarding">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-onboarding-salon')">← Zurück</button>
     <span class="hdr-title">Abo wählen</span>
     <span style="width:60px"></span>
   </div>
+  <div class="prog"><div class="prog-fill" style="width:66%"></div></div>
   <div class="body">
-    <p style="font-size:14px;color:var(--mid);margin-bottom:20px;line-height:1.6">Starte mit <strong>14 Tagen kostenlos</strong>. Danach wähle das passende Abo.</p>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:18px;font-weight:800;letter-spacing:-0.3px">Wähle dein Abo</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:6px">Schritt 2 von 3 · 14 Tage kostenlos testen</div>
+    </div>
     <div class="plan-card selected" id="plan-solo" onclick="selectPlan('solo')">
       <div class="plan-card-name">Solo</div>
       <div class="plan-card-price">29€ <span>/ Monat</span></div>
@@ -733,9 +781,46 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
       <div class="card-lbl">Hinweis</div>
       <div class="warn-box"><span>⚠️</span><div class="warn-text">Vorblondierung empfohlen, um das gewünschte Farbergebnis exakt zu erzielen.</div></div>
     </div>
+
+    <!-- After-Color Photo -->
+    <div class="lbl">Ergebnis-Foto (nach dem Färben)</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Optional: Foto nach dem Färben für die Kundenkartei</p>
+    <div class="photo-area">
+      <div class="photo-preview" id="after-preview">
+        <div class="photo-placeholder"><div class="ico">✨</div><p>Foto nach dem Färben</p></div>
+      </div>
+      <div class="photo-btns">
+        <button class="btn btn-dark btn-full" onclick="triggerCamera('after-file')">📷 Kamera</button>
+        <button class="btn btn-outline btn-full" onclick="triggerGallery('after-file')">🖼 Galerie</button>
+      </div>
+      <input type="file" id="after-file" accept="image/*" onchange="handlePhoto(this,'after-preview','after-data')"/>
+      <input type="hidden" id="after-data"/>
+    </div>
+
+    <!-- Assign to client if not already assigned -->
+    <div id="result-assign-wrap" style="display:none;margin-top:16px">
+      <div class="lbl">Kundin zuordnen</div>
+      <select class="inp" id="result-assign-select" style="margin-bottom:8px">
+        <option value="">Ohne Kundin speichern</option>
+      </select>
+    </div>
+
     <div class="divider"></div>
-    <button class="btn btn-dark btn-full" style="margin-bottom:8px" onclick="go('s-select-client')">+ Neue Analyse</button>
-    <button class="btn btn-pink btn-full" onclick="saveResult(event)">💾 In Kundenkartei speichern</button>
+    <button class="btn btn-pink btn-full" id="result-save-btn" onclick="saveResult(event)" style="margin-bottom:8px">💾 In Kundenkartei speichern</button>
+    <div id="result-saved-actions" style="display:none;gap:8px;flex-direction:column">
+      <button class="btn btn-dark btn-full" onclick="goToClientProfile()">👤 Zur Kundenkartei →</button>
+      <button class="btn btn-outline btn-full" onclick="go('s-select-client')">+ Neue Analyse</button>
+    </div>
+    <!-- ML Feedback -->
+    <div id="ml-feedback-wrap" style="display:none;margin-top:8px">
+      <div class="lbl" style="margin-top:0">War das Ergebnis gut?</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button class="btn btn-outline btn-full" style="height:44px;border-color:#4A7C59;color:#0A7C55" onclick="submitFeedback(true)">👍 Ja, super!</button>
+        <button class="btn btn-outline btn-full" style="height:44px;border-color:var(--danger);color:var(--danger)" onclick="submitFeedback(false)">👎 Nicht ideal</button>
+      </div>
+      <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px">Dein Feedback verbessert die KI-Empfehlungen</p>
+    </div>
+    <button class="btn btn-ghost btn-full" id="result-new-btn" onclick="go('s-select-client')">+ Neue Analyse</button>
     <div style="height:28px"></div>
   </div>
 </section>
@@ -1283,35 +1368,138 @@ function resetPhotoPreview(id) {
 }
 
 /* ═══════════════════ ANALYSIS ═══════════════════ */
-function startAnalysis() {
+async function startAnalysis() {
   go('s-analysis');
   const steps=[{d:'d1',t:'t1',c:'c1'},{d:'d2',t:'t2',c:'c2'},{d:'d3',t:'t3',c:'c3'},{d:'d4',t:'t4',c:'c4'}];
   steps.forEach(s=>{document.getElementById(s.d).className='dot';document.getElementById(s.t).className='step-txt';document.getElementById(s.c).className='step-chk';});
   document.getElementById('spinner').style.opacity='1';
-  let i=0;
-  function next() {
-    if(i>0){const p=steps[i-1];document.getElementById(p.d).className='dot done';document.getElementById(p.t).className='step-txt done';document.getElementById(p.c).className='step-chk show';}
-    if(i<steps.length){document.getElementById(steps[i].d).className='dot active';document.getElementById(steps[i].t).className='step-txt active';i++;setTimeout(next,900+Math.random()*400);}
-    else{document.getElementById('spinner').style.opacity='0';setTimeout(()=>go('s-result'),500);}
+
+  // Schritt 1: IST-Bild analysieren
+  const istImageData = document.getElementById('curr-data')?.value;
+  document.getElementById(steps[0].d).className='dot active';
+  document.getElementById(steps[0].t).className='step-txt active';
+  
+  let istResult = null;
+  if (istImageData) {
+    try {
+      istResult = await analyzeHairWithAI(istImageData, 'ist');
+      lastAnalysis.ist = istResult;
+    } catch(e) { console.error('IST-Analyse Fehler:', e); }
   }
-  setTimeout(next,400);
+  document.getElementById(steps[0].d).className='dot done';
+  document.getElementById(steps[0].t).className='step-txt done';
+  document.getElementById(steps[0].c).className='step-chk show';
+
+  // Schritt 2: Unterton erkennen
+  document.getElementById(steps[1].d).className='dot active';
+  document.getElementById(steps[1].t).className='step-txt active';
+  await new Promise(r => setTimeout(r, 700));
+  document.getElementById(steps[1].d).className='dot done';
+  document.getElementById(steps[1].t).className='step-txt done';
+  document.getElementById(steps[1].c).className='step-chk show';
+
+  // Schritt 3: Farbdatenbank abgleichen
+  document.getElementById(steps[2].d).className='dot active';
+  document.getElementById(steps[2].t).className='step-txt active';
+  const colorBarLbl = document.getElementById('color-bar-lbl')?.textContent || 'Kühles Blond';
+  const levelVal = document.getElementById('level-val')?.textContent || '7';
+  lastAnalysis.soll = { color_name: colorBarLbl, level: parseFloat(levelVal) };
+  await new Promise(r => setTimeout(r, 800));
+  document.getElementById(steps[2].d).className='dot done';
+  document.getElementById(steps[2].t).className='step-txt done';
+  document.getElementById(steps[2].c).className='step-chk show';
+
+  // Schritt 4: Formel berechnen
+  document.getElementById(steps[3].d).className='dot active';
+  document.getElementById(steps[3].t).className='step-txt active';
+  const brand = document.querySelector('.brand-chip.selected')?.textContent || 'Wella';
+  lastAnalysis.formula = await getFormulaFromML(lastAnalysis.ist, lastAnalysis.soll, { brand });
+  await new Promise(r => setTimeout(r, 900));
+  document.getElementById(steps[3].d).className='dot done';
+  document.getElementById(steps[3].t).className='step-txt done';
+  document.getElementById(steps[3].c).className='step-chk show';
+
+  document.getElementById('spinner').style.opacity='0';
+
+  // Ergebnis-Screen updaten mit AI-Erkenntnissen
+  updateResultWithAI();
+  setTimeout(() => go('s-result'), 500);
+}
+
+function updateResultWithAI() {
+  if (!lastAnalysis.ist) return;
+  const ist = lastAnalysis.ist;
+  
+  // Erkannte Basis updaten
+  const baseEl = document.querySelector('#s-result .card:nth-child(3) .card-val');
+  const baseSubEl = document.querySelector('#s-result .card:nth-child(3) .card-sub');
+  if (baseEl) baseEl.textContent = 'Stufe ' + ist.level?.toFixed(1);
+  if (baseSubEl) {
+    const undertoneDE = ist.undertone === 'warm' ? 'Warmer Unterton' : ist.undertone === 'cool' ? 'Kühler Unterton' : 'Neutraler Unterton';
+    baseSubEl.textContent = undertoneDE + ' · ' + (ist.base_color || 'Mittelbraun');
+  }
+  
+  // Konfidenz anzeigen wenn niedrig
+  if (ist.confidence < 0.7) {
+    const warnCard = document.querySelector('#s-result .warn-box .warn-text');
+    if (warnCard) warnCard.textContent = `KI-Konfidenz: ${Math.round(ist.confidence * 100)}% — Bitte Ergebnis manuell prüfen. ` + warnCard.textContent;
+  }
 }
 
 /* ═══════════════════ SAVE RESULT ═══════════════════ */
-function saveResult(e) {
-  sessions.unshift({
-    id:nextId++,
-    clientId:activeClient?activeClient.id:null,
-    date:new Date().toISOString().slice(0,10),
-    target:'Cool Beige Blonde',formula:'8/13 – 60g, 9/13 – 20g',
-    dev:'9%',brand:'Wella',notes:'',
-    hairPhoto:document.getElementById('curr-data')?.value||''
-  });
-  const btn=e.target;
-  const lbl=activeClient?'Gespeichert für '+activeClient.name+'!':'Gespeichert!';
-  btn.textContent='✓ '+lbl;
-  btn.style.cssText='background:#EAF4EE;border:1.5px solid #4A7C59;color:#0A7C55;height:52px;';
-  setTimeout(()=>{btn.textContent='💾 In Kundenkartei speichern';btn.style.cssText='';},2800);
+async function saveResult(e) {
+  const btn = e.target;
+  btn.textContent = 'Speichern…'; btn.disabled = true;
+
+  // Check if we should assign to a client from dropdown
+  const assignSel = document.getElementById('result-assign-select');
+  const assignId = assignSel?.value;
+  if (assignId && !activeClient) {
+    activeClient = clients.find(c => String(c.id) === String(assignId)) || null;
+  }
+
+  const afterPhoto = document.getElementById('after-data')?.value || '';
+  const sessionData = {
+    id: nextId++,
+    clientId: activeClient ? activeClient.id : null,
+    date: new Date().toISOString().slice(0,10),
+    target: 'Kühles Beige-Blond',
+    formula: '8/13 – 60g, 9/13 – 20g',
+    dev: '9%',
+    brand: 'Wella',
+    notes: '',
+    hairPhoto: document.getElementById('curr-data')?.value || '',
+    afterPhoto,
+  };
+  sessions.unshift(sessionData);
+
+  // Save to Supabase if logged in
+  if (currentSalon?.id && activeClient?.id) {
+    await sb.from('sessions').insert({
+      salon_id: currentSalon.id,
+      client_id: activeClient.id,
+      target_color: sessionData.target,
+      formula: sessionData.formula,
+      developer: sessionData.dev,
+      brand: sessionData.brand,
+      notes: sessionData.notes,
+      created_by: currentUser?.id,
+    }).catch(err => console.error('Session save error:', err));
+  }
+
+  const lbl = activeClient ? 'Gespeichert für ' + activeClient.name + '!' : 'Gespeichert!';
+  btn.textContent = '✓ ' + lbl;
+  btn.style.cssText = 'background:#EAF4EE;border:1.5px solid #4A7C59;color:#0A7C55;height:52px;';
+  btn.disabled = false;
+
+  // Show profile navigation buttons
+  const savedActions = document.getElementById('result-saved-actions');
+  const newBtn = document.getElementById('result-new-btn');
+  if (savedActions) savedActions.style.display = 'flex';
+  const fbWrap = document.getElementById('ml-feedback-wrap');
+  if (fbWrap) fbWrap.style.display = 'block';
+  if (newBtn) newBtn.style.display = 'none';
+  setTimeout(() => { btn.textContent = '💾 In Kundenkartei speichern'; btn.style.cssText = ''; }, 3000);
 }
 
 /* ═══════════════════ DELETE ═══════════════════ */
@@ -1591,6 +1779,104 @@ const SUPABASE_URL = 'https://kncltnmzocufnhdrzswt.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtuY2x0bm16b2N1Zm5oZHJ6c3d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0MDA0MDMsImV4cCI6MjA4OTk3NjQwM30.HTzpw0qgORUhQHd1fcx1x6y2hVmn78udPz6WrsWlljU';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+/* ═══════════════════ ML / AI CONFIG ═══════════════════ */
+// Wenn Melissas Modell fertig ist, diese URL ändern:
+const ML_API_URL = null; // z.B. 'https://colormixai-ml.huggingface.co'
+const ANTHROPIC_API_KEY = null; // API Key für Claude Vision Bridge
+
+// Analyseergebnis wird hier gespeichert
+let lastAnalysis = {
+  ist: null,   // { level, undertone, base_color, confidence }
+  soll: null,  // { level, color_name, undertone }
+  formula: null,
+  sessionId: null,
+};
+
+/* ── Claude Vision Bridge (Placeholder bis ML-Modell fertig) ── */
+async function analyzeHairWithAI(imageBase64, type = 'ist') {
+  // Wenn eigenes ML-Modell vorhanden → nutze das
+  if (ML_API_URL) {
+    return await callMLAPI(imageBase64, type);
+  }
+  
+  // Placeholder: simulierte Analyse (wird durch echtes Modell ersetzt)
+  // In Produktion: Anthropic API Key hier einsetzen
+  await new Promise(r => setTimeout(r, 800)); // kurze Verzögerung simulieren
+  
+  // Simuliertes Ergebnis basierend auf häufigen Haarfarben
+  const mockResults = [
+    { level: 5.5, undertone: 'warm', base_color: 'Medium Brown', confidence: 0.82 },
+    { level: 7.0, undertone: 'neutral', base_color: 'Blonde', confidence: 0.78 },
+    { level: 3.5, undertone: 'cool', base_color: 'Dark Brown', confidence: 0.85 },
+    { level: 8.5, undertone: 'warm', base_color: 'Light Blonde', confidence: 0.75 },
+    { level: 6.0, undertone: 'warm', base_color: 'Dark Blonde', confidence: 0.80 },
+  ];
+  const result = mockResults[Math.floor(Math.random() * mockResults.length)];
+  return result;
+}
+
+async function callMLAPI(imageBase64, type) {
+  const { data: { session } } = await sb.auth.getSession();
+  const response = await fetch(`${ML_API_URL}/api/v1/analyze`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session?.access_token}`
+    },
+    body: JSON.stringify({
+      image_base64: imageBase64,
+      salon_id: currentSalon?.id,
+      type // 'ist' oder 'soll'
+    })
+  });
+  return response.json();
+}
+
+async function getFormulaFromML(istData, sollData, preferences) {
+  if (ML_API_URL) {
+    const { data: { session } } = await sb.auth.getSession();
+    const response = await fetch(`${ML_API_URL}/api/v1/formula`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`
+      },
+      body: JSON.stringify({ ist: istData, soll: sollData, preferences, salon_id: currentSalon?.id })
+    });
+    return response.json();
+  }
+  // Placeholder
+  return null;
+}
+
+/* ── Feedback an ML senden (für Lernschleife) ── */
+async function sendMLFeedback(sessionId, resultGood, afterPhotoBase64) {
+  // In Supabase speichern (immer)
+  if (sessionId && currentSalon?.id) {
+    await sb.from('sessions').update({
+      result_good: resultGood,
+    }).eq('id', sessionId).catch(e => console.error(e));
+  }
+  
+  // An ML API senden (wenn vorhanden)
+  if (ML_API_URL && sessionId) {
+    const { data: { session } } = await sb.auth.getSession();
+    await fetch(`${ML_API_URL}/api/v1/feedback`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`
+      },
+      body: JSON.stringify({
+        session_id: sessionId,
+        result_good: resultGood,
+        after_image_base64: afterPhotoBase64
+      })
+    }).catch(e => console.error(e));
+  }
+}
+
+
 let currentUser = null;
 let currentSalon = null;
 let selectedPlan = 'solo';
@@ -1666,7 +1952,8 @@ function renderLandingUserBar() {
   const el = document.getElementById('landing-user-bar');
   if (!currentUser || !el) return;
   const initial = (currentUser.email || 'U')[0].toUpperCase();
-  const planLabel = currentSalon?.plan === 'team' ? 'Team' : 'Solo';
+  const plan = currentSalon?.plan || 'solo';
+  const planLabel = plan === 'team' ? 'Team' : 'Solo';
   const isTrial = currentSalon?.plan_status === 'trial';
   el.innerHTML = `<div class="user-bar">
     <div class="user-bar-avatar">${initial}</div>
@@ -1688,7 +1975,7 @@ async function doLogin() {
   if (error) { showAuthError('login-error', 'Falsche E-Mail oder Passwort.'); return; }
   currentUser = data.user;
   await loadSalon();
-  if (!currentSalon) { go('s-onboarding'); return; }
+  if (!currentSalon) { go('s-onboarding-salon'); return; }
   await enforceSessionLimit(data.session);
   renderLandingUserBar();
   go('s-landing');
@@ -1710,9 +1997,9 @@ async function doRegister() {
   btn.textContent = 'Weiter → Abo wählen'; btn.disabled = false;
   if (error) { showAuthError('reg-error', error.message); return; }
   currentUser = data.user;
-  // Temporär Salon-Name speichern für Onboarding
   window._pendingSalonName = salon;
-  go('s-onboarding');
+  // Direkt zu Salon-Info gehen
+  go('s-onboarding-salon');
 }
 
 /* ── ABO WÄHLEN ── */
@@ -1726,7 +2013,8 @@ async function completeOnboarding() {
   const btn = document.querySelector('#s-onboarding .btn-pink');
   btn.textContent = 'Wird eingerichtet…'; btn.disabled = true;
   // Salon anlegen
-  const salonName = window._pendingSalonName || currentUser?.user_metadata?.salon_name || 'Mein Salon';
+  const ob = window._pendingOnboarding || {};
+  const salonName = ob.name || window._pendingSalonName || currentUser?.user_metadata?.salon_name || 'Mein Salon';
   const { data: salon, error } = await sb.from('salons').insert({
     name: salonName,
     owner_id: currentUser.id,
@@ -1853,6 +2141,7 @@ go = function(screenId) {
   }
   _goOrigAuth(screenId);
   if (screenId === 's-account') renderAccountScreen();
+  if (screenId === 's-result') renderResultScreen();
 };
 
 /* ── App starten ── */
@@ -1872,6 +2161,71 @@ go = function(screenId) {
 })();
 
 
+
+/* ── Onboarding Step 1 → 2 ── */
+function onboardingStep2() {
+  const name = document.getElementById('ob-salon-name').value.trim();
+  if (!name) { alert('Bitte Salon-Namen eingeben.'); return; }
+  // Store salon info for completeOnboarding
+  window._pendingOnboarding = {
+    name,
+    street: document.getElementById('ob-street').value.trim(),
+    zip: document.getElementById('ob-zip').value.trim(),
+    city: document.getElementById('ob-city').value.trim(),
+    website: document.getElementById('ob-website').value.trim(),
+    phone: document.getElementById('ob-phone').value.trim(),
+    listed: document.getElementById('ob-directory').checked,
+  };
+  window._pendingSalonName = name;
+  go('s-onboarding');
+}
+
+/* ── Go to client profile after saving result ── */
+function goToClientProfile() {
+  if (activeClient) {
+    viewingClient = clients.find(c => c.id === activeClient.id) || activeClient;
+    go('s-profile');
+  } else {
+    go('s-clients');
+  }
+}
+
+/* ── Populate assign-client dropdown on result screen ── */
+function renderResultScreen() {
+  const wrap = document.getElementById('result-assign-wrap');
+  const sel = document.getElementById('result-assign-select');
+  const savedActions = document.getElementById('result-saved-actions');
+  const saveBtn = document.getElementById('result-save-btn');
+  const newBtn = document.getElementById('result-new-btn');
+  if (savedActions) savedActions.style.display = 'none';
+  if (saveBtn) saveBtn.style.display = 'flex';
+  if (newBtn) newBtn.style.display = 'flex';
+  // Reset after-photo
+  resetPhotoPreview('after-preview');
+  document.getElementById('after-data').value = '';
+
+  if (!activeClient && clients.length > 0 && wrap && sel) {
+    wrap.style.display = 'block';
+    sel.innerHTML = '<option value="">Ohne Kundin speichern</option>' +
+      clients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  } else if (wrap) {
+    wrap.style.display = 'none';
+  }
+}
+
+
+async function submitFeedback(good) {
+  const afterPhoto = document.getElementById('after-data')?.value || '';
+  await sendMLFeedback(lastAnalysis.sessionId, good, afterPhoto);
+  
+  const wrap = document.getElementById('ml-feedback-wrap');
+  if (wrap) {
+    wrap.innerHTML = `<div style="text-align:center;padding:10px;font-size:13px;color:var(--success)">
+      ✓ Danke! Dein Feedback hilft der KI zu lernen.
+    </div>`;
+  }
+}
+
 /* ═══════════════════ GOOGLE LOGIN ═══════════════════ */
 async function doGoogleLogin() {
   const { error } = await sb.auth.signInWithOAuth({
@@ -1886,31 +2240,37 @@ async function redeemVoucher() {
   const code = document.getElementById('voucher-code-input').value.trim().toUpperCase();
   if (!code) { showAuthError('voucher-error', 'Bitte einen Code eingeben.'); return; }
 
-  // Voucher suchen
-  const { data: voucher, error } = await sb.from('vouchers')
-    .select('*')
-    .eq('code', code)
-    .eq('is_active', true)
-    .single();
+  const btn = document.getElementById('voucher-redeem-btn');
+  if (btn) { btn.textContent = 'Wird eingelöst…'; btn.disabled = true; }
 
-  if (error || !voucher) {
-    showAuthError('voucher-error', 'Ungültiger oder abgelaufener Code.');
+  // Prüfen ob Nutzer bereits einen Salon hat
+  await loadSalon();
+  if (currentSalon?.id) {
+    // Salon existiert bereits — einfach Plan updaten
+    const { data: voucher } = await sb.from('vouchers')
+      .select('*').eq('code', code).eq('is_active', true).single();
+    if (!voucher) { showAuthError('voucher-error', 'Ungültiger Code.'); if(btn){btn.textContent='Gutschein einlösen';btn.disabled=false;} return; }
+    // Plan updaten
+    await sb.from('salons').update({ plan: voucher.plan, plan_status: 'active' }).eq('id', currentSalon.id);
+    currentSalon.plan = voucher.plan;
+    currentSalon.plan_status = 'active';
+    document.getElementById('voucher-error').style.display = 'none';
+    const successEl = document.getElementById('voucher-success');
+    successEl.innerHTML = `✅ ${voucher.plan === 'team' ? 'Team' : 'Solo'}-Abo für ${voucher.duration_days} Tage aktiviert!`;
+    successEl.style.display = 'block';
+    setTimeout(() => { renderLandingUserBar(); go('s-landing'); }, 1500);
     return;
   }
 
-  // Prüfen ob abgelaufen
-  if (voucher.expires_at && new Date(voucher.expires_at) < new Date()) {
-    showAuthError('voucher-error', 'Dieser Code ist abgelaufen.');
-    return;
-  }
+  // Gutschein prüfen
+  const { data: voucher, error: vErr } = await sb.from('vouchers')
+    .select('*').eq('code', code).eq('is_active', true).single();
 
-  // Prüfen ob max uses erreicht
-  if (voucher.used_count >= voucher.max_uses) {
-    showAuthError('voucher-error', 'Dieser Code wurde bereits zu oft verwendet.');
-    return;
-  }
+  if (vErr || !voucher) { showAuthError('voucher-error', 'Ungültiger oder abgelaufener Code.'); if(btn){btn.textContent='Gutschein einlösen';btn.disabled=false;} return; }
+  if (voucher.expires_at && new Date(voucher.expires_at) < new Date()) { showAuthError('voucher-error', 'Dieser Code ist abgelaufen.'); if(btn){btn.textContent='Gutschein einlösen';btn.disabled=false;} return; }
+  if (voucher.used_count >= voucher.max_uses) { showAuthError('voucher-error', 'Dieser Code wurde bereits zu oft verwendet.'); if(btn){btn.textContent='Gutschein einlösen';btn.disabled=false;} return; }
 
-  // Salon anlegen mit Gutschein-Plan
+  // Salon anlegen
   const salonName = window._pendingSalonName || currentUser?.user_metadata?.salon_name || 'Mein Salon';
   const trialEnd = new Date();
   trialEnd.setDate(trialEnd.getDate() + voucher.duration_days);
@@ -1924,39 +2284,45 @@ async function redeemVoucher() {
   }).select().single();
 
   if (salonError) {
-    showAuthError('voucher-error', 'Fehler: ' + salonError.message);
-    return;
+    // Salon vielleicht schon angelegt — nochmal laden
+    await new Promise(r => setTimeout(r, 1000));
+    await loadSalon();
+    if (currentSalon?.id) {
+      // Salon wurde doch angelegt, Plan sicherstellen
+      await sb.from('salons').update({ plan: voucher.plan, plan_status: 'active' }).eq('id', currentSalon.id);
+      currentSalon.plan = voucher.plan;
+      currentSalon.plan_status = 'active';
+    } else {
+      showAuthError('voucher-error', 'Fehler beim Anlegen: ' + salonError.message);
+      if(btn){btn.textContent='Gutschein einlösen';btn.disabled=false;}
+      return;
+    }
+  } else {
+    currentSalon = salon;
+    currentSalon.role = 'owner';
   }
 
-  // Einlösung speichern
-  await sb.from('voucher_redemptions').insert({
-    voucher_id: voucher.id,
-    user_id: currentUser.id,
-    salon_id: salon.id
-  });
-
-  // Nutzungszähler erhöhen
-  await sb.from('vouchers').update({ used_count: voucher.used_count + 1 }).eq('id', voucher.id);
-
-  currentSalon = salon;
-  currentSalon.role = 'owner';
   window._pendingSalonName = null;
 
-  // Kurz warten bis Supabase die Daten bereit hat, dann neu laden
-  await new Promise(r => setTimeout(r, 1500));
-  await loadSalon(); // nochmal laden um sicher zu gehen
+  // Einlösung + Zähler
+  if (salon?.id) {
+    await sb.from('voucher_redemptions').insert({ voucher_id: voucher.id, user_id: currentUser.id, salon_id: salon.id }).catch(()=>{});
+    await sb.from('vouchers').update({ used_count: voucher.used_count + 1 }).eq('id', voucher.id).catch(()=>{});
+  }
 
-  // Erfolg anzeigen
+  // Nochmal laden für sicheren State
+  await new Promise(r => setTimeout(r, 800));
+  await loadSalon();
+
   document.getElementById('voucher-error').style.display = 'none';
   const successEl = document.getElementById('voucher-success');
-  const planLabel = voucher.plan === 'team' ? 'Team' : 'Solo';
-  successEl.innerHTML = `✅ Code eingelöst! ${planLabel}-Abo für ${voucher.duration_days} Tage aktiviert.`;
+  const planLabel = currentSalon?.plan === 'team' ? 'Team' : 'Solo';
+  successEl.innerHTML = `✅ ${planLabel}-Abo für ${voucher.duration_days} Tage aktiviert!`;
   successEl.style.display = 'block';
 
-  setTimeout(() => {
-    renderLandingUserBar();
-    go('s-landing');
-  }, 2000);
+  if(btn){btn.textContent='Gutschein einlösen';btn.disabled=false;}
+  await loadClientsFromDB();
+  setTimeout(() => { renderLandingUserBar(); go('s-landing'); }, 1500);
 }
 
 /* ═══════════════════ GUTSCHEIN ADMIN ═══════════════════ */
