@@ -284,6 +284,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 <div id="app">
 
 
+<!-- ══════════════════ LOADING ══════════════════ -->
+<section class="screen active" id="s-loading">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff">
+    <div style="font-family:Outfit,sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:20px">Color<span style="color:#E8185A">Mix</span>AI</div>
+    <div style="width:36px;height:36px;border:2.5px solid #EBEBEB;border-top:2.5px solid #E8185A;border-radius:50%;animation:spin .9s linear infinite"></div>
+  </div>
+</section>
+
 <!-- ══════════════════ LOGIN ══════════════════ -->
 <section class="screen" id="s-login">
   <div class="auth-wrap">
@@ -413,7 +421,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 </section>
 
 <!-- ══════════════════ LANDING ══════════════════ -->
-<section class="screen active" id="s-landing">
+<section class="screen" id="s-landing">
   <div class="landing-hero">
     <img class="hero-img" src="hero.jpg" alt="Friseursalon" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(0.45) saturate(0.85);"/>
     <div class="hero-noise"></div>
@@ -1717,25 +1725,30 @@ function showAuthError(id, msg) {
 }
 
 /* ── go() erweitern für Auth-Screens ── */
-const _goOrig = go;
+const _goOrigAuth = go;
 go = function(screenId) {
-  const publicScreens = ['s-login','s-register','s-onboarding','s-forgot'];
+  const publicScreens = ['s-login','s-register','s-onboarding','s-forgot','s-loading'];
   if (!currentUser && !publicScreens.includes(screenId)) {
-    _goOrig('s-login'); return;
+    _goOrigAuth('s-login'); return;
   }
-  _goOrig(screenId);
+  _goOrigAuth(screenId);
   if (screenId === 's-account') renderAccountScreen();
 };
 
 /* ── App starten ── */
-if (typeof supabase === 'undefined') {
-  console.error('Supabase nicht geladen');
-  // Fallback: direkt zur App ohne Login
-  document.querySelector('.screen.active')?.classList.remove('active');
-  document.getElementById('s-landing')?.classList.add('active');
-} else {
-  initApp();
-}
+window.addEventListener('DOMContentLoaded', async () => {
+  if (typeof supabase === 'undefined') {
+    console.error('Supabase nicht geladen — lade ohne Auth');
+    go('s-landing');
+    return;
+  }
+  try {
+    await initApp();
+  } catch(e) {
+    console.error('initApp Fehler:', e);
+    go('s-login');
+  }
+});
 
 </script>
 </body>
