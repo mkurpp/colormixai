@@ -1736,9 +1736,10 @@ go = function(screenId) {
 };
 
 /* ── App starten ── */
-window.addEventListener('DOMContentLoaded', async () => {
+/* Script is at end of body — DOM already ready, call directly */
+(async () => {
   if (typeof supabase === 'undefined') {
-    console.error('Supabase nicht geladen — lade ohne Auth');
+    console.error('Supabase nicht geladen');
     go('s-landing');
     return;
   }
@@ -1748,7 +1749,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     console.error('initApp Fehler:', e);
     go('s-login');
   }
-});
+})();
 
 </script>
 </body>
