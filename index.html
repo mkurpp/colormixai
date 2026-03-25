@@ -2,9 +2,10 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>ColorMixAI</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Cormorant:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -48,7 +49,7 @@ html,body{height:100%;background:var(--bg);font-family:'Outfit',sans-serif;color
 .prog-fill{height:100%;background:var(--pink);transition:width .4s ease}
 
 /* ── SCROLL ── */
-.body{flex:1;overflow-y:auto;padding:20px}
+.body{flex:1;overflow-y:auto;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
 .body::-webkit-scrollbar{width:3px}
 .body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
@@ -197,7 +198,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 .empty{text-align:center;padding:40px 20px;color:var(--muted)}
 .empty .ico{font-size:36px;margin-bottom:10px}
 .empty p{font-size:13px;line-height:1.6}
-.fab{position:sticky;bottom:20px;right:0;margin:0 20px 20px auto;width:50px;height:50px;border-radius:50%;background:var(--pink);border:none;color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(232,24,90,.4);transition:all .18s;flex-shrink:0}
+.fab{position:sticky;bottom:calc(20px + env(safe-area-inset-bottom));right:0;margin:0 20px calc(20px + env(safe-area-inset-bottom)) auto;width:50px;height:50px;border-radius:50%;background:var(--pink);border:none;color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(232,24,90,.4);transition:all .18s;flex-shrink:0}
 .fab:hover{background:var(--pink-dark);transform:scale(1.08)}
 
 /* ── MODAL ── */
@@ -233,13 +234,183 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 .hero-headline{font-family:'Cormorant',serif;font-size:44px;font-weight:600;color:#fff;line-height:1.1;letter-spacing:-1px;margin-bottom:12px}
 .hero-headline em{font-style:italic;color:var(--pink)}
 .hero-sub{font-size:14px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:0}
-.landing-bottom{padding:20px;background:var(--surface);display:flex;flex-direction:column;gap:8px}
+.landing-bottom{padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom));background:var(--surface);display:flex;flex-direction:column;gap:8px}
 .landing-cta-row{display:grid;grid-template-columns:1fr auto;gap:8px}
-.landing-note{text-align:center;font-size:11px;color:var(--muted);margin-top:4px}
-</style>
+/* ── ADMIN ── */
+.admin-tag{display:inline-flex;align-items:center;gap:6px;background:var(--pink-light);border:1.5px solid var(--pink-mid);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--pink);margin-bottom:4px}
+.admin-section{background:var(--bg);border-radius:var(--r);padding:16px;margin-bottom:12px;border:1.5px solid var(--border)}
+.admin-section-title{font-size:13px;font-weight:800;letter-spacing:-0.2px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.admin-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.admin-row:last-child{border-bottom:none}
+.admin-row-name{flex:1;font-size:14px;font-weight:600}
+.admin-row-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.admin-swatch{width:28px;height:28px;border-radius:6px;flex-shrink:0;border:1px solid rgba(0,0,0,0.08)}
+.admin-del{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px;border-radius:4px;transition:color .15s}
+.admin-del:hover{color:var(--danger)}
+.admin-expand{background:none;border:none;color:var(--pink);font-size:12px;font-weight:700;cursor:pointer;padding:4px 0}
+.admin-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:16px}
+.admin-tab{flex:1;border:none;background:none;padding:10px 4px;font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.admin-tab.active{color:var(--pink);border-bottom-color:var(--pink)}
+.color-dot-inp{width:36px;height:36px;border-radius:8px;border:1.5px solid var(--border);cursor:pointer;padding:2px;flex-shrink:0}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.inp-sm{height:40px;font-size:13px}
+
+
+/* ── AUTH ── */
+.auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;padding:32px 24px;padding-bottom:calc(32px + env(safe-area-inset-bottom))}
+.auth-logo{font-family:'Outfit',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;margin-bottom:6px}
+.auth-logo span{color:var(--pink)}
+.auth-sub{font-size:14px;color:var(--muted);margin-bottom:28px;line-height:1.5}
+.auth-switch{text-align:center;font-size:13px;color:var(--mid);margin-top:16px}
+.auth-switch a{color:var(--pink);font-weight:700;cursor:pointer}
+.auth-error{background:#FDF2F2;border:1.5px solid #F5C4C4;color:var(--danger);font-size:13px;border-radius:var(--rs);padding:10px 14px;margin-bottom:12px;display:none}
+.plan-card{border:2px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:10px;cursor:pointer;transition:all .2s;position:relative}
+.plan-card.selected{border-color:var(--pink);background:var(--pink-light)}
+.plan-card-name{font-size:17px;font-weight:800;letter-spacing:-0.3px}
+.plan-card-price{font-size:26px;font-weight:800;color:var(--pink);margin:4px 0}
+.plan-card-price span{font-size:13px;font-weight:500;color:var(--mid)}
+.plan-card-feat{font-size:13px;color:var(--mid);line-height:1.9;margin-top:8px}
+.plan-badge{position:absolute;top:14px;right:14px;background:var(--pink);color:#fff;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;letter-spacing:.5px}
+.user-bar{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:var(--rs);padding:10px 14px;margin-bottom:16px}
+.user-bar-avatar{width:32px;height:32px;border-radius:50%;background:var(--pink);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800;flex-shrink:0}
+.user-bar-name{flex:1;font-size:13px;font-weight:700}
+.user-bar-plan{font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--pink);background:var(--pink-light);padding:2px 7px;border-radius:10px}
+.user-bar-logout{border:none;background:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
+.team-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.team-row:last-child{border-bottom:none}
+.team-avatar{width:36px;height:36px;border-radius:50%;background:var(--pink-light);display:flex;align-items:center;justify-content:center;color:var(--pink);font-size:14px;font-weight:800;flex-shrink:0}
 </head>
 <body>
 <div id="app">
+
+
+<!-- ══════════════════ LOGIN ══════════════════ -->
+<section class="screen" id="s-login">
+  <div class="auth-wrap">
+    <div class="auth-logo">Color<span>Mix</span>AI</div>
+    <div class="auth-sub">Willkommen zurück.<br>Melde dich in deinem Salon-Account an.</div>
+    <div class="auth-error" id="login-error"></div>
+    <input class="inp" type="email" placeholder="E-Mail" id="login-email" style="margin-bottom:8px" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <input class="inp" type="password" placeholder="Passwort" id="login-pw" style="margin-bottom:14px" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="btn btn-pink btn-full" id="login-btn" onclick="doLogin()">Einloggen</button>
+    <div style="text-align:right;margin-top:10px">
+      <a style="font-size:12px;color:var(--mid);cursor:pointer" onclick="go('s-forgot')">Passwort vergessen?</a>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;margin:20px 0">
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+      <span style="font-size:11px;color:var(--muted);font-weight:600">NEU BEI COLORMIXAI?</span>
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+    </div>
+    <button class="btn btn-outline btn-full" onclick="go('s-register')">Kostenlos registrieren</button>
+    <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:24px">14 Tage kostenlos testen · Keine Kreditkarte nötig</div>
+  </div>
+</section>
+
+<!-- ══════════════════ REGISTRIERUNG ══════════════════ -->
+<section class="screen" id="s-register">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-login')">← Zurück</button>
+    <span class="hdr-title">Registrieren</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="body">
+    <div class="auth-error" id="reg-error"></div>
+    <div class="lbl" style="margin-top:0">Salon-Informationen</div>
+    <input class="inp" type="text" placeholder="Salon-Name *" id="reg-salon" style="margin-bottom:8px"/>
+    <div class="lbl">Deine Zugangsdaten</div>
+    <input class="inp" type="text" placeholder="Dein Name *" id="reg-name" style="margin-bottom:8px"/>
+    <input class="inp" type="email" placeholder="E-Mail *" id="reg-email" style="margin-bottom:8px"/>
+    <input class="inp" type="password" placeholder="Passwort (min. 8 Zeichen) *" id="reg-pw" style="margin-bottom:8px"/>
+    <input class="inp" type="password" placeholder="Passwort wiederholen *" id="reg-pw2" style="margin-bottom:20px"/>
+    <button class="btn btn-pink btn-full" id="reg-btn" onclick="doRegister()">Weiter → Abo wählen</button>
+    <div class="auth-switch" style="margin-top:20px">Schon registriert? <a onclick="go('s-login')">Einloggen</a></div>
+    <div style="height:24px"></div>
+  </div>
+</section>
+
+<!-- ══════════════════ ABO WÄHLEN ══════════════════ -->
+<section class="screen" id="s-onboarding">
+  <div class="hdr">
+    <span style="width:60px"></span>
+    <span class="hdr-title">Abo wählen</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="body">
+    <p style="font-size:14px;color:var(--mid);margin-bottom:20px;line-height:1.6">Starte mit <strong>14 Tagen kostenlos</strong>. Danach wähle das passende Abo.</p>
+    <div class="plan-card selected" id="plan-solo" onclick="selectPlan('solo')">
+      <div class="plan-card-name">Solo</div>
+      <div class="plan-card-price">29€ <span>/ Monat</span></div>
+      <div class="plan-card-feat">✅ 1 Nutzer (nur du)<br>✅ Unbegrenzte Kunden<br>✅ Alle Analysen & Farbdatenbank<br>✅ KI-Formelberechnung<br>❌ Kein Team-Zugang</div>
+    </div>
+    <div class="plan-card" id="plan-team" onclick="selectPlan('team')">
+      <div class="plan-badge">EMPFOHLEN</div>
+      <div class="plan-card-name">Team</div>
+      <div class="plan-card-price">69€ <span>/ Monat</span></div>
+      <div class="plan-card-feat">✅ Unbegrenzte Mitarbeiter<br>✅ Alle sehen Salon-Kunden<br>✅ Team-Einladungen per E-Mail<br>✅ Alle Analysen & Farbdatenbank<br>✅ KI-Formelberechnung</div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);text-align:center;margin:12px 0">Monatlich abrechenbar · Jederzeit kündbar</div>
+    <button class="btn btn-pink btn-full" onclick="completeOnboarding()">14 Tage kostenlos starten →</button>
+    <div style="height:24px"></div>
+  </div>
+</section>
+
+<!-- ══════════════════ PASSWORT VERGESSEN ══════════════════ -->
+<section class="screen" id="s-forgot">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-login')">← Zurück</button>
+    <span class="hdr-title">Passwort zurücksetzen</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="body">
+    <p style="font-size:14px;color:var(--mid);margin-bottom:20px;line-height:1.6">Wir schicken dir einen Reset-Link per E-Mail.</p>
+    <div class="auth-error" id="forgot-error"></div>
+    <div id="forgot-success" style="background:#EAF4EE;border:1.5px solid #4A7C59;color:#0A7C55;font-size:13px;border-radius:var(--rs);padding:10px 14px;margin-bottom:12px;display:none">✓ E-Mail gesendet! Bitte prüfe dein Postfach.</div>
+    <input class="inp" type="email" placeholder="E-Mail" id="forgot-email" style="margin-bottom:14px"/>
+    <button class="btn btn-pink btn-full" onclick="doForgot()">Reset-Link senden</button>
+  </div>
+</section>
+
+<!-- ══════════════════ TEAM VERWALTEN ══════════════════ -->
+<section class="screen" id="s-team">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-landing')">← Zurück</button>
+    <span class="hdr-title">Team verwalten</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="body">
+    <div id="team-upgrade-note" style="display:none;background:var(--pink-light);border:1.5px solid var(--pink-mid);border-radius:var(--rs);padding:14px;margin-bottom:16px;font-size:13px;line-height:1.6">
+      <strong>Team-Abo erforderlich</strong><br>Mit dem Solo-Abo kannst du keine Mitarbeiter einladen. <a style="color:var(--pink);font-weight:700;cursor:pointer" onclick="go('s-onboarding')">Jetzt upgraden →</a>
+    </div>
+    <div id="team-content">
+      <div class="lbl" style="margin-top:0">Mitarbeiter einladen</div>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <input class="inp inp-sm" type="email" placeholder="E-Mail des Mitarbeiters" id="invite-email" style="flex:1"/>
+        <button class="btn btn-pink" style="height:48px;padding:0 14px;font-size:13px;flex-shrink:0" onclick="inviteMember()">Einladen</button>
+      </div>
+      <div class="lbl">Aktive Mitglieder</div>
+      <div class="admin-section" id="team-members-list"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ KONTO ══════════════════ -->
+<section class="screen" id="s-account">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-landing')">← Zurück</button>
+    <span class="hdr-title">Mein Konto</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="body">
+    <div id="account-info" style="margin-bottom:16px"></div>
+    <div class="lbl" style="margin-top:0">Abo</div>
+    <div class="admin-section" id="account-plan"></div>
+    <div class="lbl">Salon</div>
+    <div class="admin-section" id="account-salon"></div>
+    <div class="divider"></div>
+    <button class="btn btn-danger btn-full" onclick="doLogout()">Ausloggen</button>
+    <div style="height:24px"></div>
+  </div>
+</section>
 
 <!-- ══════════════════ LANDING ══════════════════ -->
 <section class="screen active" id="s-landing">
@@ -255,11 +426,16 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
     </div>
   </div>
   <div class="landing-bottom">
+    <div id="landing-user-bar"></div>
     <div class="landing-cta-row">
       <button class="btn btn-pink btn-full" onclick="go('s-select-client')">Analyse starten</button>
       <button class="btn btn-outline" style="min-width:90px" onclick="go('s-clients')">Kunden</button>
     </div>
-    <div class="landing-note">Wella · L'Oréal · Schwarzkopf · Redken und mehr</div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn btn-ghost btn-full" style="height:36px;font-size:12px" onclick="go('s-account')">👤 Konto</button>
+      <button class="btn btn-ghost btn-full" style="height:36px;font-size:12px" onclick="openTeam()">👥 Team</button>
+    </div>
+    <div class="landing-note" onclick="adminTap()" style="cursor:default;user-select:none">Wella · L'Oréal · Schwarzkopf · Redken und mehr</div>
   </div>
 </section>
 
@@ -604,6 +780,126 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
     <button class="btn btn-ghost btn-full" onclick="closeModal()">Cancel</button>
   </div>
 </div>
+
+<!-- ══════════════════ ADMIN LOGIN ══════════════════ -->
+<section class="screen" id="s-admin-login">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-landing')">← Zurück</button>
+    <span class="hdr-title">Admin</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh">
+    <div style="width:100%;max-width:320px">
+      <div style="text-align:center;margin-bottom:28px">
+        <div style="font-size:36px;margin-bottom:12px">🔐</div>
+        <div style="font-size:20px;font-weight:800;letter-spacing:-0.3px">Admin-Bereich</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px">Nur für authorisierte Nutzer</div>
+      </div>
+      <input class="inp" type="password" placeholder="Passwort" id="admin-pw-input" onkeydown="if(event.key==='Enter')checkAdminPw()" style="margin-bottom:10px;text-align:center;letter-spacing:3px"/>
+      <div id="admin-pw-error" style="color:var(--danger);font-size:12px;text-align:center;margin-bottom:10px;display:none">Falsches Passwort</div>
+      <button class="btn btn-pink btn-full" onclick="checkAdminPw()">Einloggen</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ ADMIN PANEL ══════════════════ -->
+<section class="screen" id="s-admin">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-landing')">← App</button>
+    <span class="hdr-title">Admin-Panel</span>
+    <span class="admin-tag">Admin</span>
+  </div>
+  <div class="body">
+
+    <!-- TABS -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchAdminTab('tab-brands',this)">Marken</button>
+      <button class="admin-tab" onclick="switchAdminTab('tab-lines',this)">Linien</button>
+      <button class="admin-tab" onclick="switchAdminTab('tab-shades',this)">Farbtöne</button>
+      <button class="admin-tab" onclick="switchAdminTab('tab-devs',this)">Entwickler</button>
+    </div>
+
+    <!-- TAB: MARKEN -->
+    <div id="tab-brands">
+      <div class="lbl" style="margin-top:0">Marke hinzufügen</div>
+      <div class="admin-section">
+        <input class="inp inp-sm" type="text" placeholder="Markenname *" id="new-brand-name" style="margin-bottom:8px"/>
+        <input class="inp inp-sm" type="text" placeholder="Beschreibung" id="new-brand-desc" style="margin-bottom:8px"/>
+        <button class="btn btn-pink btn-full" style="height:40px;font-size:13px" onclick="addBrand()">+ Marke hinzufügen</button>
+      </div>
+
+      <div class="lbl">Bestehende Marken</div>
+      <div class="admin-section" id="brands-list"></div>
+    </div>
+
+    <!-- TAB: LINIEN -->
+    <div id="tab-lines" style="display:none">
+      <div class="lbl" style="margin-top:0">Farblinie hinzufügen</div>
+      <div class="admin-section">
+        <select class="inp inp-sm" id="new-line-brand" style="margin-bottom:8px"></select>
+        <input class="inp inp-sm" type="text" placeholder="Name der Linie *" id="new-line-name" style="margin-bottom:8px"/>
+        <select class="inp inp-sm" id="new-line-type" style="margin-bottom:8px">
+          <option value="permanent">Permanent</option>
+          <option value="demi-permanent">Demi-Permanent</option>
+          <option value="treatment">Behandlung</option>
+        </select>
+        <input class="inp inp-sm" type="text" placeholder="Beschreibung" id="new-line-desc" style="margin-bottom:8px"/>
+        <button class="btn btn-pink btn-full" style="height:40px;font-size:13px" onclick="addLine()">+ Linie hinzufügen</button>
+      </div>
+
+      <div class="lbl">Bestehende Linien</div>
+      <div class="admin-section" id="lines-list"></div>
+    </div>
+
+    <!-- TAB: FARBTÖNE -->
+    <div id="tab-shades" style="display:none">
+      <div class="lbl" style="margin-top:0">Farbton hinzufügen</div>
+      <div class="admin-section">
+        <select class="inp inp-sm" id="new-shade-brand" style="margin-bottom:8px" onchange="populateShadeLines()"></select>
+        <select class="inp inp-sm" id="new-shade-line" style="margin-bottom:8px"></select>
+        <div class="form-row" style="margin-bottom:8px">
+          <input class="inp inp-sm" type="text" placeholder="Code *  z.B. 8/13" id="new-shade-code"/>
+          <input class="inp inp-sm" type="text" placeholder="Name *" id="new-shade-name"/>
+        </div>
+        <div class="form-row" style="margin-bottom:8px">
+          <input class="inp inp-sm" type="number" placeholder="Stufe 1-10" id="new-shade-level" min="1" max="10"/>
+          <input class="inp inp-sm" type="text" placeholder="Ton z.B. A, G, N" id="new-shade-tone"/>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <input type="color" id="new-shade-hex" value="#C8A870" class="color-dot-inp"/>
+          <span style="font-size:13px;color:var(--mid)">Farbe wählen</span>
+          <span id="hex-preview" style="font-size:12px;color:var(--muted)">#C8A870</span>
+        </div>
+        <button class="btn btn-pink btn-full" style="height:40px;font-size:13px" onclick="addShade()">+ Farbton hinzufügen</button>
+      </div>
+
+      <div class="lbl">Filter nach Marke & Linie</div>
+      <div class="admin-section" style="padding:12px">
+        <select class="inp inp-sm" id="filter-shade-brand" style="margin-bottom:8px" onchange="filterShades()"></select>
+        <select class="inp inp-sm" id="filter-shade-line" onchange="filterShades()"></select>
+      </div>
+      <div class="admin-section" id="shades-list"></div>
+    </div>
+
+    <!-- TAB: ENTWICKLER -->
+    <div id="tab-devs" style="display:none">
+      <div class="lbl" style="margin-top:0">Entwickler-Stärke hinzufügen</div>
+      <div class="admin-section">
+        <div class="form-row" style="margin-bottom:8px">
+          <input class="inp inp-sm" type="text" placeholder="Stärke z.B. 20%" id="new-dev-strength"/>
+          <input class="inp inp-sm" type="text" placeholder="Vol z.B. 20 Vol" id="new-dev-vol"/>
+        </div>
+        <input class="inp inp-sm" type="text" placeholder="Zweck / Beschreibung" id="new-dev-purpose" style="margin-bottom:8px"/>
+        <button class="btn btn-pink btn-full" style="height:40px;font-size:13px" onclick="addDev()">+ Entwickler hinzufügen</button>
+      </div>
+
+      <div class="lbl">Bestehende Entwickler-Stärken</div>
+      <div class="admin-section" id="devs-list"></div>
+    </div>
+
+    <div style="height:32px"></div>
+  </div>
+</section>
 
 </div><!-- #app -->
 <script>
@@ -971,6 +1267,470 @@ function confirmDeleteSess(sessId){
     ()=>{ sessions=sessions.filter(x=>x.id!==sessId); renderProfile(); }
   );
 }
+
+/* ═══════════════════ ADMIN ═══════════════════ */
+const ADMIN_PASSWORD = 'colormix2024';
+let adminTapCount = 0;
+let adminTapTimer = null;
+
+function adminTap() {
+  adminTapCount++;
+  clearTimeout(adminTapTimer);
+  adminTapTimer = setTimeout(() => { adminTapCount = 0; }, 2000);
+  if (adminTapCount >= 5) {
+    adminTapCount = 0;
+    document.getElementById('admin-pw-input').value = '';
+    document.getElementById('admin-pw-error').style.display = 'none';
+    go('s-admin-login');
+  }
+}
+
+function checkAdminPw() {
+  const pw = document.getElementById('admin-pw-input').value;
+  if (pw === ADMIN_PASSWORD) {
+    document.getElementById('admin-pw-error').style.display = 'none';
+    go('s-admin');
+    renderAdminAll();
+  } else {
+    document.getElementById('admin-pw-error').style.display = 'block';
+    document.getElementById('admin-pw-input').value = '';
+  }
+}
+
+let colorDB = {
+  brands: [
+    { id:'wella',       name:'Wella Professionals',      desc:'Koleston, Illumina, Color Touch' },
+    { id:'loreal',      name:"L'Oréal Professionnel",    desc:'Majirel, INOA, Dia Richesse' },
+    { id:'schwarzkopf', name:'Schwarzkopf Professional', desc:'Igora Royal, Igora Vibrance' },
+    { id:'redken',      name:'Redken',                   desc:'Shades EQ, Chromatics' },
+    { id:'olaplex',     name:'Olaplex',                  desc:'Bond Building Treatments' },
+  ],
+  lines: [
+    { id:'koleston',     brandId:'wella',        name:'Koleston Perfect ME+', type:'permanent',      desc:'Pure Balance Technology' },
+    { id:'colortouch',   brandId:'wella',        name:'Color Touch',          type:'demi-permanent', desc:'Ammonia-free, shiny finish' },
+    { id:'illumina',     brandId:'wella',        name:'Illumina Color',       type:'permanent',      desc:'Luminous color technology' },
+    { id:'majirel',      brandId:'loreal',       name:'Majirel',              type:'permanent',      desc:'Classic permanent color' },
+    { id:'inoa',         brandId:'loreal',       name:'INOA',                 type:'permanent',      desc:'Oil-based, ammonia-free' },
+    { id:'diarichesse',  brandId:'loreal',       name:'Dia Richesse',         type:'demi-permanent', desc:'Acid demi-permanent' },
+    { id:'igoraroyal',   brandId:'schwarzkopf',  name:'Igora Royal',          type:'permanent',      desc:'Precision color' },
+    { id:'igoravibrance',brandId:'schwarzkopf',  name:'Igora Vibrance',       type:'demi-permanent', desc:'Oil-in-cream, ammonia-free' },
+    { id:'shadeseq',     brandId:'redken',       name:'Shades EQ',            type:'demi-permanent', desc:'Acidic demi-permanent gloss' },
+    { id:'chromatics',   brandId:'redken',       name:'Chromatics',           type:'permanent',      desc:'Oil-enriched, ammonia-free' },
+  ],
+  shades: [
+    { id:'s1', lineId:'koleston',  code:'8/13', name:'Hellblond Beige',    level:8,  tone:'BA', hex:'#C8A870' },
+    { id:'s2', lineId:'koleston',  code:'9/13', name:'Sehr hell Beige',    level:9,  tone:'BA', hex:'#D4BF99' },
+    { id:'s3', lineId:'koleston',  code:'7/3',  name:'Mittelblond Golden', level:7,  tone:'G',  hex:'#B8883A' },
+    { id:'s4', lineId:'koleston',  code:'8/1',  name:'Hellblond Asche',    level:8,  tone:'A',  hex:'#BCA888' },
+    { id:'s5', lineId:'koleston',  code:'10/0', name:'Hellstes Blond',     level:10, tone:'N',  hex:'#ECD8A0' },
+    { id:'s6', lineId:'majirel',   code:'7.3',  name:'Goldblond',          level:7,  tone:'G',  hex:'#B8904A' },
+    { id:'s7', lineId:'majirel',   code:'8.1',  name:'Hell Ascheblond',    level:8,  tone:'A',  hex:'#B8A890' },
+    { id:'s8', lineId:'igoraroyal',code:'7-1',  name:'Mittelblond Cendré', level:7,  tone:'C',  hex:'#888070' },
+    { id:'s9', lineId:'shadeseq',  code:'09B',  name:'Champagne',          level:9,  tone:'B',  hex:'#D8C898' },
+  ],
+  developers: [
+    { strength:'6%',  vol:'2 Vol',  purpose:'Tönungen, kein Aufhellen' },
+    { strength:'9%',  vol:'3 Vol',  purpose:'Leichte Tönung, minimaler Lift' },
+    { strength:'12%', vol:'4 Vol',  purpose:'Grauhaarabdeckung, minimaler Lift' },
+    { strength:'20%', vol:'20 Vol', purpose:'Standard Färbung, 1-2 Stufen Lift' },
+    { strength:'30%', vol:'30 Vol', purpose:'3 Stufen Aufhellung' },
+    { strength:'40%', vol:'40 Vol', purpose:'Maximale Aufhellung, 4+ Stufen' },
+  ]
+};
+let dbNextId = 100;
+
+function renderAdminAll() {
+  renderBrandsList(); renderLinesList(); renderShadesFilter(); renderDevsList();
+  populateBrandSelects();
+}
+
+function switchAdminTab(tabId, btn) {
+  ['tab-brands','tab-lines','tab-shades','tab-devs'].forEach(id=>{
+    document.getElementById(id).style.display = id===tabId?'block':'none';
+  });
+  document.querySelectorAll('.admin-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function populateBrandSelects() {
+  ['new-line-brand','new-shade-brand','filter-shade-brand'].forEach(id=>{
+    const sel=document.getElementById(id); if(!sel)return;
+    sel.innerHTML=colorDB.brands.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+  });
+  populateShadeLines(); filterShadeLines();
+}
+
+function populateShadeLines() {
+  const brandId=document.getElementById('new-shade-brand')?.value;
+  const sel=document.getElementById('new-shade-line'); if(!sel)return;
+  sel.innerHTML=colorDB.lines.filter(l=>l.brandId===brandId).map(l=>`<option value="${l.id}">${l.name}</option>`).join('');
+}
+
+function filterShadeLines() {
+  const brandId=document.getElementById('filter-shade-brand')?.value;
+  const sel=document.getElementById('filter-shade-line'); if(!sel)return;
+  sel.innerHTML=`<option value="">Alle Linien</option>`+colorDB.lines.filter(l=>l.brandId===brandId).map(l=>`<option value="${l.id}">${l.name}</option>`).join('');
+  filterShades();
+}
+
+/* BRANDS */
+function renderBrandsList(){
+  document.getElementById('brands-list').innerHTML=colorDB.brands.map(b=>`
+    <div class="admin-row">
+      <div style="flex:1"><div class="admin-row-name">${b.name}</div><div class="admin-row-sub">${b.desc}</div></div>
+      <button class="admin-del" onclick="deleteBrand('${b.id}')">🗑</button>
+    </div>`).join('')||'<p style="font-size:13px;color:var(--muted)">Noch keine Marken.</p>';
+}
+function addBrand(){
+  const name=document.getElementById('new-brand-name').value.trim();
+  if(!name){alert('Markenname fehlt.');return;}
+  colorDB.brands.push({id:'brand_'+dbNextId++,name,desc:document.getElementById('new-brand-desc').value.trim()});
+  document.getElementById('new-brand-name').value='';
+  document.getElementById('new-brand-desc').value='';
+  renderBrandsList(); populateBrandSelects();
+}
+function deleteBrand(id){
+  if(!confirm('Marke und alle zugehörigen Daten löschen?'))return;
+  const lineIds=colorDB.lines.filter(l=>l.brandId===id).map(l=>l.id);
+  colorDB.shades=colorDB.shades.filter(s=>!lineIds.includes(s.lineId));
+  colorDB.lines=colorDB.lines.filter(l=>l.brandId!==id);
+  colorDB.brands=colorDB.brands.filter(b=>b.id!==id);
+  renderAdminAll();
+}
+
+/* LINES */
+function renderLinesList(){
+  document.getElementById('lines-list').innerHTML=colorDB.lines.map(l=>{
+    const brand=colorDB.brands.find(b=>b.id===l.brandId);
+    const count=colorDB.shades.filter(s=>s.lineId===l.id).length;
+    return `<div class="admin-row">
+      <div style="flex:1"><div class="admin-row-name">${l.name}</div><div class="admin-row-sub">${brand?.name||''} · ${l.type} · ${count} Farbtöne</div></div>
+      <button class="admin-del" onclick="deleteLine('${l.id}')">🗑</button>
+    </div>`;
+  }).join('')||'<p style="font-size:13px;color:var(--muted)">Noch keine Linien.</p>';
+  const sel=document.getElementById('new-line-brand');
+  if(sel) sel.innerHTML=colorDB.brands.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+}
+function addLine(){
+  const name=document.getElementById('new-line-name').value.trim();
+  if(!name){alert('Name fehlt.');return;}
+  colorDB.lines.push({id:'line_'+dbNextId++,brandId:document.getElementById('new-line-brand').value,name,type:document.getElementById('new-line-type').value,desc:document.getElementById('new-line-desc').value.trim()});
+  document.getElementById('new-line-name').value='';
+  document.getElementById('new-line-desc').value='';
+  renderLinesList(); populateBrandSelects();
+}
+function deleteLine(id){
+  if(!confirm('Linie und alle Farbtöne löschen?'))return;
+  colorDB.shades=colorDB.shades.filter(s=>s.lineId!==id);
+  colorDB.lines=colorDB.lines.filter(l=>l.id!==id);
+  renderLinesList(); filterShades();
+}
+
+/* SHADES */
+function renderShadesFilter(){
+  const sel=document.getElementById('filter-shade-brand');
+  if(sel) sel.innerHTML=colorDB.brands.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+  filterShadeLines();
+}
+function filterShades(){
+  const brandId=document.getElementById('filter-shade-brand')?.value;
+  const lineId=document.getElementById('filter-shade-line')?.value;
+  const lineIds=lineId?[lineId]:colorDB.lines.filter(l=>l.brandId===brandId).map(l=>l.id);
+  const el=document.getElementById('shades-list'); if(!el)return;
+  const shades=colorDB.shades.filter(s=>lineIds.includes(s.lineId));
+  el.innerHTML=shades.map(s=>{
+    const line=colorDB.lines.find(l=>l.id===s.lineId);
+    return `<div class="admin-row">
+      <div class="admin-swatch" style="background:${s.hex}"></div>
+      <div style="flex:1"><div class="admin-row-name">${s.code} — ${s.name}</div><div class="admin-row-sub">${line?.name||''} · Stufe ${s.level||'—'} · ${s.tone||'—'}</div></div>
+      <button class="admin-del" onclick="deleteShade('${s.id}')">🗑</button>
+    </div>`;
+  }).join('')||'<p style="font-size:13px;color:var(--muted)">Keine Farbtöne gefunden.</p>';
+}
+function addShade(){
+  const code=document.getElementById('new-shade-code').value.trim();
+  const name=document.getElementById('new-shade-name').value.trim();
+  if(!code||!name){alert('Code und Name sind Pflichtfelder.');return;}
+  colorDB.shades.push({id:'shade_'+dbNextId++,lineId:document.getElementById('new-shade-line').value,code,name,level:parseInt(document.getElementById('new-shade-level').value)||null,tone:document.getElementById('new-shade-tone').value.trim(),hex:document.getElementById('new-shade-hex').value});
+  ['new-shade-code','new-shade-name','new-shade-level','new-shade-tone'].forEach(id=>document.getElementById(id).value='');
+  filterShades();
+}
+function deleteShade(id){
+  colorDB.shades=colorDB.shades.filter(s=>s.id!==id);
+  filterShades();
+}
+
+/* DEVELOPERS */
+function renderDevsList(){
+  document.getElementById('devs-list').innerHTML=colorDB.developers.map((d,i)=>`
+    <div class="admin-row">
+      <div style="flex:1"><div class="admin-row-name">${d.strength} — ${d.vol}</div><div class="admin-row-sub">${d.purpose}</div></div>
+      <button class="admin-del" onclick="deleteDev(${i})">🗑</button>
+    </div>`).join('')||'<p style="font-size:13px;color:var(--muted)">Keine Entwickler.</p>';
+}
+function addDev(){
+  const strength=document.getElementById('new-dev-strength').value.trim();
+  if(!strength){alert('Stärke fehlt.');return;}
+  colorDB.developers.push({strength,vol:document.getElementById('new-dev-vol').value.trim(),purpose:document.getElementById('new-dev-purpose').value.trim()});
+  ['new-dev-strength','new-dev-vol','new-dev-purpose'].forEach(id=>document.getElementById(id).value='');
+  renderDevsList();
+}
+function deleteDev(i){
+  colorDB.developers.splice(i,1); renderDevsList();
+}
+
+document.getElementById('new-shade-hex').addEventListener('input',e=>{
+  document.getElementById('hex-preview').textContent=e.target.value;
+});
+document.getElementById('filter-shade-brand').addEventListener('change',filterShadeLines);
+
+/* ═══════════════════ SUPABASE AUTH ═══════════════════ */
+const SUPABASE_URL = 'https://kncltnmzocufnhdrzswt.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_630ZCE9exj23wGlyXNUtlg_3mzoMA0w';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+let currentSalon = null;
+let selectedPlan = 'solo';
+
+/* ── App initialisieren ── */
+async function initApp() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    await loadSalon();
+    renderLandingUserBar();
+    // Session-Kontrolle: Solo nur 1 Gerät
+    await enforceSessionLimit(session);
+    go('s-landing');
+  } else {
+    go('s-login');
+  }
+}
+
+/* ── Salon laden ── */
+async function loadSalon() {
+  const { data } = await sb.from('salon_members')
+    .select('salon_id, role, salons(id, name, plan, plan_status, trial_ends_at)')
+    .eq('user_id', currentUser.id)
+    .eq('status', 'active')
+    .single();
+  if (data?.salons) {
+    currentSalon = data.salons;
+    currentSalon.role = data.role;
+  }
+}
+
+/* ── Session-Limit für Solo (1 Gerät) ── */
+async function enforceSessionLimit(session) {
+  if (!currentSalon || currentSalon.plan !== 'solo') return;
+  const token = session.access_token.slice(-32);
+  const deviceInfo = navigator.userAgent.slice(0, 80);
+  // Upsert aktive Session — überschreibt vorherigen Token
+  await sb.from('active_sessions').upsert({
+    user_id: currentUser.id,
+    session_token: token,
+    device_info: deviceInfo,
+    last_seen: new Date().toISOString()
+  }, { onConflict: 'user_id' });
+}
+
+/* ── User-Bar auf Startseite ── */
+function renderLandingUserBar() {
+  const el = document.getElementById('landing-user-bar');
+  if (!currentUser || !el) return;
+  const initial = (currentUser.email || 'U')[0].toUpperCase();
+  const planLabel = currentSalon?.plan === 'team' ? 'Team' : 'Solo';
+  const isTrial = currentSalon?.plan_status === 'trial';
+  el.innerHTML = `<div class="user-bar">
+    <div class="user-bar-avatar">${initial}</div>
+    <div class="user-bar-name">${currentSalon?.name || currentUser.email}</div>
+    <span class="user-bar-plan">${planLabel}${isTrial?' · Trial':''}</span>
+  </div>`;
+}
+
+/* ── LOGIN ── */
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pw = document.getElementById('login-pw').value;
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('login-btn');
+  if (!email || !pw) { showAuthError('login-error', 'Bitte E-Mail und Passwort eingeben.'); return; }
+  btn.textContent = 'Einloggen…'; btn.disabled = true;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
+  btn.textContent = 'Einloggen'; btn.disabled = false;
+  if (error) { showAuthError('login-error', 'Falsche E-Mail oder Passwort.'); return; }
+  currentUser = data.user;
+  await loadSalon();
+  if (!currentSalon) { go('s-onboarding'); return; }
+  await enforceSessionLimit(data.session);
+  renderLandingUserBar();
+  go('s-landing');
+}
+
+/* ── REGISTRIERUNG ── */
+async function doRegister() {
+  const salon = document.getElementById('reg-salon').value.trim();
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pw = document.getElementById('reg-pw').value;
+  const pw2 = document.getElementById('reg-pw2').value;
+  if (!salon || !name || !email || !pw) { showAuthError('reg-error', 'Bitte alle Felder ausfüllen.'); return; }
+  if (pw.length < 8) { showAuthError('reg-error', 'Passwort muss mindestens 8 Zeichen haben.'); return; }
+  if (pw !== pw2) { showAuthError('reg-error', 'Passwörter stimmen nicht überein.'); return; }
+  const btn = document.getElementById('reg-btn');
+  btn.textContent = 'Bitte warten…'; btn.disabled = true;
+  const { data, error } = await sb.auth.signUp({ email, password: pw, options: { data: { full_name: name, salon_name: salon } } });
+  btn.textContent = 'Weiter → Abo wählen'; btn.disabled = false;
+  if (error) { showAuthError('reg-error', error.message); return; }
+  currentUser = data.user;
+  // Temporär Salon-Name speichern für Onboarding
+  window._pendingSalonName = salon;
+  go('s-onboarding');
+}
+
+/* ── ABO WÄHLEN ── */
+function selectPlan(plan) {
+  selectedPlan = plan;
+  document.getElementById('plan-solo').classList.toggle('selected', plan === 'solo');
+  document.getElementById('plan-team').classList.toggle('selected', plan === 'team');
+}
+
+async function completeOnboarding() {
+  const btn = document.querySelector('#s-onboarding .btn-pink');
+  btn.textContent = 'Wird eingerichtet…'; btn.disabled = true;
+  // Salon anlegen
+  const salonName = window._pendingSalonName || currentUser?.user_metadata?.salon_name || 'Mein Salon';
+  const { data: salon, error } = await sb.from('salons').insert({
+    name: salonName,
+    owner_id: currentUser.id,
+    plan: selectedPlan,
+    plan_status: 'trial'
+  }).select().single();
+  btn.textContent = '14 Tage kostenlos starten →'; btn.disabled = false;
+  if (error) { alert('Fehler beim Anlegen des Salons: ' + error.message); return; }
+  currentSalon = salon;
+  currentSalon.role = 'owner';
+  window._pendingSalonName = null;
+  renderLandingUserBar();
+  go('s-landing');
+}
+
+/* ── PASSWORT VERGESSEN ── */
+async function doForgot() {
+  const email = document.getElementById('forgot-email').value.trim();
+  if (!email) { showAuthError('forgot-error', 'Bitte E-Mail eingeben.'); return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.href
+  });
+  if (error) { showAuthError('forgot-error', error.message); return; }
+  document.getElementById('forgot-success').style.display = 'block';
+  document.getElementById('forgot-email').value = '';
+}
+
+/* ── LOGOUT ── */
+async function doLogout() {
+  await sb.auth.signOut();
+  if (currentUser) {
+    await sb.from('active_sessions').delete().eq('user_id', currentUser.id);
+  }
+  currentUser = null; currentSalon = null;
+  go('s-login');
+}
+
+/* ── TEAM ── */
+async function openTeam() {
+  go('s-team');
+  if (!currentSalon || currentSalon.plan !== 'team') {
+    document.getElementById('team-upgrade-note').style.display = 'block';
+    document.getElementById('team-content').style.display = 'none';
+    return;
+  }
+  document.getElementById('team-upgrade-note').style.display = 'none';
+  document.getElementById('team-content').style.display = 'block';
+  await loadTeamMembers();
+}
+
+async function loadTeamMembers() {
+  const { data } = await sb.from('salon_members')
+    .select('user_id, role, status, invited_email, joined_at')
+    .eq('salon_id', currentSalon.id);
+  const el = document.getElementById('team-members-list');
+  if (!data?.length) { el.innerHTML = '<p style="font-size:13px;color:var(--muted)">Noch keine Mitglieder.</p>'; return; }
+  el.innerHTML = data.map(m => `
+    <div class="team-row">
+      <div class="team-avatar">${(m.invited_email||'?')[0].toUpperCase()}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700">${m.invited_email||'Unbekannt'}</div>
+        <div style="font-size:11px;color:var(--muted)">${m.role === 'owner' ? 'Inhaber' : 'Mitarbeiter'} · ${m.status === 'active' ? 'Aktiv' : 'Einladung ausstehend'}</div>
+      </div>
+      ${m.role !== 'owner' && currentSalon.role === 'owner' ? `<button class="admin-del" onclick="removeMember('${m.user_id}')">🗑</button>` : ''}
+    </div>`).join('');
+}
+
+async function inviteMember() {
+  const email = document.getElementById('invite-email').value.trim();
+  if (!email) return;
+  const { error } = await sb.from('salon_members').insert({
+    salon_id: currentSalon.id,
+    invited_email: email,
+    role: 'member',
+    status: 'pending'
+  });
+  if (error) { alert('Fehler: ' + error.message); return; }
+  document.getElementById('invite-email').value = '';
+  await loadTeamMembers();
+  // TODO: E-Mail-Einladung über Supabase Edge Function senden
+}
+
+async function removeMember(userId) {
+  if (!confirm('Mitarbeiter entfernen?')) return;
+  await sb.from('salon_members').delete().eq('salon_id', currentSalon.id).eq('user_id', userId);
+  await loadTeamMembers();
+}
+
+/* ── KONTO-SCREEN ── */
+function renderAccountScreen() {
+  if (!currentUser || !currentSalon) return;
+  const plan = currentSalon.plan === 'team' ? 'Team' : 'Solo';
+  const status = currentSalon.plan_status === 'trial' ? '🟡 Testphase' : currentSalon.plan_status === 'active' ? '🟢 Aktiv' : '🔴 Inaktiv';
+  const trialEnd = currentSalon.trial_ends_at ? new Date(currentSalon.trial_ends_at).toLocaleDateString('de-DE') : '—';
+  document.getElementById('account-info').innerHTML = `<div class="user-bar">
+    <div class="user-bar-avatar">${(currentUser.email||'U')[0].toUpperCase()}</div>
+    <div style="flex:1"><div style="font-size:14px;font-weight:700">${currentUser.email}</div></div>
+  </div>`;
+  document.getElementById('account-plan').innerHTML = `
+    <div style="font-size:14px;font-weight:700;margin-bottom:4px">${plan}-Abo · ${plan === 'Solo' ? '29€' : '69€'}/Monat</div>
+    <div style="font-size:12px;color:var(--mid)">${status}</div>
+    ${currentSalon.plan_status === 'trial' ? `<div style="font-size:12px;color:var(--mid);margin-top:2px">Testphase bis: ${trialEnd}</div>` : ''}`;
+  document.getElementById('account-salon').innerHTML = `
+    <div style="font-size:14px;font-weight:700">${currentSalon.name}</div>
+    <div style="font-size:12px;color:var(--mid);margin-top:2px">Rolle: ${currentSalon.role === 'owner' ? 'Inhaber' : 'Mitarbeiter'}</div>`;
+}
+
+/* ── HILFSFUNKTIONEN ── */
+function showAuthError(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+/* ── go() erweitern für Auth-Screens ── */
+const _goOrig = go;
+go = function(id) {
+  // Auth-Schutz: wenn nicht eingeloggt → Login
+  const publicScreens = ['s-login','s-register','s-onboarding','s-forgot'];
+  if (!currentUser && !publicScreens.includes(id)) {
+    _goOrig('s-login'); return;
+  }
+  _goOrig(id);
+  if (id === 's-account') renderAccountScreen();
+};
+
+/* ── App starten ── */
+initApp();
+
 </script>
 </body>
 </html>
