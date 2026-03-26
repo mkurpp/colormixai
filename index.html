@@ -2333,8 +2333,7 @@ function searchAddress(query) {
           item.address?.city||item.address?.town||item.address?.village].filter(Boolean).join(', ');
         return '<div onclick="selectAddressByIdx(' + idx + ')" ' +
           'style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #E0E0E8;font-size:13px" ' +
-          'onmouseover="this.style.background='#FFF0F4'" ' +
-          'onmouseout="this.style.background=''">' +
+          '>' +
           '📍 ' + parts + '</div>';
       }).join('');
       sug.style.display = 'block';
