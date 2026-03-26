@@ -602,7 +602,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
     </div>
 
     <div class="divider"></div>
-    <button class="btn btn-outline btn-full" onclick="go('s-ml-training')" style="margin-bottom:8px">🧠 KI Training</button>
+    <button id="acc-ml-training-btn" class="btn btn-outline btn-full" onclick="go('s-ml-training')" style="margin-bottom:8px;display:none">🧠 KI Training</button>
     <button class="btn btn-danger btn-full" onclick="doLogout()">Ausloggen</button>
     <div style="height:24px"></div>
   </div>
@@ -1136,6 +1136,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
       <button onclick="mlSaveEditModal()" style="font-size:13px;font-weight:800;color:var(--pink);background:none;border:none;cursor:pointer">Speichern ✓</button>
     </div>
     <div style="padding:16px 20px">
+
+      <!-- Bild Vorschau -->
+      <div id="ml-edit-img-preview" style="display:none;margin-bottom:16px;border-radius:var(--r);overflow:hidden;max-height:200px">
+        <img id="ml-edit-img" style="width:100%;max-height:200px;object-fit:cover"/>
+      </div>
 
       <!-- Strukturtyp -->
       <div class="lbl" style="margin-top:0">Farbstruktur</div>
@@ -1836,12 +1841,14 @@ async function saveNewClientFlow() {
   if (!name) { alert('Bitte einen Kundennamen eingeben.'); return; }
   const btn = document.querySelector('#s-new-client-flow .btn-pink');
   btn.textContent = 'Speichern…'; btn.disabled = true;
+  const photoData = document.getElementById('fcf-data')?.value || null;
   const clientData = {
     salon_id: currentSalon?.id || null,
     name,
     notes: document.getElementById('fcf-notes').value.trim(),
     hair_history: document.getElementById('fcf-history').value.trim(),
     hair_state: document.querySelector('#fcf-state .seg-btn.active')?.textContent||'Natur',
+    photo_url: photoData || null,
     created_by: currentUser?.id || null,
   };
   let savedClient;
@@ -1849,12 +1856,12 @@ async function saveNewClientFlow() {
     const { data, error } = await sb.from('clients').insert(clientData).select().single();
     if (error) { console.error(error); }
     if (data) {
-      savedClient = { id: data.id, name: data.name, notes: data.notes, hairHistory: data.hair_history, hairState: data.hair_state, photo: '' };
+      savedClient = { id: data.id, name: data.name, notes: data.notes, hairHistory: data.hair_history, hairState: data.hair_state, photo: data.photo_url || '' };
       clients.unshift(savedClient);
     }
   }
   if (!savedClient) {
-    savedClient = { id: nextId++, name, notes: clientData.notes, hairHistory: clientData.hair_history, hairState: clientData.hair_state, photo: '' };
+    savedClient = { id: nextId++, name, notes: clientData.notes, hairHistory: clientData.hair_history, hairState: clientData.hair_state, photo: photoData || '' };
     clients.unshift(savedClient);
   }
   activeClient = savedClient;
@@ -1870,19 +1877,21 @@ async function saveClientStandalone() {
   if (!name) { alert('Bitte einen Kundennamen eingeben.'); return; }
   const btn = document.querySelector('#s-new-client-standalone .btn-pink');
   btn.textContent = 'Speichern…'; btn.disabled = true;
+  const ncsPhoto = document.getElementById('ncs-data')?.value || null;
   const clientData = {
     salon_id: currentSalon?.id || null,
     name,
     notes: document.getElementById('ncs-notes').value.trim(),
     hair_history: document.getElementById('ncs-history').value.trim(),
     hair_state: document.querySelector('#ncs-state .seg-btn.active')?.textContent||'Natur',
+    photo_url: ncsPhoto || null,
     created_by: currentUser?.id || null,
   };
   if (currentSalon?.id) {
     const { data } = await sb.from('clients').insert(clientData).select().single();
-    if (data) clients.unshift({ id: data.id, name: data.name, notes: data.notes, hairHistory: data.hair_history, hairState: data.hair_state, photo: '' });
+    if (data) clients.unshift({ id: data.id, name: data.name, notes: data.notes, hairHistory: data.hair_history, hairState: data.hair_state, photo: data.photo_url || '' });
   } else {
-    clients.unshift({ id: nextId++, name, notes: clientData.notes, hairHistory: clientData.hair_history, hairState: clientData.hair_state, photo: '' });
+    clients.unshift({ id: nextId++, name, notes: clientData.notes, hairHistory: clientData.hair_history, hairState: clientData.hair_state, photo: ncsPhoto || '' });
   }
   btn.textContent = '✓ Kunde speichern'; btn.disabled = false;
   ['ncs-name','ncs-notes','ncs-history'].forEach(id=>document.getElementById(id).value='');
@@ -2914,6 +2923,9 @@ function renderAccountScreen() {
           // Show Zielbild section
           const zielSection = document.getElementById('account-zielbild-section');
           if (zielSection) { zielSection.style.display = 'block'; renderAccZielbilder(); }
+          // KI Training nur für Admins
+          const mlBtn = document.getElementById('acc-ml-training-btn');
+          if (mlBtn) mlBtn.style.display = adminMode ? 'block' : 'none';
         });
     }
   } else {
@@ -3054,6 +3066,7 @@ go = function(screenId) {
   if (screenId === 's-target') { renderZielGrid('trends'); }
   if (screenId === 's-target-detail') { renderZielBloecke(zielCurrentStruktur); }
   if (screenId === 's-ml-training') {
+    if (!adminMode) { go('s-landing'); return; }
     mlRenderHerstellerTabs();
     mlRenderFarbBlocks();
     mlLoadStats();
@@ -3538,11 +3551,12 @@ function proceedToTarget() {
   // Save IST data
   const istData = getIstData();
   document.getElementById('curr-ist-json').value = JSON.stringify(istData);
-  lastAnalysis.ist = { ...istData, confidence: 0.85 };
+  // Save image reference in IST data for later use
+  const imageBase64 = document.getElementById('curr-data')?.value || null;
+  lastAnalysis.ist = { ...istData, imageBase64: imageBase64, confidence: 0.85 };
 
   // If hearted → save as training example
   if (istIsFavorited) {
-    const imageBase64 = document.getElementById('curr-data')?.value || null;
     saveIstAsFavorite(istData, imageBase64);
   }
 
@@ -3643,7 +3657,7 @@ async function saveIstAsFavorite(istData, imageBase64) {
       source: 'confirmed' // unterscheidet sich von 'manual' (Melissa)
     }).select().single();
 
-    if (error) { console.error('Favorite save error:', error); return; }
+    if (error) { console.error('Favorite save error:', error.message || error); return; }
 
     // Save values for each Farbblock
     const hersteller = istData.hersteller || 'unbekannt';
@@ -4519,6 +4533,17 @@ function mlOpenEditModal(img, values) {
   // Render
   mlEditRenderHTabs();
   mlEditRenderBlocks();
+
+  // Show image if available
+  const src = (mlTrainingImages.find(function(m){return m.id===img.id;})||{}).src || img.image_base64 || '';
+  const previewWrap = document.getElementById('ml-edit-img-preview');
+  const previewImg = document.getElementById('ml-edit-img');
+  if (src && previewWrap && previewImg) {
+    previewImg.src = src;
+    previewWrap.style.display = 'block';
+  } else if (previewWrap) {
+    previewWrap.style.display = 'none';
+  }
 
   // Clear status
   const st = document.getElementById('ml-edit-status');
