@@ -552,11 +552,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
       <div class="lbl">Bevorzugter Hersteller</div>
       <select class="inp" id="acc-hersteller" style="margin-bottom:12px">
         <option value="">— Kein Hersteller hinterlegt —</option>
-        <option value="wella">Wella Professionals</option>
-        <option value="loreal">L'Oréal Professionnel</option>
-        <option value="schwarzkopf">Schwarzkopf Professional</option>
-        <option value="redken">Redken</option>
-        <option value="gold">GOLD</option>
+        <option value="">— Bitte wählen —</option>
       </select>
       <!-- Karte listing toggle -->
       <div style="background:var(--pink-light);border:2px solid var(--pink-mid);border-radius:var(--rs);padding:14px;margin-bottom:12px">
@@ -779,11 +775,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
     <div class="lbl" style="margin-top:0">Farbsystem / Hersteller</div>
     <select class="inp" id="ist-hersteller" onchange="onHerstellerChange()" style="margin-bottom:4px">
       <option value="">— Bitte wählen —</option>
-      <option value="wella">Wella Professionals</option>
-      <option value="loreal">L'Oréal Professionnel</option>
-      <option value="schwarzkopf">Schwarzkopf Professional</option>
-      <option value="redken">Redken</option>
-      <option value="gold">GOLD</option>
+      <option value="">— Bitte wählen —</option>
     </select>
     <div style="font-size:11px;color:var(--muted);margin-bottom:16px">Aus Salon-Profil vorausgewählt wenn hinterlegt</div>
 
@@ -946,11 +938,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
       <button onclick="toggleHerstellerOverride()" style="font-size:12px;font-weight:700;color:var(--pink);background:none;border:none;cursor:pointer;white-space:nowrap">Ändern</button>
     </div>
     <select class="inp" id="ziel-hersteller-override" style="display:none;margin-bottom:8px" onchange="onZielHerstellerChange()">
-      <option value="wella">Wella Professionals</option>
-      <option value="loreal">L'Oréal Professionnel</option>
-      <option value="schwarzkopf">Schwarzkopf Professional</option>
-      <option value="redken">Redken</option>
-      <option value="gold">GOLD</option>
+      <option value="">— Bitte wählen —</option>
     </select>
 
     <!-- Farblinie -->
@@ -1398,7 +1386,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 
     <!-- TABS -->
     <div class="admin-tabs">
-      <button class="admin-tab active" onclick="switchAdminTab('tab-brands',this)">Marken</button>
+      <button class="admin-tab active" onclick="switchAdminTab('tab-brands',this);renderHerstellerAdmin()">🎨 Hersteller</button>
       <button class="admin-tab" onclick="switchAdminTab('tab-lines',this)">Linien</button>
       <button class="admin-tab" onclick="switchAdminTab('tab-shades',this)">Farbtöne</button>
       <button class="admin-tab" onclick="switchAdminTab('tab-devs',this)">Entwickler</button>
@@ -1416,17 +1404,13 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
       </button>
     </div>
 
-    <!-- TAB: MARKEN -->
+    <!-- TAB: HERSTELLER (replaces old Marken) -->
     <div id="tab-brands">
-      <div class="lbl" style="margin-top:0">Marke hinzufügen</div>
-      <div class="admin-section">
-        <input class="inp inp-sm" type="text" placeholder="Markenname *" id="new-brand-name" style="margin-bottom:8px"/>
-        <input class="inp inp-sm" type="text" placeholder="Beschreibung" id="new-brand-desc" style="margin-bottom:8px"/>
-        <button class="btn btn-pink btn-full" style="height:40px;font-size:13px" onclick="addBrand()">+ Marke hinzufügen</button>
-      </div>
-
-      <div class="lbl">Bestehende Marken</div>
-      <div class="admin-section" id="brands-list"></div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">
+        Definiere hier alle Hersteller mit ihren Nuancen-Codes und Farblinien. Diese erscheinen direkt in der App bei IST-Aufnahme und Zielfarbe.
+      </p>
+      <div id="hersteller-list"></div>
+      <button class="btn btn-pink btn-full" style="margin-top:8px" onclick="herstellerAddNew()">+ Neuen Hersteller hinzufügen</button>
     </div>
 
     <!-- TAB: LINIEN -->
@@ -1670,6 +1654,8 @@ async function loadSessionsForClient(clientId) {
         resultGood: s.result_good,
         pinnedAsZiel: s.pinned_as_ziel || false,
       }));
+      // Restore pin state from localStorage (works even without DB column)
+      sessions.forEach(function(s) { restorePinState(s); });
     }
   } catch(e) { console.error('loadSessionsForClient error:', e); }
 }
@@ -1677,7 +1663,7 @@ async function loadSessionsForClient(clientId) {
 function renderProfile() {
   const c = viewingClient;
   document.getElementById('profile-hdr-name').textContent = c.name;
-  const clientSessions = sessions.filter(s=>s.clientId===c.id).sort((a,b)=>b.date.localeCompare(a.date));
+  const clientSessions = sessions.filter(s=>String(s.clientId)===String(c.id)).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
 
   document.getElementById('profile-top').innerHTML = `
     <div class="profile-avatar" style="${c.photo?'':'background:linear-gradient(135deg,var(--pink),var(--pink-dark))'}">${c.photo?`<img src="${c.photo}"/>`:`<span style="color:#fff;font-weight:900;font-size:26px">${c.name[0].toUpperCase()}</span>`}</div>
@@ -2477,6 +2463,7 @@ function checkAdminPw() {
     adminMode = true;
     go('s-admin');
     renderAdminAll();
+    setTimeout(function() { renderHerstellerAdmin(); }, 200);
   } else {
     document.getElementById('admin-pw-error').style.display = 'block';
     document.getElementById('admin-pw-input').value = '';
@@ -2786,7 +2773,8 @@ async function initApp() {
       currentUser = session.user;
       await loadSalon();
       if (currentSalon) {
-        await loadClientsFromDB();
+        await ensureDBColumns(); await loadClientsFromDB();
+  loadHerstellerFromDB(); // Load custom brands if configured
         await enforceSessionLimit(session);
         renderLandingUserBar();
         go('s-landing');
@@ -2849,6 +2837,18 @@ async function loadClientsFromDB() {
   await loadAllSalonSessions();
 }
 
+async function ensureDBColumns() {
+  // Try to run migration SQL to ensure required columns exist
+  // This is a no-op if columns already exist
+  try {
+    await sb.rpc('exec_sql', { 
+      query: 'ALTER TABLE sessions ADD COLUMN IF NOT EXISTS pinned_as_ziel BOOLEAN DEFAULT FALSE; ALTER TABLE sessions ADD COLUMN IF NOT EXISTS before_photo_url TEXT; ALTER TABLE sessions ADD COLUMN IF NOT EXISTS after_photo_url TEXT; ALTER TABLE clients ADD COLUMN IF NOT EXISTS photo_url TEXT;'
+    });
+  } catch(e) {
+    // RPC might not exist — that's ok, columns may already exist
+  }
+}
+
 async function loadAllSalonSessions() {
   if (!currentSalon?.id) return;
   try {
@@ -2871,6 +2871,8 @@ async function loadAllSalonSessions() {
         resultGood: s.result_good,
         pinnedAsZiel: s.pinned_as_ziel || false,
       }));
+      // Restore pin state from localStorage (works even without DB column)
+      sessions.forEach(function(s) { restorePinState(s); });
     }
   } catch(e) { console.error('loadAllSalonSessions error:', e); }
 }
@@ -3377,6 +3379,7 @@ go = function(screenId) {
     }
     // Reset lastAnalysis
     lastAnalysis = { ist: null, soll: null, formula: null, trend: null, sessionId: null };
+    populateHerstellerDropdowns();
     preSelectHersteller();
   }
 };
@@ -4162,6 +4165,39 @@ async function analyzeZielbild(imageData) {
 }
 
 /* ── Gepinnte Sessions für Zielbild-Tab laden ── */
+
+async function loadPinnedImagesTable() {
+  if (!currentSalon?.id) return;
+  try {
+    const { data } = await sb.from('pinned_images')
+      .select('*')
+      .eq('salon_id', currentSalon.id);
+    if (!data || !data.length) return;
+    // Mark sessions as pinned based on pinned_images table
+    data.forEach(function(p) {
+      const sess = sessions.find(function(s) { return String(s.id) === String(p.session_id); });
+      if (sess) {
+        sess.pinnedAsZiel = true;
+        if (p.before_photo && !sess.hairPhoto) sess.hairPhoto = p.before_photo;
+        if (p.after_photo && !sess.afterPhoto) sess.afterPhoto = p.after_photo;
+      } else {
+        // Session not in array — add minimal entry
+        sessions.push({
+          id: p.session_id,
+          clientId: null,
+          hairPhoto: p.before_photo || '',
+          afterPhoto: p.after_photo || '',
+          pinnedAsZiel: true,
+          date: '', target: '', formula: '', dev: '', brand: '', notes: ''
+        });
+      }
+    });
+  } catch(e) {
+    // pinned_images table doesn't exist yet — that's ok
+  }
+}
+
+// Also update loadSessionsForClient to mark pinned from pinned_images
 async function loadPinnedSessionsForZiel() {
   if (!currentSalon?.id) return;
   try {
@@ -4382,6 +4418,55 @@ function selectTrend(id) {
   renderTrendsGrid();
 }
 
+
+/* ═══════════════════ DB DIAGNOSE ═══════════════════ */
+async function checkDBColumns() {
+  const results = [];
+  try {
+    // Test pinned_as_ziel column
+    const { data: t1, error: e1 } = await sb.from('sessions')
+      .select('pinned_as_ziel').limit(1);
+    results.push({ col: 'sessions.pinned_as_ziel', ok: !e1, error: e1?.message });
+
+    // Test before_photo_url column  
+    const { data: t2, error: e2 } = await sb.from('sessions')
+      .select('before_photo_url').limit(1);
+    results.push({ col: 'sessions.before_photo_url', ok: !e2, error: e2?.message });
+
+    // Test after_photo_url column
+    const { data: t3, error: e3 } = await sb.from('sessions')
+      .select('after_photo_url').limit(1);
+    results.push({ col: 'sessions.after_photo_url', ok: !e3, error: e3?.message });
+
+    // Test photo_url on clients
+    const { data: t4, error: e4 } = await sb.from('clients')
+      .select('photo_url').limit(1);
+    results.push({ col: 'clients.photo_url', ok: !e4, error: e4?.message });
+
+  } catch(e) { results.push({ col: 'ERROR', ok: false, error: e.message }); }
+
+  const missing = results.filter(r => !r.ok);
+  if (missing.length === 0) {
+    console.log('✅ All DB columns exist!');
+    return true;
+  }
+
+  // Show visible error in gallery
+  const grid = document.getElementById('acc-zielbilder-grid');
+  const empty = document.getElementById('acc-gallery-empty');
+  if (grid) {
+    grid.innerHTML = missing.map(r =>
+      '<div style="grid-column:1/-1;padding:12px;background:#FEE;border-radius:var(--rs);margin-bottom:6px;font-size:11px;color:var(--danger)">' +
+      '❌ Spalte fehlt: <strong>' + r.col + '</strong><br>' +
+      '<span style="color:var(--mid)">Bitte SQL ausführen: ALTER TABLE ' + r.col.split('.')[0] + ' ADD COLUMN IF NOT EXISTS ' + r.col.split('.')[1] + (r.col.includes('pinned') ? ' BOOLEAN DEFAULT FALSE' : ' TEXT') + ';</span>' +
+      '</div>'
+    ).join('');
+    if (empty) empty.style.display = 'none';
+  }
+  return false;
+}
+/* ═══════════════════ END DB DIAGNOSE ═══════════════════ */
+
 async function renderAccZielbilder() {
   const grid = document.getElementById('acc-zielbilder-grid');
   const empty = document.getElementById('acc-gallery-empty');
@@ -4394,12 +4479,20 @@ async function renderAccZielbilder() {
     return;
   }
 
-  // Reload ALL sessions fresh (includes pinned_as_ziel + photos)
+  // Reload ALL sessions fresh
   await loadAllSalonSessions();
 
-  const allImgs = [];
+  // DEBUG: show what we got
+  const pinnedCount = sessions.filter(function(s){ return s.pinnedAsZiel; }).length;
+  const withPhotos = sessions.filter(function(s){ return s.hairPhoto || s.afterPhoto; }).length;
+  console.log('Sessions total:', sessions.length, '| pinned:', pinnedCount, '| with photos:', withPhotos);
+  
+  // Show debug info temporarily
+  grid.innerHTML = '<div style="grid-column:1/-1;padding:10px 12px;background:var(--bg);border-radius:var(--rs);margin-bottom:8px;font-size:11px;color:var(--mid)">' +
+    '🔍 ' + sessions.length + ' Sitzungen · ' + pinnedCount + ' gepinnt · ' + withPhotos + ' mit Fotos' +
+    '</div>';
 
-  // 1. Uploaded images from zielbilder array
+  const allImgs = [];
   zielbilder.filter(function(z) { return z.type === 'upload'; }).forEach(function(img) {
     allImgs.push({ id: 'upload_' + img.id, src: img.src, label: '📤', clientName: '', isUpload: true, uploadId: img.id });
   });
@@ -4412,17 +4505,18 @@ async function renderAccZielbilder() {
     if (s.hairPhoto) allImgs.push({ id: 'before_' + s.id, src: s.hairPhoto, label: 'Vorher', clientName: cname, sessId: s.id });
   });
 
-  grid.innerHTML = '';
-
   if (!allImgs.length) {
     if (empty) {
       empty.style.display = 'block';
       empty.textContent = sessions.length === 0
         ? 'Noch keine Sitzungen — erstelle erst eine Analyse'
-        : 'Noch keine gepinnten Bilder — nutze den 📌 Toggle in der Kundenkartei';
+        : pinnedCount === 0
+        ? 'Noch keine gepinnten Bilder — nutze den 📌 Toggle in der Kundenkartei'
+        : pinnedCount + ' gepinnte Sitzungen aber keine Fotos vorhanden';
     }
     return;
   }
+  // Don't clear grid — keep debug info, append images after it
 
   allImgs.forEach(function(img) {
     const div = document.createElement('div');
@@ -4443,16 +4537,25 @@ async function renderAccZielbilder() {
       return async function() {
         if (item.isUpload) {
           zielbilder = zielbilder.filter(function(z) { return z.id !== item.uploadId; });
+          renderAccZielbilderFromCache();
         } else {
-          const sess = sessions.find(function(x) { return String(x.id) === String(item.sessId); });
-          if (sess) {
-            sess.pinnedAsZiel = false;
-            if (currentSalon?.id) {
-              await sb.from('sessions').update({ pinned_as_ziel: false }).eq('id', item.sessId).catch(console.error);
+          try {
+            const { error } = await sb.from('sessions')
+              .update({ pinned_as_ziel: false })
+              .eq('id', item.sessId);
+            if (error) {
+              alert('Fehler: ' + error.message);
+              return;
             }
+            // Update local array directly — no DB reload needed
+            const sess = sessions.find(function(x) { return String(x.id) === String(item.sessId); });
+            if (sess) sess.pinnedAsZiel = false;
+            // Re-render without calling loadAllSalonSessions (which would reload from DB)
+            renderAccZielbilderFromCache();
+          } catch(e) {
+            alert('Fehler: ' + e.message);
           }
         }
-        renderAccZielbilder();
       };
     })(img);
     div.appendChild(btn);
@@ -4464,7 +4567,65 @@ async function renderAccZielbilder() {
 
 function removeZielbild(id) {
   zielbilder = zielbilder.filter(z => z.id !== id);
-  renderAccZielbilder();
+  renderAccZielbilderFromCache();
+}
+
+/* Renders gallery using current sessions[] cache — no DB reload */
+function renderAccZielbilderFromCache() {
+  const grid = document.getElementById('acc-zielbilder-grid');
+  const empty = document.getElementById('acc-gallery-empty');
+  if (!grid) return;
+  grid.innerHTML = '';
+  const allImgs = [];
+
+  zielbilder.filter(function(z) { return z.type === 'upload'; }).forEach(function(img) {
+    allImgs.push({ id: 'upload_' + img.id, src: img.src, label: '📤', clientName: '', isUpload: true, uploadId: img.id });
+  });
+
+  sessions.filter(function(s) { return s.pinnedAsZiel; }).forEach(function(s) {
+    const client = clients.find(function(c) { return String(c.id) === String(s.clientId); });
+    const cname = client ? client.name : '';
+    if (s.afterPhoto) allImgs.push({ id: 'after_' + s.id, src: s.afterPhoto, label: 'Nachher', clientName: cname, sessId: s.id });
+    if (s.hairPhoto) allImgs.push({ id: 'before_' + s.id, src: s.hairPhoto, label: 'Vorher', clientName: cname, sessId: s.id });
+  });
+
+  if (!allImgs.length) {
+    if (empty) { empty.style.display = 'block'; empty.textContent = 'Keine gepinnten Bilder'; }
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  allImgs.forEach(function(img) {
+    const div = document.createElement('div');
+    div.style.cssText = 'position:relative;aspect-ratio:1';
+    const image = document.createElement('img');
+    image.src = img.src;
+    image.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:4px';
+    div.appendChild(image);
+    const badge = document.createElement('div');
+    badge.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);color:#fff;font-size:9px;font-weight:700;padding:3px 4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;border-radius:0 0 4px 4px';
+    badge.textContent = (img.label ? img.label + (img.clientName ? ' · ' : '') : '') + img.clientName;
+    div.appendChild(badge);
+    const btn = document.createElement('button');
+    btn.style.cssText = 'position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:11px;line-height:1';
+    btn.textContent = '✕';
+    btn.onclick = (function(item) {
+      return async function() {
+        if (item.isUpload) {
+          zielbilder = zielbilder.filter(function(z) { return z.id !== item.uploadId; });
+          renderAccZielbilderFromCache();
+        } else {
+          const { error } = await sb.from('sessions').update({ pinned_as_ziel: false }).eq('id', item.sessId);
+          if (error) { alert('Fehler: ' + error.message); return; }
+          const sess = sessions.find(function(x) { return String(x.id) === String(item.sessId); });
+          if (sess) sess.pinnedAsZiel = false;
+          renderAccZielbilderFromCache();
+        }
+      };
+    })(img);
+    div.appendChild(btn);
+    grid.appendChild(div);
+  });
 }
 
 async function addZielbildFromAccount(input) {
@@ -4472,7 +4633,7 @@ async function addZielbildFromAccount(input) {
   const url = await compressImage(file, 1200, 0.8);
   const id = 'upload_' + Date.now();
   zielbilder.unshift({ id, src: url, type: 'upload', clientName: 'Eigenes Bild' });
-  renderAccZielbilder();
+  renderAccZielbilderFromCache();
 }
 
 
@@ -4482,27 +4643,23 @@ async function togglePinZielbild(sessionId) {
   
   const newVal = !sess.pinnedAsZiel;
   sess.pinnedAsZiel = newVal;
-  
-  // Save to Supabase immediately
+
+  // Save in localStorage immediately (always works)
+  const pinKey = 'pin_' + sessionId;
   try {
-    const { error } = await sb.from('sessions')
+    if (newVal) localStorage.setItem(pinKey, '1');
+    else localStorage.removeItem(pinKey);
+  } catch(e) {}
+
+  // Also try Supabase (best effort)
+  if (currentSalon?.id) {
+    sb.from('sessions')
       .update({ pinned_as_ziel: newVal })
-      .eq('id', sessionId);
-    
-    if (error) {
-      console.error('Pin save error:', error.message);
-      // Revert local state if save failed
-      sess.pinnedAsZiel = !newVal;
-      alert('Speichern fehlgeschlagen: ' + error.message + '\n\nBitte SQL ausführen:\nALTER TABLE sessions ADD COLUMN IF NOT EXISTS pinned_as_ziel BOOLEAN DEFAULT FALSE;');
-      renderProfile();
-      return;
-    }
-    console.log('✅ Pin saved:', sessionId, '→', newVal);
-  } catch(e) {
-    console.error('Pin save exception:', e);
-    sess.pinnedAsZiel = !newVal;
-    renderProfile();
-    return;
+      .eq('id', sessionId)
+      .then(function(res) {
+        if (res.error) console.warn('Pin DB save failed (column may not exist yet):', res.error.message);
+        else console.log('✅ Pin saved to DB:', sessionId, newVal);
+      });
   }
   
   renderProfile();
@@ -4512,6 +4669,15 @@ async function togglePinZielbild(sessionId) {
     const arr = document.getElementById('arr-' + sessionId);
     if (arr) arr.textContent = '∨';
   }, 50);
+}
+
+// Restore pin state from localStorage for a session
+function restorePinState(sess) {
+  try {
+    if (localStorage.getItem('pin_' + sess.id) === '1') {
+      sess.pinnedAsZiel = true;
+    }
+  } catch(e) {}
 }
 
 
@@ -5327,7 +5493,211 @@ async function mlExportCSV() {
 
 function mlFilterGallery(typ) { mlLoadGallery(typ==='alle'?null:typ); }
 
-/* ═══════════════════ ML REVIEW QUEUE ═══════════════════ */
+/* ═══════════════════ HERSTELLER ADMIN ═══════════════════ */
+
+/* ── Alle Hersteller-Dropdowns dynamisch befüllen ── */
+function populateHerstellerDropdowns() {
+  const ids = ['ist-hersteller', 'ziel-hersteller-override', 'acc-hersteller'];
+  const keys = Object.keys(NUANCEN_DB);
+  ids.forEach(function(id) {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const current = sel.value;
+    sel.innerHTML = '<option value="">— Bitte wählen —</option>';
+    keys.forEach(function(key) {
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = NUANCEN_DB[key].name;
+      if (key === current) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  });
+}
+
+async function loadHerstellerFromDB() {
+  try {
+    const { data } = await sb.from('hersteller_config').select('*').order('sort_order');
+    if (data && data.length) {
+      // Replace NUANCEN_DB and FARBLINIEN completely with DB values
+      Object.keys(NUANCEN_DB).forEach(k => delete NUANCEN_DB[k]);
+      Object.keys(FARBLINIEN).forEach(k => delete FARBLINIEN[k]);
+      data.forEach(function(h) {
+        NUANCEN_DB[h.key] = { name: h.name, nuancen: h.nuancen || [] };
+        FARBLINIEN[h.key] = h.farblinien || [];
+      });
+      console.log('✅ Hersteller aus DB geladen:', data.length);
+    }
+  } catch(e) {
+    console.log('Hersteller-Config nicht in DB — nutze hardcoded Werte');
+  }
+  // Always populate dropdowns after loading
+  populateHerstellerDropdowns();
+}
+
+async function renderHerstellerAdmin() {
+  const list = document.getElementById('hersteller-list');
+  if (!list) return;
+  list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--muted);font-size:13px">Lade…</div>';
+
+  // Load from DB
+  let items = [];
+  try {
+    const { data, error } = await sb.from('hersteller_config').select('*').order('sort_order');
+    if (error) throw error;
+    
+    if (data && data.length > 0) {
+      items = data;
+    } else {
+      // DB is empty → seed with hardcoded values and save to DB
+      const defaults = Object.keys(NUANCEN_DB).map(function(key, i) {
+        return { key: key, name: NUANCEN_DB[key].name, nuancen: NUANCEN_DB[key].nuancen, farblinien: FARBLINIEN[key] || [], sort_order: i };
+      });
+      // Insert all defaults
+      for (const h of defaults) {
+        await sb.from('hersteller_config').upsert(h, { onConflict: 'key' });
+      }
+      items = defaults;
+      console.log('✅ Hersteller in DB gespeichert (erstmalig)');
+    }
+  } catch(e) {
+    // Fallback to hardcoded if DB fails
+    items = Object.keys(NUANCEN_DB).map(function(key, i) {
+      return { key: key, name: NUANCEN_DB[key].name, nuancen: NUANCEN_DB[key].nuancen, farblinien: FARBLINIEN[key] || [], sort_order: i };
+    });
+    list.innerHTML = '<div style="padding:10px;background:#FEE;border-radius:var(--rs);font-size:12px;color:var(--danger);margin-bottom:12px">⚠️ DB nicht erreichbar — Änderungen werden nicht gespeichert</div>';
+  }
+
+  const existingCards = list.querySelectorAll('.hersteller-card');
+  existingCards.forEach(c => c.remove());
+  const errDiv = list.querySelector('div');
+  if (errDiv && errDiv.textContent.includes('Lade')) list.innerHTML = '';
+
+  list.innerHTML = list.innerHTML; // keep error if any
+
+  items.forEach(function(h) {
+    const card = document.createElement('div');
+    card.className = 'hersteller-card';
+    card.dataset.key = h.key;
+    card.style.cssText = 'background:var(--surface);border:2px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden';
+
+    const hdr = document.createElement('div');
+    hdr.style.cssText = 'padding:12px 14px;display:flex;justify-content:space-between;align-items:center;background:var(--bg);cursor:pointer;user-select:none';
+    hdr.innerHTML = 
+      '<div><div style="font-size:14px;font-weight:800">' + h.name + '</div>' +
+      '<div style="font-size:11px;color:var(--muted);margin-top:2px">' + (h.nuancen||[]).length + ' Nuancen · ' + (h.farblinien||[]).length + ' Farblinien</div></div>' +
+      '<span style="font-size:18px;color:var(--muted)">›</span>';
+
+    const body = document.createElement('div');
+    body.style.cssText = 'padding:14px;display:none;border-top:1px solid var(--border)';
+    body.innerHTML =
+      '<div class="lbl">Anzeigename *</div>' +
+      '<input class="inp" value="' + h.name + '" id="h-name-' + h.key + '" style="margin-bottom:10px"/>' +
+      
+      '<div class="lbl">Key (eindeutig, z.B. "wella" oder "gold")</div>' +
+      '<input class="inp" value="' + h.key + '" id="h-key-' + h.key + '" placeholder="wella" style="margin-bottom:10px"/>' +
+      
+      '<div class="lbl">Nuancen-Codes — kommagetrennt (z.B. 0,1,2,3,13,65)</div>' +
+      '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">Das sind die .X Werte: 0=Natur, 1=Asch, 2=Matt, 3=Gold, 4=Kupfer, 5=Mahagoni, 6=Violett, 7=Braun usw.</div>' +
+      '<input class="inp" value="' + (h.nuancen||[]).join(', ') + '" id="h-nuancen-' + h.key + '" placeholder="0,1,2,3,4,5,6,7,8" style="margin-bottom:10px"/>' +
+      
+      '<div class="lbl">Farblinien (eine pro Zeile)</div>' +
+      '<textarea class="inp" id="h-linien-' + h.key + '" style="height:90px;resize:vertical;margin-bottom:14px">' + (h.farblinien||[]).join('\n') + '</textarea>' +
+      
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+      '<button class="btn btn-pink btn-full" style="height:42px" onclick="herstellerSaveFromCard(this)">💾 Speichern</button>' +
+      '<button class="btn btn-danger btn-full" style="height:42px" onclick="herstellerDeleteFromCard(this)">🗑 Löschen</button>' +
+      '</div>';
+
+    hdr.onclick = function() {
+      const isOpen = body.style.display === 'block';
+      body.style.display = isOpen ? 'none' : 'block';
+      hdr.querySelector('span').textContent = isOpen ? '›' : '∨';
+    };
+    card.appendChild(hdr);
+    card.appendChild(body);
+    list.appendChild(card);
+  });
+
+  if (!items.length) {
+    list.innerHTML += '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Noch keine Hersteller — füge einen hinzu</div>';
+  }
+}
+
+async function herstellerSave(oldKey) {
+  const name = document.getElementById('h-name-' + oldKey)?.value.trim();
+  const newKey = document.getElementById('h-key-' + oldKey)?.value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_');
+  const nuancenRaw = document.getElementById('h-nuancen-' + oldKey)?.value || '';
+  const linienRaw = document.getElementById('h-linien-' + oldKey)?.value || '';
+
+  if (!name || !newKey) { alert('Name und Key sind Pflichtfelder'); return; }
+
+  const nuancen = nuancenRaw.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+  const farblinien = linienRaw.split('\n').map(l => l.trim()).filter(Boolean);
+  const sort_order = Object.keys(NUANCEN_DB).indexOf(oldKey);
+
+  try {
+    // If key changed: delete old, insert new
+    if (newKey !== oldKey) {
+      await sb.from('hersteller_config').delete().eq('key', oldKey);
+    }
+    const { error } = await sb.from('hersteller_config').upsert(
+      { key: newKey, name, nuancen, farblinien, sort_order },
+      { onConflict: 'key' }
+    );
+    if (error) throw error;
+
+    // Update local DB
+    if (newKey !== oldKey) { delete NUANCEN_DB[oldKey]; delete FARBLINIEN[oldKey]; }
+    NUANCEN_DB[newKey] = { name, nuancen };
+    FARBLINIEN[newKey] = farblinien;
+    populateHerstellerDropdowns();
+    alert('✅ ' + name + ' gespeichert!');
+    renderHerstellerAdmin();
+  } catch(e) {
+    alert('❌ Fehler: ' + e.message);
+  }
+}
+
+async function herstellerDelete(key) {
+  const name = NUANCEN_DB[key]?.name || key;
+  if (!confirm(name + ' löschen?\n\nDieser Hersteller verschwindet aus der App.')) return;
+  try {
+    await sb.from('hersteller_config').delete().eq('key', key);
+  } catch(e) {}
+  delete NUANCEN_DB[key];
+  delete FARBLINIEN[key];
+  populateHerstellerDropdowns();
+  renderHerstellerAdmin();
+}
+
+function herstellerAddNew() {
+  const tempKey = 'neu_' + Date.now();
+  NUANCEN_DB[tempKey] = { name: 'Neuer Hersteller', nuancen: [0,1,2,3,4,5,6,7,8] };
+  FARBLINIEN[tempKey] = [];
+  renderHerstellerAdmin().then(function() {
+    setTimeout(function() {
+      const cards = document.querySelectorAll('#hersteller-list .hersteller-card');
+      if (cards.length) {
+        const last = cards[cards.length - 1];
+        const body = last.querySelector('div:last-child');
+        if (body) body.style.display = 'block';
+        last.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 200);
+  });
+}
+
+function herstellerSaveFromCard(btn) {
+  const card = btn.closest('[data-key]');
+  if (card) herstellerSave(card.dataset.key);
+}
+function herstellerDeleteFromCard(btn) {
+  const card = btn.closest('[data-key]');
+  if (card) herstellerDelete(card.dataset.key);
+}
+/* ═══════════════════ END HERSTELLER ADMIN ═══════════════════ */
+
+
 
 let mlReviewCurrentFilter = 'alle';
 let mlReviewData = []; // cached review items
