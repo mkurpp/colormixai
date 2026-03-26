@@ -56,11 +56,12 @@ nav{
 /* ══ HERO ══════════════════════════════════════════════ */
 .hero{
   min-height:100vh;
-  display:grid;grid-template-columns:1fr 1fr;
+  display:flex;
+  flex-direction:column;
   align-items:center;
-  padding:0 5%;
-  padding-top:68px;
-  gap:60px;
+  justify-content:center;
+  padding:120px 5% 0;
+  text-align:center;
   position:relative;overflow:hidden;
 }
 .hero::before{
@@ -87,8 +88,8 @@ nav{
   color:var(--ink);
 }
 .hero-headline em{font-style:italic;color:var(--pink)}
-.hero-sub{font-size:18px;color:var(--mid);line-height:1.7;margin-bottom:36px;max-width:480px;font-weight:400}
-.hero-cta-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.hero-sub{font-size:18px;color:var(--mid);line-height:1.7;margin-bottom:36px;max-width:560px;font-weight:400;margin-left:auto;margin-right:auto}
+.hero-cta-row{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
 .btn-primary{
   background:var(--pink);color:#fff;
   font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;
@@ -107,12 +108,12 @@ nav{
 }
 .btn-secondary:hover{border-color:var(--ink)}
 .hero-note{font-size:13px;color:var(--muted);margin-top:16px}
-.hero-brands{display:flex;align-items:center;gap:20px;margin-top:48px;flex-wrap:wrap}
+.hero-brands{display:flex;align-items:center;justify-content:center;gap:20px;margin-top:32px;flex-wrap:wrap}
 .hero-brands-label{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
 .brand-tag{font-size:13px;font-weight:700;color:var(--mid);background:var(--bg);border:1.5px solid var(--border);padding:5px 12px;border-radius:6px}
 
 /* Hero visual */
-.hero-visual{position:relative}
+.hero-visual{position:relative;width:100%;max-width:860px;margin:48px auto 0;}
 .hero-phone{
   width:100%;max-width:340px;margin:0 auto;
   border-radius:32px;overflow:hidden;
@@ -121,7 +122,7 @@ nav{
   animation:float 6s ease-in-out infinite;
 }
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
-.hero-phone img{width:100%;display:block}
+.hero-phone img{width:100%;height:100%;display:block;object-fit:cover}
 .hero-phone-overlay{
   position:absolute;inset:0;
   background:linear-gradient(to bottom,transparent 60%,rgba(232,24,90,0.08));
@@ -133,8 +134,8 @@ nav{
   box-shadow:0 8px 32px rgba(0,0,0,0.12);
   display:flex;align-items:center;gap:12px;
 }
-.hero-stat-1{bottom:15%;left:-10%;animation:float2 5s ease-in-out infinite}
-.hero-stat-2{top:20%;right:-8%;animation:float2 7s ease-in-out infinite 1s}
+.hero-stat-1{bottom:24px;left:24px;animation:float2 5s ease-in-out infinite}
+.hero-stat-2{top:24px;right:24px;animation:float2 7s ease-in-out infinite 1s}
 @keyframes float2{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 .hero-stat-icon{font-size:24px}
 .hero-stat-val{font-size:18px;font-weight:800;color:var(--ink)}
@@ -384,7 +385,7 @@ footer{
   .brand-tag{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.15);color:rgba(255,255,255,0.7)}
   .hero-note{color:rgba(255,255,255,0.4)}
   .hero-cta-row{flex-direction:column;align-items:stretch;}
-  .hero-stat-1,.hero-stat-2{display:none}
+  .hero-stat-1,.hero-stat-2{display:flex}
   .nav-links{display:none}
   .nav-mobile-toggle{display:block}
   .features-grid{grid-template-columns:1fr}
@@ -435,12 +436,12 @@ footer{
       <em>Farbformel</em>,<br>
       in Sekunden.
     </h1>
-    <p class="hero-sub">ColorMixAI analysiert das Haar deiner Kundin, vergleicht mit der Zielfarbe und berechnet die exakte Formel — für alle großen Marken.</p>
+    <p class="hero-sub">Foto hochladen, Zielfarbe wählen — ColorMixAI berechnet die exakte Haarfarb-Formel für Wella, GOLD, L'Oréal, Schwarzkopf und mehr. In unter 20 Sekunden.</p>
     <div class="hero-cta-row">
       <a href="index.html" class="btn-primary">✦ Kostenlos starten</a>
       <a href="#how" class="btn-secondary">Wie es funktioniert →</a>
     </div>
-    <p class="hero-note">14 Tage kostenlos · Keine Kreditkarte nötig · Jederzeit kündbar</p>
+    <p class="hero-note">3 Analysen kostenlos testen · Keine Kreditkarte nötig · Jederzeit kündbar</p>
     <div class="hero-brands">
       <span class="hero-brands-label">Unterstützte Marken</span>
       <span class="brand-tag">Wella</span>
@@ -562,13 +563,14 @@ footer{
     <div class="reveal">
       <div class="section-label">Preise</div>
       <h2 class="section-title">Einfach. Transparent.<br><em>Fair.</em></h2>
-      <p class="section-sub" style="margin:0 auto">Keine versteckten Kosten. Monatlich kündbar. 14 Tage kostenlos testen — ohne Kreditkarte.</p>
+      <p class="section-sub" style="margin:0 auto">3 kostenlose Analysen zum Testen. Kein Abo nötig. Keine Kreditkarte. Monatlich kündbar.</p>
     </div>
-    <div class="pricing-grid reveal">
+    <div class="pricing-grid reveal" style="grid-template-columns:1fr 1fr 1fr;gap:20px">
+      <!-- Solo -->
       <div class="pricing-card">
         <div class="pricing-name">Solo</div>
-        <div class="pricing-price">29€ <span>/ Monat</span></div>
-        <div class="pricing-desc">Perfekt für selbstständige Friseurinnen</div>
+        <div class="pricing-price">39€ <span>/ Monat</span></div>
+        <div class="pricing-desc">Für selbstständige Friseure</div>
         <ul class="pricing-features">
           <li><span class="check">✓</span> 1 Nutzer-Zugang</li>
           <li><span class="check">✓</span> Unbegrenzte Kunden</li>
@@ -577,22 +579,39 @@ footer{
           <li><span class="check">✓</span> Kundenkartei & Verlauf</li>
           <li><span class="cross" style="color:var(--muted)">—</span> <span style="color:var(--muted)">Kein Team-Zugang</span></li>
         </ul>
-        <a href="index.html" class="pricing-btn pricing-btn-secondary">14 Tage kostenlos testen</a>
+        <a href="index.html" class="pricing-btn pricing-btn-secondary">Kostenlos testen →</a>
       </div>
+      <!-- Team S -->
       <div class="pricing-card featured">
-        <div class="pricing-badge">EMPFOHLEN</div>
-        <div class="pricing-name">Team</div>
-        <div class="pricing-price">69€ <span>/ Monat</span></div>
-        <div class="pricing-desc">Für Salons mit mehreren Mitarbeiterinnen</div>
+        <div class="pricing-badge">BELIEBT</div>
+        <div class="pricing-name">Team S</div>
+        <div class="pricing-price">99€ <span>/ Monat</span></div>
+        <div class="pricing-desc">Für Salons bis 4 Personen</div>
         <ul class="pricing-features">
-          <li><span class="check">✓</span> Unbegrenzte Mitarbeiter</li>
+          <li><span class="check">✓</span> Bis zu 4 Nutzer inkl. Inhaber</li>
           <li><span class="check">✓</span> Gemeinsame Kundenkartei</li>
           <li><span class="check">✓</span> Alle KI-Analysen</li>
           <li><span class="check">✓</span> Komplette Farbdatenbank</li>
           <li><span class="check">✓</span> Team-Einladungen per E-Mail</li>
-          <li><span class="check">✓</span> Eigene Farbdatenbank pflegen</li>
+          <li><span class="check">✓</span> Eigene Zielbilder & Trends</li>
         </ul>
-        <a href="index.html" class="pricing-btn pricing-btn-primary">14 Tage kostenlos testen</a>
+        <a href="index.html" class="pricing-btn pricing-btn-primary">Kostenlos testen →</a>
+      </div>
+      <!-- Team L -->
+      <div class="pricing-card" style="border:2px solid var(--ink)">
+        <div class="pricing-badge" style="background:var(--ink)">STUDIO</div>
+        <div class="pricing-name">Team L</div>
+        <div class="pricing-price">199€ <span>/ Monat</span></div>
+        <div class="pricing-desc">Für große Salons & Studios</div>
+        <ul class="pricing-features">
+          <li><span class="check">✓</span> Bis zu 10 Nutzer inkl. Inhaber</li>
+          <li><span class="check">✓</span> Gemeinsame Kundenkartei</li>
+          <li><span class="check">✓</span> Alle KI-Analysen</li>
+          <li><span class="check">✓</span> Komplette Farbdatenbank</li>
+          <li><span class="check">✓</span> Team-Einladungen per E-Mail</li>
+          <li><span class="check">✓</span> Prioritäts-Support</li>
+        </ul>
+        <a href="index.html" class="pricing-btn pricing-btn-secondary" style="border-color:var(--ink)">Kostenlos testen →</a>
       </div>
     </div>
     <p class="pricing-note reveal">Alle Preise zzgl. MwSt. · Monatlich abrechenbar · Jederzeit kündbar</p>
@@ -672,11 +691,11 @@ footer{
       </div>
       <div class="faq-item">
         <button class="faq-question" onclick="toggleFaq(this)">
-          Was passiert nach den 14 Tagen?
+          Was passiert nach den 3 kostenlosen Analysen?
           <span class="faq-icon">+</span>
         </button>
         <div class="faq-answer">
-          <div class="faq-answer-inner">Nach der Testphase wählst du dein Abo (Solo 29€/Monat oder Team 69€/Monat). Wir erinnern dich rechtzeitig per E-Mail. Wenn du nicht weiter machen möchtest, kannst du jederzeit kündigen — ohne Haken.</div>
+          <div class="faq-answer-inner">Nach der Registrierung kannst du kostenlos 3 Analysen durchführen — ganz ohne Kreditkarte. Danach wählst du dein Abo: Solo (39€), Team S bis 4 Nutzer (99€) oder Team L bis 10 Nutzer (199€). Alternativ kannst du einen Gutscheincode einlösen. Jederzeit kündbar.</div>
         </div>
       </div>
       <div class="faq-item">
@@ -694,7 +713,7 @@ footer{
           <span class="faq-icon">+</span>
         </button>
         <div class="faq-answer">
-          <div class="faq-answer-inner">Ja, jederzeit. Du kannst dein Abo in den Konto-Einstellungen upgraden oder downgraden. Bei einem Upgrade auf Team werden alle bestehenden Kundendaten automatisch für das Team freigegeben.</div>
+          <div class="faq-answer-inner">Ja, jederzeit. Du kannst dein Abo in den Konto-Einstellungen upgraden oder downgraden. Bei einem Upgrade werden alle bestehenden Kundendaten automatisch für das Team freigegeben. Team S erlaubt bis zu 4 Nutzer, Team L bis zu 10 Nutzer.</div>
         </div>
       </div>
       <div class="faq-item">
@@ -743,7 +762,7 @@ footer{
           📍 Salons in meiner Nähe
         </button>
         <div id="location-status" style="font-size:11px;color:#9A9A9A;text-align:center;margin-bottom:6px;min-height:14px"></div>
-        <div class="salon-list-preview" id="salon-list-preview">
+        <div class="salon-list-preview" id="salon-list-preview" style="display:none">
           <div style="font-size:12px;color:#9A9A9A;padding:8px 0;text-align:center">Wird geladen…</div>
         </div>
         <div style="margin-top:10px;font-size:11px;color:#9A9A9A">
@@ -904,34 +923,35 @@ async function loadListedSalons() {
 function findNearMe() {
   const btn = document.getElementById('location-btn');
   const status = document.getElementById('location-status');
+  const listPreview = document.getElementById('salon-list-preview');
+  // Show the list
+  if (listPreview) listPreview.style.display = 'flex';
   if (!navigator.geolocation) {
     if (status) status.textContent = 'Standort nicht verfügbar';
+    renderSalonList(allSalons);
     return;
   }
-  if (btn) { btn.textContent = '⏳ Standort wird ermittelt…'; btn.disabled = true; }
+  if (btn) { btn.innerHTML = '⏳ Standort wird ermittelt…'; btn.disabled = true; }
   if (status) status.textContent = '';
 
   navigator.geolocation.getCurrentPosition(
     (pos) => {
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
-      if (btn) { btn.textContent = '✅ Standort gefunden'; btn.disabled = false; }
-      // Sort by distance
+      if (btn) { btn.innerHTML = '✅ Standort gefunden'; btn.disabled = false; }
       const sorted = allSalons
         .filter(s => s.lat && s.lng)
         .sort((a,b) => dist(lat,lng,a.lat,a.lng) - dist(lat,lng,b.lat,b.lng));
       const nearby = sorted.filter(s => dist(lat,lng,s.lat,s.lng) < 50);
       renderSalonList(nearby.length ? nearby : allSalons, lat, lng);
       if (status) status.textContent = nearby.length ? nearby.length + ' Salons in 50km Umkreis' : 'Alle Salons angezeigt';
-      // Center map on user
       updateMapForLocation(lat, lng, 11);
-      setTimeout(() => { if (btn) btn.textContent = '📍 Salons in meiner Nähe'; }, 3000);
+      setTimeout(() => { if (btn) btn.innerHTML = '📍 Salons in meiner Nähe'; }, 3000);
     },
     (err) => {
-      if (btn) { btn.textContent = '📍 Salons in meiner Nähe'; btn.disabled = false; }
-      if (status) {
-        status.textContent = err.code === 1 ? 'Standort-Zugriff verweigert' : 'Standort nicht verfügbar';
-      }
+      if (btn) { btn.innerHTML = '📍 Salons in meiner Nähe'; btn.disabled = false; }
+      renderSalonList(allSalons);
+      if (status) status.textContent = err.code === 1 ? 'Standort-Zugriff verweigert' : 'Standort nicht verfügbar';
     },
     { timeout: 8000, maximumAge: 300000 }
   );
@@ -944,6 +964,25 @@ const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
 }, { threshold: 0.1 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+function findNearbySalons() {
+  const list = document.getElementById('salon-list');
+  if (!list) return;
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(pos) {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      if (window.salonMap) {
+        window.salonMap.flyTo({ center: [lng, lat], zoom: 11, duration: 1500 });
+      }
+      list.style.display = 'flex';
+    }, function() {
+      list.style.display = 'flex'; // show list anyway if denied
+    });
+  } else {
+    list.style.display = 'flex';
+  }
+}
 </script>
 </body>
 </html>
