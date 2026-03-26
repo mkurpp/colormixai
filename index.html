@@ -3267,50 +3267,95 @@ function renderIstBloecke(typ) {
   if (!container) return;
   const blocks = STRUKTUR_CONFIG[typ] || STRUKTUR_CONFIG.global;
   const hersteller = document.getElementById('ist-hersteller')?.value || '';
-  const nuancen = hersteller && NUANCEN_DB[hersteller] ? NUANCEN_DB[hersteller].nuancen : [0,1,2,3,4,5,6,7,8];
-
-  container.innerHTML = blocks.map(block => {
-    const saved = istBlocks[block.id] || { level: 6, nuance: 0 };
-    const pct = Math.round((saved.level - 1) / 9 * 100);
+  const nuancen = (hersteller && NUANCEN_DB[hersteller]) ? NUANCEN_DB[hersteller].nuancen : [0,1,2,3,4,5,6,7,8];
+  container.innerHTML = '';
+  blocks.forEach(function(block) {
+    const saved = istBlocks[block.id] || {level:6, nuance:0};
+    const pct = Math.round((saved.level-1)/9*100);
     const code = saved.level + '.' + saved.nuance;
-    const nuanceOpts = nuancen.map(n =>
-      '<option value="' + n + '"' + (n === saved.nuance ? ' selected' : '') + '>' +
-      (n === 0 ? '0 — Natur/Rein' : '.' + n) + '</option>'
-    ).join('');
-
-    return '<div class="ist-block" id="' + block.id + '-wrap">' +
-      '<div class="ist-block-header">' +
-        '<span class="ist-block-label">' + block.label + '</span>' +
-        '<span class="ist-block-code" id="' + block.id + '-code">' + code + '</span>' +
-      '</div>' +
-      '<div class="ist-block-body">' +
-        // Level Slider
-        '<div class="lbl" style="margin-top:12px">Level (Tonhöhe)</div>' +
-        '<div class="slider-wrap">' +
-          '<div class="slider-row">' +
-            '<span class="slider-val" id="' + block.id + '-level-val">' + saved.level + '</span>' +
-            '<span id="' + block.id + '-level-name" style="font-size:13px;font-weight:600;color:var(--mid);flex:1;margin-left:8px">' + (LEVEL_NAMES[saved.level]||'') + '</span>' +
-            '<input type="range" min="1" max="10" value="' + saved.level + '" style="--pct:' + pct + '%" ' +
-              'oninput="onIstLevelChange(this,\'' + block.id + '\')">' +
-          '</div>' +
-          '<div class="slider-lbls"><span>1 Schwarz</span><span>5 Mittel</span><span>10 Hellstes</span></div>' +
-        '</div>' +
-        // Nuance Dropdown
-        '<div class="lbl">Nuance / Reflex</div>' +
-        '<select class="inp" id="' + block.id + '-nuance" onchange="onIstNuanceChange(this,\'' + block.id + '\')">' +
-          nuanceOpts +
-        '</select>' +
-        // Code (readonly)
-        '<div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 14px;background:var(--bg);border-radius:var(--rs)">' +
-          '<span style="font-size:12px;color:var(--muted);font-weight:700">CODE:</span>' +
-          '<span style="font-size:18px;font-weight:900;color:var(--ink);letter-spacing:-0.5px" id="' + block.id + '-codedisplay">' + code + '</span>' +
-          '<span style="font-size:11px;color:var(--muted);margin-left:4px">(automatisch)</span>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
-  }).join('');
+    const wrap = document.createElement('div');
+    wrap.className = 'ist-block';
+    wrap.id = block.id + '-wrap';
+    // Header
+    const hdr = document.createElement('div');
+    hdr.className = 'ist-block-header';
+    const lbl = document.createElement('span');
+    lbl.className = 'ist-block-label';
+    lbl.textContent = block.label;
+    const badge = document.createElement('span');
+    badge.className = 'ist-block-code';
+    badge.id = block.id + '-code';
+    badge.textContent = code;
+    hdr.appendChild(lbl); hdr.appendChild(badge);
+    wrap.appendChild(hdr);
+    // Body
+    const body = document.createElement('div');
+    body.className = 'ist-block-body';
+    // Level label
+    const lvLbl = document.createElement('div');
+    lvLbl.className = 'lbl';
+    lvLbl.style.marginTop = '12px';
+    lvLbl.textContent = 'Level (Tonhöhe)';
+    body.appendChild(lvLbl);
+    // Slider row
+    const sliderWrap = document.createElement('div');
+    sliderWrap.className = 'slider-wrap';
+    const sliderRow = document.createElement('div');
+    sliderRow.className = 'slider-row';
+    const lvVal = document.createElement('span');
+    lvVal.className = 'slider-val';
+    lvVal.id = block.id + '-level-val';
+    lvVal.textContent = saved.level;
+    const lvName = document.createElement('span');
+    lvName.id = block.id + '-level-name';
+    lvName.style.cssText = 'font-size:13px;font-weight:600;color:var(--mid);flex:1;margin-left:8px';
+    lvName.textContent = LEVEL_NAMES[saved.level] || '';
+    const slider = document.createElement('input');
+    slider.type = 'range'; slider.min = 1; slider.max = 10; slider.value = saved.level;
+    slider.style.setProperty('--pct', pct + '%');
+    const bid = block.id;
+    slider.oninput = function() { onIstLevelChange(this, bid); };
+    sliderRow.appendChild(lvVal); sliderRow.appendChild(lvName); sliderRow.appendChild(slider);
+    const sliderLbls = document.createElement('div');
+    sliderLbls.className = 'slider-lbls';
+    sliderLbls.innerHTML = '<span>1 Schwarz</span><span>5 Mittel</span><span>10 Hellstes</span>';
+    sliderWrap.appendChild(sliderRow); sliderWrap.appendChild(sliderLbls);
+    body.appendChild(sliderWrap);
+    // Nuance label
+    const nuLbl = document.createElement('div');
+    nuLbl.className = 'lbl';
+    nuLbl.textContent = 'Nuance / Reflex';
+    body.appendChild(nuLbl);
+    // Nuance select
+    const sel = document.createElement('select');
+    sel.className = 'inp';
+    sel.id = block.id + '-nuance';
+    nuancen.forEach(function(n) {
+      const opt = document.createElement('option');
+      opt.value = n;
+      opt.textContent = n === 0 ? '0 — Natur/Rein' : '.' + n;
+      if (n === saved.nuance) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.onchange = function() { onIstNuanceChange(this, bid); };
+    body.appendChild(sel);
+    // Code display
+    const codeDiv = document.createElement('div');
+    codeDiv.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 14px;background:var(--bg);border-radius:var(--rs)';
+    codeDiv.innerHTML = '<span style="font-size:12px;color:var(--muted);font-weight:700">CODE:</span>';
+    const codeVal = document.createElement('span');
+    codeVal.style.cssText = 'font-size:18px;font-weight:900;color:var(--ink);letter-spacing:-0.5px';
+    codeVal.id = block.id + '-codedisplay';
+    codeVal.textContent = code;
+    const codeHint = document.createElement('span');
+    codeHint.style.cssText = 'font-size:11px;color:var(--muted);margin-left:4px';
+    codeHint.textContent = '(automatisch)';
+    codeDiv.appendChild(codeVal); codeDiv.appendChild(codeHint);
+    body.appendChild(codeDiv);
+    wrap.appendChild(body);
+    container.appendChild(wrap);
+  });
 }
-
 function onIstLevelChange(input, blockId) {
   istManualOverride = true;
   const val = parseInt(input.value);
@@ -3466,17 +3511,19 @@ let selectedProblems = new Set();
 function renderProblemChips() {
   const container = document.getElementById('problem-chips');
   if (!container) return;
-  container.innerHTML = PROBLEMFAELLE.map(p => {
+  container.innerHTML = '';
+  PROBLEMFAELLE.forEach(function(p) {
     const sel = selectedProblems.has(p.id);
-    return '<button onclick="toggleProblem(\'' + p.id + '\')" style="' +
-      'padding:8px 14px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;' +
+    const btn = document.createElement('button');
+    btn.style.cssText = 'padding:8px 14px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;' +
       'border:2px solid ' + (sel ? 'var(--pink)' : 'var(--border)') + ';' +
       'background:' + (sel ? 'var(--pink-light)' : 'var(--surface)') + ';' +
-      'color:' + (sel ? 'var(--pink)' : 'var(--mid)') + '">' +
-      p.label + '</button>';
-  }).join('');
+      'color:' + (sel ? 'var(--pink)' : 'var(--mid)');
+    btn.textContent = p.label;
+    btn.onclick = (function(pid) { return function() { toggleProblem(pid); }; })(p.id);
+    container.appendChild(btn);
+  });
 }
-
 function toggleProblem(id) {
   if (selectedProblems.has(id)) selectedProblems.delete(id);
   else selectedProblems.add(id);
@@ -3567,30 +3614,80 @@ function renderZielBloecke(typ) {
   const blocks = STRUKTUR_CONFIG[typ] || STRUKTUR_CONFIG.global;
   const h = getActiveZielHersteller();
   const nuancen = (h && NUANCEN_DB[h]) ? NUANCEN_DB[h].nuancen : [0,1,2,3,4,5,6,7,8];
-  container.innerHTML = blocks.map(block => {
-    const saved = zielBlocks[block.id] || { level: 7, nuance: 0 };
-    const pct = Math.round((saved.level - 1) / 9 * 100);
+  container.innerHTML = '';
+  blocks.forEach(function(block) {
+    const saved = zielBlocks[block.id] || {level:7, nuance:0};
+    const pct = Math.round((saved.level-1)/9*100);
     const code = saved.level + '.' + saved.nuance;
-    const opts = nuancen.map(n => '<option value="' + n + '"' + (n === saved.nuance ? ' selected' : '') + '>' + (n === 0 ? '0 — Natur/Rein' : '.' + n) + '</option>').join('');
-    return '<div class="ist-block">' +
-      '<div class="ist-block-header"><span class="ist-block-label">' + block.label + '</span><span class="ist-block-code" id="ziel-' + block.id + '-code">' + code + '</span></div>' +
-      '<div class="ist-block-body">' +
-        '<div class="lbl" style="margin-top:12px">Level</div>' +
-        '<div class="slider-wrap"><div class="slider-row">' +
-          '<span class="slider-val" id="ziel-' + block.id + '-lv">' + saved.level + '</span>' +
-          '<span id="ziel-' + block.id + '-ln" style="font-size:13px;font-weight:600;color:var(--mid);flex:1;margin-left:8px">' + (LEVEL_NAMES[saved.level]||'') + '</span>' +
-          '<input type="range" min="1" max="10" value="' + saved.level + '" style="--pct:' + pct + '%" oninput="onZielLvChange(this,\'' + block.id + '\')">' +
-        '</div><div class="slider-lbls"><span>1 Schwarz</span><span>5 Mittel</span><span>10 Hellstes</span></div></div>' +
-        '<div class="lbl">Nuance</div>' +
-        '<select class="inp" id="ziel-' + block.id + '-nu" onchange="onZielNuChange(this,\'' + block.id + '\')">' + opts + '</select>' +
-        '<div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 14px;background:var(--bg);border-radius:var(--rs)">' +
-          '<span style="font-size:12px;color:var(--muted);font-weight:700">CODE:</span>' +
-          '<span style="font-size:18px;font-weight:900;color:var(--ink)" id="ziel-' + block.id + '-cd">' + code + '</span>' +
-        '</div>' +
-      '</div></div>';
-  }).join('');
+    const wrap = document.createElement('div');
+    wrap.className = 'ist-block';
+    // Header
+    const hdr = document.createElement('div');
+    hdr.className = 'ist-block-header';
+    const lbl = document.createElement('span');
+    lbl.className = 'ist-block-label';
+    lbl.textContent = block.label;
+    const badge = document.createElement('span');
+    badge.className = 'ist-block-code';
+    badge.id = 'ziel-' + block.id + '-code';
+    badge.textContent = code;
+    hdr.appendChild(lbl); hdr.appendChild(badge);
+    wrap.appendChild(hdr);
+    // Body
+    const body = document.createElement('div');
+    body.className = 'ist-block-body';
+    const lvLbl = document.createElement('div');
+    lvLbl.className = 'lbl'; lvLbl.style.marginTop='12px'; lvLbl.textContent = 'Level';
+    body.appendChild(lvLbl);
+    const sliderWrap = document.createElement('div');
+    sliderWrap.className = 'slider-wrap';
+    const sliderRow = document.createElement('div');
+    sliderRow.className = 'slider-row';
+    const lvNum = document.createElement('span');
+    lvNum.className = 'slider-val'; lvNum.id = 'ziel-' + block.id + '-lv'; lvNum.textContent = saved.level;
+    const lvName = document.createElement('span');
+    lvName.id = 'ziel-' + block.id + '-ln';
+    lvName.style.cssText = 'font-size:13px;font-weight:600;color:var(--mid);flex:1;margin-left:8px';
+    lvName.textContent = LEVEL_NAMES[saved.level] || '';
+    const slider = document.createElement('input');
+    slider.type='range'; slider.min=1; slider.max=10; slider.value=saved.level;
+    slider.style.setProperty('--pct', pct+'%');
+    const bid = block.id;
+    slider.oninput = function() { onZielLvChange(this, bid); };
+    sliderRow.appendChild(lvNum); sliderRow.appendChild(lvName); sliderRow.appendChild(slider);
+    const lbls = document.createElement('div');
+    lbls.className = 'slider-lbls';
+    lbls.innerHTML = '<span>1 Schwarz</span><span>5 Mittel</span><span>10 Hellstes</span>';
+    sliderWrap.appendChild(sliderRow); sliderWrap.appendChild(lbls);
+    body.appendChild(sliderWrap);
+    const nuLbl = document.createElement('div');
+    nuLbl.className = 'lbl'; nuLbl.textContent = 'Nuance';
+    body.appendChild(nuLbl);
+    const sel = document.createElement('select');
+    sel.className = 'inp'; sel.id = 'ziel-' + block.id + '-nu';
+    nuancen.forEach(function(n) {
+      const opt = document.createElement('option');
+      opt.value = n; opt.textContent = n===0 ? '0 — Natur/Rein' : '.' + n;
+      if (n === saved.nuance) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.onchange = function() { onZielNuChange(this, bid); };
+    body.appendChild(sel);
+    const codeDiv = document.createElement('div');
+    codeDiv.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 14px;background:var(--bg);border-radius:var(--rs)';
+    const codeLbl = document.createElement('span');
+    codeLbl.style.cssText = 'font-size:12px;color:var(--muted);font-weight:700';
+    codeLbl.textContent = 'CODE:';
+    const codeVal = document.createElement('span');
+    codeVal.style.cssText = 'font-size:18px;font-weight:900;color:var(--ink)';
+    codeVal.id = 'ziel-' + block.id + '-cd';
+    codeVal.textContent = code;
+    codeDiv.appendChild(codeLbl); codeDiv.appendChild(codeVal);
+    body.appendChild(codeDiv);
+    wrap.appendChild(body);
+    container.appendChild(wrap);
+  });
 }
-
 function onZielLvChange(input, id) {
   zielManualOverride = true;
   const val = parseInt(input.value);
@@ -3638,30 +3735,46 @@ function renderZielGrid(filter) {
   const container = document.getElementById('ziel-grid');
   const emptyEl = document.getElementById('ziel-empty');
   if (!container) return;
-  let uploadImgs = [...zielbilder.filter(z => z.type === 'upload')];
+  let uploadImgs = zielbilder.filter(function(z) { return z.type === 'upload'; });
   let ergebnisImgs = [];
-  sessions.forEach(s => { if (s.afterPhoto && s.pinnedAsZiel) ergebnisImgs.push({ id: 'sess_' + s.id, src: s.afterPhoto, type: 'ergebnis', clientName: clients.find(c=>String(c.id)===String(s.clientId))?.name||'' }); });
+  sessions.forEach(function(s) {
+    if (s.afterPhoto && s.pinnedAsZiel) {
+      const client = clients.find(function(c) { return String(c.id)===String(s.clientId); });
+      ergebnisImgs.push({id:'sess_'+s.id, src:s.afterPhoto, type:'ergebnis', clientName: client ? client.name : ''});
+    }
+  });
   let imgs;
-  if (filter === 'ziel') imgs = uploadImgs;
-  else if (filter === 'ergebnis') imgs = ergebnisImgs;
-  else if (filter === 'trends') {
-    // Show COLOR_TRENDS as special cards
-    renderTrendsGrid();
-    return;
-  }
-  else imgs = [...uploadImgs, ...ergebnisImgs];
-  if (!imgs.length) { container.innerHTML = ''; if (emptyEl) emptyEl.style.display = 'block'; return; }
-  if (emptyEl) emptyEl.style.display = 'none';
-  const sel = document.getElementById('ref-data')?.value;
-  container.innerHTML = imgs.map(img =>
-    '<div onclick="selectZielbild(\'' + img.id + '\')" style="position:relative;aspect-ratio:1;cursor:pointer">' +
-    '<img src="' + img.src + '" style="width:100%;height:100%;object-fit:cover' + (img.src===sel?';outline:3px solid var(--pink);outline-offset:-3px':'') + '"/>' +
-    (img.src===sel ? '<div style="position:absolute;top:4px;right:4px;background:var(--pink);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">✓</div>' : '') +
-    (img.type==='ergebnis' ? '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);color:#fff;font-size:9px;font-weight:700;padding:3px 4px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap">✨ ' + (img.clientName||'Ergebnis') + '</div>' : '') +
-    '</div>'
-  ).join('');
+  if (filter==='ziel') imgs = uploadImgs;
+  else if (filter==='ergebnis') imgs = ergebnisImgs;
+  else if (filter==='trends') { renderTrendsGrid(); return; }
+  else imgs = uploadImgs.concat(ergebnisImgs);
+  if (!imgs.length) { container.innerHTML=''; if(emptyEl) emptyEl.style.display='block'; return; }
+  if (emptyEl) emptyEl.style.display='none';
+  const selSrc = document.getElementById('ref-data')?.value || '';
+  container.innerHTML = '';
+  imgs.forEach(function(img) {
+    const div = document.createElement('div');
+    div.style.cssText = 'position:relative;aspect-ratio:1;cursor:pointer';
+    const image = document.createElement('img');
+    image.src = img.src;
+    image.style.cssText = 'width:100%;height:100%;object-fit:cover' + (img.src===selSrc ? ';outline:3px solid var(--pink);outline-offset:-3px' : '');
+    div.appendChild(image);
+    if (img.src===selSrc) {
+      const check = document.createElement('div');
+      check.style.cssText = 'position:absolute;top:4px;right:4px;background:var(--pink);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700';
+      check.textContent = '✓';
+      div.appendChild(check);
+    }
+    if (img.type==='ergebnis') {
+      const badge = document.createElement('div');
+      badge.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);color:#fff;font-size:9px;font-weight:700;padding:3px 4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis';
+      badge.textContent = '✨ ' + (img.clientName||'Ergebnis');
+      div.appendChild(badge);
+    }
+    div.onclick = (function(id) { return function() { selectZielbild(id); }; })(img.id);
+    container.appendChild(div);
+  });
 }
-
 function selectZielbild(id) {
   const img = zielbilder.find(i => i.id === id);
   const sessImg = id.startsWith('sess_') ? sessions.find(s => 'sess_' + s.id === id) : null;
@@ -3694,22 +3807,32 @@ function renderTrendsGrid() {
   const container = document.getElementById('ziel-grid');
   const emptyEl = document.getElementById('ziel-empty');
   if (!container) return;
-  if (emptyEl) emptyEl.style.display = 'none';
-  const sel = document.getElementById('ref-data')?.value;
-
-  container.innerHTML = COLOR_TRENDS.map(trend => {
-    const isSel = sel && sel === trend.id;
-    return '<div onclick="selectTrend(\'' + trend.id + '\')" style="position:relative;cursor:pointer;aspect-ratio:1;border-radius:4px;overflow:hidden;' +
-      (isSel ? 'outline:3px solid var(--pink);outline-offset:-3px;' : '') + '">' +
-      '<div style="width:100%;height:100%;background:' + trend.hex + ';display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">' +
-      '<div style="width:36px;height:36px;border-radius:50%;background:' + trend.hex + ';border:3px solid rgba(255,255,255,0.5)"></div>' +
-      '<div style="font-size:10px;font-weight:800;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.4);text-align:center;padding:0 4px">' + trend.name + '</div>' +
-      '</div>' +
-      (isSel ? '<div style="position:absolute;top:4px;right:4px;background:var(--pink);color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">✓</div>' : '') +
-    '</div>';
-  }).join('');
+  if (emptyEl) emptyEl.style.display='none';
+  const selId = document.getElementById('ref-data')?.value || '';
+  container.innerHTML = '';
+  COLOR_TRENDS.forEach(function(trend) {
+    const isSel = selId === trend.id;
+    const div = document.createElement('div');
+    div.style.cssText = 'position:relative;cursor:pointer;aspect-ratio:1;border-radius:4px;overflow:hidden' + (isSel ? ';outline:3px solid var(--pink);outline-offset:-3px' : '');
+    const inner = document.createElement('div');
+    inner.style.cssText = 'width:100%;height:100%;background:' + trend.hex + ';display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px';
+    const swatch = document.createElement('div');
+    swatch.style.cssText = 'width:36px;height:36px;border-radius:50%;background:' + trend.hex + ';border:3px solid rgba(255,255,255,0.5)';
+    const name = document.createElement('div');
+    name.style.cssText = 'font-size:10px;font-weight:800;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.4);text-align:center;padding:0 4px';
+    name.textContent = trend.name;
+    inner.appendChild(swatch); inner.appendChild(name);
+    div.appendChild(inner);
+    if (isSel) {
+      const check = document.createElement('div');
+      check.style.cssText = 'position:absolute;top:4px;right:4px;background:var(--pink);color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700';
+      check.textContent = '✓';
+      div.appendChild(check);
+    }
+    div.onclick = (function(t) { return function() { selectTrend(t.id); }; })(trend);
+    container.appendChild(div);
+  });
 }
-
 function selectTrend(id) {
   const trend = COLOR_TRENDS.find(t => t.id === id);
   if (!trend) return;
@@ -3741,18 +3864,27 @@ function selectTrend(id) {
 function renderAccZielbilder() {
   const grid = document.getElementById('acc-zielbilder-grid');
   if (!grid) return;
-  if (!zielbilder.length) {
-    grid.innerHTML = '<div style="grid-column:1/-1;font-size:12px;color:var(--muted);text-align:center;padding:16px">Noch keine Zielbilder hochgeladen</div>';
+  const uploads = zielbilder.filter(function(z) { return z.type==='upload'; });
+  if (!uploads.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;font-size:12px;color:var(--muted);text-align:center;padding:16px">Noch keine eigenen Zielbilder</div>';
     return;
   }
-  grid.innerHTML = zielbilder.filter(z => z.type === 'upload').map(img =>
-    '<div style="position:relative;aspect-ratio:1">' +
-    '<img src="' + img.src + '" style="width:100%;height:100%;object-fit:cover;border-radius:4px"/>' +
-    '<button onclick="removeZielbild(\'' + img.id + '\')" style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:11px;line-height:1">✕</button>' +
-    '</div>'
-  ).join('') || '<div style="grid-column:1/-1;font-size:12px;color:var(--muted);text-align:center;padding:16px">Noch keine eigenen Zielbilder</div>';
+  grid.innerHTML = '';
+  uploads.forEach(function(img) {
+    const div = document.createElement('div');
+    div.style.cssText = 'position:relative;aspect-ratio:1';
+    const image = document.createElement('img');
+    image.src = img.src;
+    image.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:4px';
+    div.appendChild(image);
+    const btn = document.createElement('button');
+    btn.style.cssText = 'position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:11px;line-height:1';
+    btn.textContent = '✕';
+    btn.onclick = (function(id) { return function() { removeZielbild(id); }; })(img.id);
+    div.appendChild(btn);
+    grid.appendChild(div);
+  });
 }
-
 function removeZielbild(id) {
   zielbilder = zielbilder.filter(z => z.id !== id);
   renderAccZielbilder();
@@ -3830,44 +3962,95 @@ function mlSelectHersteller(btn, h) {
 function mlRenderHerstellerTabs() {
   const container = document.getElementById('ml-hersteller-tabs');
   if (!container) return;
-  const hs = [{id:'wella',name:'Wella'},{id:'loreal',name:"L'Oréal"},{id:'schwarzkopf',name:'Schwarzkopf'},{id:'redken',name:'Redken'},{id:'gold',name:'GOLD'}];
-  container.innerHTML = hs.map(h => {
+  const hs = [
+    {id:'wella', name:'Wella'},
+    {id:'loreal', name:'L’Oréal'},
+    {id:'schwarzkopf', name:'Schwarzkopf'},
+    {id:'redken', name:'Redken'},
+    {id:'gold', name:'GOLD'}
+  ];
+  container.innerHTML = hs.map(function(h) {
     const active = mlActiveHersteller.has(h.id);
     const current = mlCurrentHersteller === h.id;
-    return '<button onclick="mlSelectHersteller(this,'' + h.id + '')" ' +
-      'style="padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid ' +
-      (active?'var(--pink)':'var(--border)') + ';background:' + (current?'var(--pink)':active?'var(--pink-light)':'var(--surface)') +
-      ';color:' + (current?'#fff':active?'var(--pink)':'var(--mid)') + '">' + h.name + (active?' ✓':'') + '</button>';
+    const border = active ? 'var(--pink)' : 'var(--border)';
+    const bg = current ? 'var(--pink)' : active ? 'var(--pink-light)' : 'var(--surface)';
+    const color = current ? '#fff' : active ? 'var(--pink)' : 'var(--mid)';
+    const label = h.name + (active ? ' ✓' : '');
+    const btn = document.createElement('button');
+    btn.style.cssText = 'padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid ' + border + ';background:' + bg + ';color:' + color;
+    btn.textContent = label;
+    btn.onclick = function() { mlSelectHersteller(btn, h.id); };
+    return btn.outerHTML;
   }).join('');
+  // Re-attach event listeners since outerHTML loses them
+  container.querySelectorAll('button').forEach(function(btn, i) {
+    btn.onclick = (function(hid) { return function() { mlSelectHersteller(btn, hid); }; })(hs[i].id);
+  });
 }
-
 function mlRenderFarbBlocks() {
   const container = document.getElementById('ml-farb-blocks');
   if (!container) return;
   const blocks = STRUKTUR_CONFIG[mlCurrentStruktur] || STRUKTUR_CONFIG.global;
   const h = mlCurrentHersteller;
-  const nuancen = NUANCEN_DB[h]?.nuancen || [0,1,2,3,4,5,6,7,8];
+  const nuancen = (NUANCEN_DB[h] && NUANCEN_DB[h].nuancen) ? NUANCEN_DB[h].nuancen : [0,1,2,3,4,5,6,7,8];
   const saved = mlLabels[h] || {};
-  container.innerHTML = '<div style="background:var(--bg);border-radius:var(--r);padding:12px;margin-bottom:16px">' +
-    '<div style="font-size:12px;font-weight:800;color:var(--mid);margin-bottom:10px">' + (NUANCEN_DB[h]?.name||h).toUpperCase() + '</div>' +
-    blocks.map(block => {
-      const s = saved[block.id] || {level:6,nuance:0};
-      const pct = Math.round((s.level-1)/9*100);
-      const opts = nuancen.map(n => '<option value="'+n+'"'+(n===s.nuance?' selected':'')+'>'+(n===0?'0 — Natur/Rein':'.'+n)+'</option>').join('');
-      return '<div style="border:1.5px solid var(--border);border-radius:var(--rs);padding:12px;margin-bottom:8px">' +
-        '<div style="font-size:13px;font-weight:800;margin-bottom:10px">' + block.label + '</div>' +
-        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
-          '<span style="font-size:20px;font-weight:900;color:var(--pink);min-width:24px" id="ml-lv-'+h+'-'+block.id+'">' + s.level + '</span>' +
-          '<span style="font-size:12px;color:var(--mid);min-width:80px" id="ml-ln-'+h+'-'+block.id+'">' + (LEVEL_NAMES[s.level]||'') + '</span>' +
-          '<input type="range" min="1" max="10" value="'+s.level+'" style="flex:1;--pct:'+pct+'%" oninput="mlOnLevel(this,''+h+'',''+block.id+'')">' +
-        '</div>' +
-        '<select class="inp" style="margin-bottom:6px" onchange="mlOnNuance(this,''+h+'',''+block.id+'')">' + opts + '</select>' +
-        '<div style="font-size:12px;color:var(--muted)">Code: <strong id="ml-code-'+h+'-'+block.id+'">' + s.level + '.' + s.nuance + '</strong></div>' +
-      '</div>';
-    }).join('') + '</div>';
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = 'background:var(--bg);border-radius:var(--r);padding:12px;margin-bottom:16px';
+  const title = document.createElement('div');
+  title.style.cssText = 'font-size:12px;font-weight:800;color:var(--mid);margin-bottom:10px';
+  title.textContent = ((NUANCEN_DB[h] && NUANCEN_DB[h].name) ? NUANCEN_DB[h].name : h).toUpperCase();
+  wrapper.appendChild(title);
+  blocks.forEach(function(block) {
+    const s = (saved[block.id]) ? saved[block.id] : {level:6, nuance:0};
+    const pct = Math.round((s.level-1)/9*100);
+    const blockDiv = document.createElement('div');
+    blockDiv.style.cssText = 'border:1.5px solid var(--border);border-radius:var(--rs);padding:12px;margin-bottom:8px';
+    const blabel = document.createElement('div');
+    blabel.style.cssText = 'font-size:13px;font-weight:800;margin-bottom:10px';
+    blabel.textContent = block.label;
+    blockDiv.appendChild(blabel);
+    // Level row
+    const lvRow = document.createElement('div');
+    lvRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:8px';
+    const lvNum = document.createElement('span');
+    lvNum.id = 'ml-lv-' + h + '-' + block.id;
+    lvNum.style.cssText = 'font-size:20px;font-weight:900;color:var(--pink);min-width:24px';
+    lvNum.textContent = s.level;
+    const lvName = document.createElement('span');
+    lvName.id = 'ml-ln-' + h + '-' + block.id;
+    lvName.style.cssText = 'font-size:12px;color:var(--mid);min-width:80px';
+    lvName.textContent = LEVEL_NAMES[s.level] || '';
+    const slider = document.createElement('input');
+    slider.type = 'range'; slider.min = 1; slider.max = 10; slider.value = s.level;
+    slider.style.cssText = 'flex:1;--pct:' + pct + '%';
+    slider.className = 'inp';
+    slider.style.height = 'auto';
+    const bid = block.id;
+    slider.oninput = function() { mlOnLevel(this, h, bid); };
+    lvRow.appendChild(lvNum); lvRow.appendChild(lvName); lvRow.appendChild(slider);
+    blockDiv.appendChild(lvRow);
+    // Nuance select
+    const sel = document.createElement('select');
+    sel.className = 'inp'; sel.style.marginBottom = '6px';
+    nuancen.forEach(function(n) {
+      const opt = document.createElement('option');
+      opt.value = n; opt.textContent = n === 0 ? '0 — Natur/Rein' : '.' + n;
+      if (n === s.nuance) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.onchange = function() { mlOnNuance(this, h, bid); };
+    blockDiv.appendChild(sel);
+    // Code display
+    const codeDiv = document.createElement('div');
+    codeDiv.style.cssText = 'font-size:12px;color:var(--muted)';
+    codeDiv.innerHTML = 'Code: <strong id="ml-code-' + h + '-' + block.id + '">' + s.level + '.' + s.nuance + '</strong>';
+    blockDiv.appendChild(codeDiv);
+    wrapper.appendChild(blockDiv);
+  });
+  container.innerHTML = '';
+  container.appendChild(wrapper);
   mlRenderProblemChipsTraining();
 }
-
 function mlOnLevel(input, h, id) {
   const val = parseInt(input.value);
   if (!mlLabels[h]) mlLabels[h]={};
@@ -3890,12 +4073,18 @@ function mlOnNuance(sel, h, id) {
 function mlRenderProblemChipsTraining() {
   const c = document.getElementById('ml-problem-chips-training');
   if (!c) return;
-  c.innerHTML = PROBLEMFAELLE.map(p => {
+  c.innerHTML = '';
+  PROBLEMFAELLE.forEach(function(p) {
     const sel = mlSelectedProblems.has(p.id);
-    return '<button onclick="mlToggleProblem(''+p.id+'')" style="padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid '+(sel?'var(--pink)':'var(--border)')+';background:'+(sel?'var(--pink-light)':'var(--surface)')+';color:'+(sel?'var(--pink)':'var(--mid)')+'">'+p.label+'</button>';
-  }).join('');
+    const btn = document.createElement('button');
+    btn.style.cssText = 'padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid ' +
+      (sel ? 'var(--pink)' : 'var(--border)') + ';background:' + (sel ? 'var(--pink-light)' : 'var(--surface)') +
+      ';color:' + (sel ? 'var(--pink)' : 'var(--mid)');
+    btn.textContent = p.label;
+    btn.onclick = function() { mlToggleProblem(p.id); };
+    c.appendChild(btn);
+  });
 }
-
 function mlToggleProblem(id) {
   if (mlSelectedProblems.has(id)) mlSelectedProblems.delete(id); else mlSelectedProblems.add(id);
   mlRenderProblemChipsTraining();
