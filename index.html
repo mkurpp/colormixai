@@ -1987,15 +1987,26 @@ let selectedPlan = 'solo';
 
 /* ── App initialisieren ── */
 async function initApp() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    currentUser = session.user;
-    await loadSalon();
-    renderLandingUserBar();
-    // Session-Kontrolle: Solo nur 1 Gerät
-    await enforceSessionLimit(session);
-    go('s-landing');
-  } else {
+  try {
+    const { data: { session }, error: sessErr } = await sb.auth.getSession();
+    if (sessErr) throw sessErr;
+    if (session) {
+      currentUser = session.user;
+      await loadSalon();
+      if (currentSalon) {
+        await loadClientsFromDB();
+        await enforceSessionLimit(session);
+        renderLandingUserBar();
+        go('s-landing');
+      } else {
+        // Eingeloggt aber kein Salon → Onboarding
+        go('s-onboarding-salon');
+      }
+    } else {
+      go('s-login');
+    }
+  } catch(e) {
+    console.error('initApp error:', e);
     go('s-login');
   }
 }
@@ -2003,17 +2014,21 @@ async function initApp() {
 /* ── Salon laden ── */
 async function loadSalon(retries = 3) {
   for (let i = 0; i < retries; i++) {
-    const { data } = await sb.from('salon_members')
-      .select('salon_id, role, salons(id, name, plan, plan_status, trial_ends_at)')
-      .eq('user_id', currentUser.id)
-      .eq('status', 'active')
-      .single();
-    if (data?.salons) {
-      currentSalon = data.salons;
-      currentSalon.role = data.role;
-      return;
+    try {
+      const { data, error } = await sb.from('salon_members')
+        .select('salon_id, role, salons(id, name, plan, plan_status, trial_ends_at, street, zip, city)')
+        .eq('user_id', currentUser.id)
+        .eq('status', 'active')
+        .maybeSingle(); // maybeSingle statt single — kein Fehler wenn leer
+      if (data?.salons) {
+        currentSalon = data.salons;
+        currentSalon.role = data.role;
+        return;
+      }
+    } catch(e) {
+      console.warn('loadSalon attempt', i+1, 'failed:', e);
     }
-    if (i < retries - 1) await new Promise(r => setTimeout(r, 1000));
+    if (i < retries - 1) await new Promise(r => setTimeout(r, 800));
   }
 }
 
@@ -2521,19 +2536,30 @@ async function redeemVoucher() {
     await sb.from('vouchers').update({ used_count: voucher.used_count + 1 }).eq('id', voucher.id).catch(()=>{});
   }
 
-  // Nochmal laden für sicheren State
-  await new Promise(r => setTimeout(r, 800));
-  await loadSalon();
+  // Salon neu laden bis er verfügbar ist (max 5 Versuche)
+  for (let i = 0; i < 5; i++) {
+    await new Promise(r => setTimeout(r, 600));
+    await loadSalon();
+    if (currentSalon?.id) break;
+  }
+
+  if (!currentSalon?.id) {
+    showAuthError('voucher-error', 'Fehler beim Laden des Salons. Bitte Seite neu laden.');
+    if(btn){btn.textContent='Gutschein einlösen';btn.disabled=false;}
+    return;
+  }
 
   document.getElementById('voucher-error').style.display = 'none';
   const successEl = document.getElementById('voucher-success');
   const planLabel = currentSalon?.plan === 'team' ? 'Team' : 'Solo';
-  successEl.innerHTML = `✅ ${planLabel}-Abo für ${voucher.duration_days} Tage aktiviert!`;
+  successEl.innerHTML = `✅ ${planLabel}-Abo aktiviert! Weiterleitung…`;
   successEl.style.display = 'block';
 
   if(btn){btn.textContent='Gutschein einlösen';btn.disabled=false;}
   await loadClientsFromDB();
-  setTimeout(() => { renderLandingUserBar(); go('s-landing'); }, 1500);
+  renderLandingUserBar();
+  await new Promise(r => setTimeout(r, 1000));
+  go('s-landing');
 }
 
 /* ═══════════════════ GUTSCHEIN ADMIN ═══════════════════ */
