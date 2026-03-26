@@ -1227,7 +1227,7 @@ function renderClientsList(filter) {
   cont.innerHTML = list.map(c => {
     const count = sessions.filter(s=>s.clientId===c.id).length;
     const last = sessions.filter(s=>s.clientId===c.id).sort((a,b)=>b.date.localeCompare(a.date))[0];
-    return `<div class="list-card" onclick="openProfile(${c.id})">
+    return `<div class="list-card" onclick="openProfile('${c.id}')">
       <div class="avatar" style="background:linear-gradient(135deg,var(--pink),var(--pink-dark));color:#fff;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center">${c.photo?`<img src="${c.photo}" style="width:100%;height:100%;object-fit:cover"/>`:'<span>'+c.name[0].toUpperCase()+'</span>'}</div>
       <div class="lc-info">
         <div class="lc-name">${c.name}</div>
@@ -1242,10 +1242,42 @@ function renderClientsList(filter) {
 }
 
 /* ═══════════════════ CLIENT PROFILE ═══════════════════ */
-function openProfile(id) {
-  viewingClient = clients.find(c=>c.id===id);
+async function openProfile(id) {
+  viewingClient = clients.find(c => String(c.id) === String(id));
   if (!viewingClient) return;
+  // Show profile screen immediately, then load sessions
   go('s-profile');
+  renderProfile();
+  await loadSessionsForClient(id);
+  renderProfile();
+}
+
+/* ── Sessions für einen Kunden aus Supabase laden ── */
+async function loadSessionsForClient(clientId) {
+  if (!currentSalon?.id || !clientId) return;
+  try {
+    const { data } = await sb.from('sessions')
+      .select('*')
+      .eq('client_id', clientId)
+      .order('created_at', { ascending: false });
+    if (data) {
+      // Remove old sessions for this client, add fresh ones
+      sessions = sessions.filter(s => String(s.clientId) !== String(clientId));
+      data.forEach(s => sessions.push({
+        id: s.id,
+        clientId: s.client_id,
+        date: s.created_at ? s.created_at.slice(0,10) : s.updated_at?.slice(0,10) || '—',
+        target: s.target_color || '—',
+        formula: s.formula || '—',
+        dev: s.developer || '—',
+        brand: s.brand || '—',
+        notes: s.notes || '',
+        hairPhoto: s.before_photo_url || '',
+        afterPhoto: s.after_photo_url || '',
+        resultGood: s.result_good,
+      }));
+    }
+  } catch(e) { console.error('loadSessionsForClient error:', e); }
 }
 
 function renderProfile() {
@@ -1354,15 +1386,40 @@ function triggerAfterGallery(inputId) {
 async function saveAfterPhotoToSession(input, sessionId) {
   const file = input.files[0];
   if (!file) return;
+
+  // Show loading state
+  const btn = input.previousElementSibling || input.parentElement?.querySelector('button');
+
   const reader = new FileReader();
   reader.onload = async e => {
     const dataUrl = e.target.result;
+
+    // Update in local sessions array (try both string and original ID)
     const sess = sessions.find(s => String(s.id) === String(sessionId));
     if (sess) sess.afterPhoto = dataUrl;
+
+    // Save to Supabase
     if (currentSalon?.id) {
-      await sb.from('sessions').update({ after_photo_url: dataUrl }).eq('id', sessionId).catch(console.error);
+      try {
+        await sb.from('sessions')
+          .update({ after_photo_url: dataUrl })
+          .eq('id', sessionId);
+      } catch(err) { console.error('After photo save error:', err); }
+    }
+
+    // Force reload sessions from DB for this client then re-render
+    if (viewingClient?.id) {
+      await loadSessionsForClient(viewingClient.id);
     }
     renderProfile();
+
+    // Keep the session body open after re-render
+    setTimeout(() => {
+      const body = document.getElementById('sb-' + sessionId);
+      if (body) body.classList.add('open');
+      const arr = document.getElementById('arr-' + sessionId);
+      if (arr) arr.textContent = '∨';
+    }, 50);
   };
   reader.readAsDataURL(file);
 }
@@ -1371,9 +1428,18 @@ async function saveSessionFeedback(sessionId, good) {
   const sess = sessions.find(s => String(s.id) === String(sessionId));
   if (sess) sess.resultGood = good;
   if (currentSalon?.id) {
-    await sb.from('sessions').update({ result_good: good }).eq('id', sessionId).catch(console.error);
+    try {
+      await sb.from('sessions').update({ result_good: good }).eq('id', sessionId);
+    } catch(err) { console.error('Feedback save error:', err); }
   }
+  if (viewingClient?.id) await loadSessionsForClient(viewingClient.id);
   renderProfile();
+  setTimeout(() => {
+    const body = document.getElementById('sb-' + sessionId);
+    if (body) body.classList.add('open');
+    const arr = document.getElementById('arr-' + sessionId);
+    if (arr) arr.textContent = '∨';
+  }, 50);
 }
 
 function toggleSess(bodyId, arrId) {
