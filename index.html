@@ -599,30 +599,16 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 
     <!-- Bild-Galerie im Konto -->
     <div id="account-zielbild-section" style="display:none">
-      <div class="lbl">Bild-Galerie</div>
-
-      <!-- Tabs: Zielbilder / Ergebnis-Fotos -->
-      <div class="seg" id="acc-gallery-seg" style="margin-bottom:12px">
-        <button class="seg-btn active" onclick="accGalleryTab(this,'upload')">Zielbilder</button>
-        <button class="seg-btn" onclick="accGalleryTab(this,'ergebnis')">Ergebnis-Fotos</button>
-      </div>
-
-      <!-- Zielbilder Tab -->
-      <div id="acc-tab-upload">
-        <p style="font-size:11px;color:var(--muted);margin-bottom:8px">Eigene hochgeladene Zielbilder — erscheinen im Zielbild-Tab der Analyse</p>
-        <div id="acc-zielbilder-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:10px"></div>
-        <button class="btn btn-outline btn-full" style="height:40px;font-size:13px" onclick="document.getElementById('acc-ziel-upload').click()">
-          📤 Eigenes Zielbild hinzufügen
-        </button>
-        <input type="file" id="acc-ziel-upload" accept="image/*" style="display:none" onchange="addZielbildFromAccount(this)"/>
-      </div>
-
-      <!-- Ergebnis-Fotos Tab -->
-      <div id="acc-tab-ergebnis" style="display:none">
-        <p style="font-size:11px;color:var(--muted);margin-bottom:8px">Gepinnte Ergebnis-Fotos (📌) aus der Kundenkartei — auch nach Kunden-Löschung verfügbar</p>
-        <div id="acc-ergebnis-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:10px"></div>
-        <div id="acc-ergebnis-empty" style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Noch keine Ergebnis-Fotos gepinnt</div>
-      </div>
+      <div class="lbl">Salon-Galerie</div>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.6">
+        Alle gepinnten Bilder deines Salons — erscheinen bei Zielbild wählen. ✕ entpinnt das Bild (Kundendaten bleiben erhalten).
+      </p>
+      <div id="acc-zielbilder-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:10px"></div>
+      <div id="acc-gallery-empty" style="display:none;text-align:center;padding:16px;font-size:12px;color:var(--muted)">Noch keine gepinnten Bilder. Pinne Bilder in der Kundenkartei mit 📌.</div>
+      <button class="btn btn-outline btn-full" style="height:40px;font-size:13px;margin-top:4px" onclick="document.getElementById('acc-ziel-upload').click()">
+        📤 Eigenes Bild hinzufügen
+      </button>
+      <input type="file" id="acc-ziel-upload" accept="image/*" style="display:none" onchange="addZielbildFromAccount(this)"/>
     </div>
 
     <div class="divider"></div>
@@ -898,8 +884,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
     <!-- Filter Tabs -->
     <div class="seg" id="ziel-filter-seg" style="margin-bottom:16px">
       <button class="seg-btn active" onclick="filterZielbilder(this,'trends')">Color Trends</button>
-      <button class="seg-btn" onclick="filterZielbilder(this,'ziel')">Zielbilder</button>
-      <button class="seg-btn" onclick="filterZielbilder(this,'ergebnis')">Ergebnis</button>
+      <button class="seg-btn" onclick="filterZielbilder(this,'salon')">Salonbilder</button>
     </div>
 
     <!-- Eigenes Bild hochladen -->
@@ -1218,8 +1203,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
     <div style="padding:16px 20px">
 
       <!-- Bild Vorschau -->
-      <div id="ml-edit-img-preview" style="display:none;margin-bottom:16px;border-radius:var(--r);overflow:hidden;max-height:200px">
-        <img id="ml-edit-img" style="width:100%;max-height:200px;object-fit:cover"/>
+      <div id="ml-edit-img-preview" style="display:none;margin-bottom:16px;border-radius:var(--r);overflow:hidden">
+        <img id="ml-edit-img" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:var(--r)"/>
       </div>
 
       <!-- Strukturtyp -->
@@ -1289,6 +1274,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
     <div class="seg" id="ml-tab-seg" style="margin-bottom:16px">
       <button class="seg-btn active" onclick="mlTab(this,'upload')">+ Neu</button>
       <button class="seg-btn" onclick="mlTab(this,'gallery')">Galerie</button>
+      <button class="seg-btn" onclick="mlTab(this,'review')">⭐ Review</button>
       <button class="seg-btn" onclick="mlTab(this,'export')">Export</button>
     </div>
 
@@ -1346,6 +1332,22 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
       <div id="ml-gallery-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px"></div>
       <div id="ml-gallery-empty" style="display:none;text-align:center;padding:32px;color:var(--muted);font-size:13px">Noch keine Trainingsbilder</div>
       <div style="height:24px"></div>
+    </div>
+
+    <!-- TAB: Review Queue -->
+    <div id="ml-tab-review" style="display:none">
+      <div style="background:var(--ink);border-radius:var(--r);padding:14px 16px;margin-bottom:16px;color:#fff">
+        <div style="font-size:14px;font-weight:800;margin-bottom:4px">⭐ Review Queue</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.6">Alle Salon-Bilder aller Salons die noch nicht für die KI übernommen wurden. ⭐ = übernehmen.</div>
+      </div>
+      <div id="ml-review-filter" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+        <button onclick="mlReviewFilter(this,'alle')" style="padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;border:2px solid var(--pink);background:var(--pink-light);color:var(--pink);cursor:pointer">Alle</button>
+        <button onclick="mlReviewFilter(this,'vorher')" style="padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;border:2px solid var(--border);background:var(--surface);color:var(--mid);cursor:pointer">Vorher</button>
+        <button onclick="mlReviewFilter(this,'nachher')" style="padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;border:2px solid var(--border);background:var(--surface);color:var(--mid);cursor:pointer">Nachher</button>
+      </div>
+      <div id="ml-review-stats" style="font-size:12px;color:var(--muted);margin-bottom:12px"></div>
+      <div id="ml-review-list"></div>
+      <div id="ml-review-empty" style="display:none;text-align:center;padding:32px;color:var(--muted);font-size:13px">Keine unreviewed Bilder 🎉</div>
     </div>
 
     <!-- TAB: Export -->
@@ -1732,6 +1734,24 @@ function renderProfile() {
             </div>` : ''}
         </div>
 
+        <!-- Pin-Button — immer sichtbar wenn mindestens ein Foto vorhanden -->
+        ${(s.hairPhoto || s.afterPhoto) ? `
+        <div style="margin-top:10px;padding:10px 12px;background:${s.pinnedAsZiel?'var(--pink-light)':'var(--bg)'};border-radius:var(--rs);border:2px solid ${s.pinnedAsZiel?'var(--pink)':'var(--border)'}">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div style="font-size:13px;font-weight:800;color:${s.pinnedAsZiel?'var(--pink)':'var(--ink)'}">
+                ${s.pinnedAsZiel?'📌 In Salon-Galerie gepinnt':'📌 In Salon-Galerie pinnen'}
+              </div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">
+                ${s.pinnedAsZiel?'Erscheint bei Zielbild wählen':'Für Analyse als Zielreferenz nutzen'}
+              </div>
+            </div>
+            <div onclick="togglePinZielbild('${s.id}')" style="width:44px;height:26px;border-radius:13px;background:${s.pinnedAsZiel?'var(--pink)':'var(--border)'};cursor:pointer;position:relative;transition:all .2s;flex-shrink:0">
+              <div style="position:absolute;top:3px;${s.pinnedAsZiel?'right:3px':'left:3px'};width:20px;height:20px;border-radius:50%;background:#fff;transition:all .2s;box-shadow:0 1px 4px rgba(0,0,0,0.2)"></div>
+            </div>
+          </div>
+        </div>` : ''}
+
         <!-- Nachher-Foto hinzufügen wenn noch keines vorhanden -->
         ${!s.afterPhoto ? `
         <div style="margin-top:10px">
@@ -1742,8 +1762,8 @@ function renderProfile() {
           </div>
           <input type="file" id="after-sess-${s.id}" accept="image/*" onchange="saveAfterPhotoToSession(this,'${s.id}')"/>
         </div>` : `
-        <div style="margin-top:8px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px"><button class="btn btn-ghost btn-full" style="height:34px;font-size:11px" onclick="triggerAfterGallery('after-sess-upd-${s.id}')">🔄 Ersetzen</button><button class="btn btn-outline btn-full" style="height:34px;font-size:11px;${s.pinnedAsZiel?'border-color:var(--pink);color:var(--pink)':''}" onclick="togglePinZielbild('${s.id}')">📌 ${s.pinnedAsZiel?'Gepinnt':'Pinnen'}</button></div>
+        <div style="margin-top:4px">
+          <button class="btn btn-ghost btn-full" style="height:34px;font-size:11px" onclick="triggerAfterGallery('after-sess-upd-${s.id}')">🔄 Nachher-Foto ersetzen</button>
           <input type="file" id="after-sess-upd-${s.id}" accept="image/*" onchange="saveAfterPhotoToSession(this,'${s.id}')"/>
         </div>`}
 
@@ -1786,13 +1806,17 @@ async function saveAfterPhotoToSession(input, sessionId) {
   const sess = sessions.find(s => String(s.id) === String(sessionId));
   if (sess) sess.afterPhoto = dataUrl;
 
-  // Save to Supabase first, THEN update local state and render
+  // Upload to storage first, then save URL to DB
+  const uploadedUrl = await uploadPhotoToStorage(dataUrl, (currentSalon?.id||'anon') + '/after');
   if (currentSalon?.id) {
     try {
       const { error } = await sb.from('sessions')
-        .update({ after_photo_url: dataUrl })
+        .update({ after_photo_url: uploadedUrl })
         .eq('id', sessionId);
       if (error) console.error('After photo save error:', error);
+      // Update local session too
+      const sess = sessions.find(s => String(s.id) === String(sessionId));
+      if (sess) sess.afterPhoto = uploadedUrl;
     } catch(err) { console.error('After photo save error:', err); }
   }
   // Reload from DB to ensure correct state
@@ -2225,6 +2249,42 @@ const COLOR_TRENDS = [
 
 
 /* ═══════════════════ SAVE RESULT ═══════════════════ */
+/* ═══════════════════ SUPABASE STORAGE ═══════════════════ */
+async function uploadPhotoToStorage(base64DataUrl, path) {
+  if (!base64DataUrl || !currentSalon?.id) return null;
+  try {
+    // Convert base64 to blob
+    const res = await fetch(base64DataUrl);
+    const blob = await res.blob();
+    const ext = blob.type.includes('png') ? 'png' : 'jpg';
+    const filePath = path + '_' + Date.now() + '.' + ext;
+    
+    const { data, error } = await sb.storage
+      .from('salon-photos')
+      .upload(filePath, blob, { 
+        contentType: blob.type,
+        upsert: false 
+      });
+    
+    if (error) {
+      console.error('Storage upload error:', error.message);
+      // Fallback: return base64 if storage fails
+      return base64DataUrl;
+    }
+    
+    // Get public URL
+    const { data: urlData } = sb.storage
+      .from('salon-photos')
+      .getPublicUrl(filePath);
+    
+    return urlData.publicUrl;
+  } catch(e) {
+    console.error('Upload error:', e);
+    return base64DataUrl; // fallback to base64
+  }
+}
+/* ═══════════════════ END STORAGE ═══════════════════ */
+
 async function saveResult(e) {
   const btn = e.target;
   btn.textContent = 'Speichern…'; btn.disabled = true;
@@ -2237,34 +2297,64 @@ async function saveResult(e) {
     activeClient = clients.find(c => String(c.id) === String(assignId)) || null;
   }
 
-  const afterPhoto = document.getElementById('after-data')?.value || '';
+  const afterPhotoRaw = document.getElementById('after-data')?.value || '';
+  const beforePhotoRaw = document.getElementById('curr-data')?.value || '';
+  
+  // Upload to Supabase Storage (falls back to base64 if storage not configured)
+  const salonId = currentSalon?.id || 'anon';
+  const beforePhoto = beforePhotoRaw ? await uploadPhotoToStorage(beforePhotoRaw, salonId + '/before') : '';
+  const afterPhoto = afterPhotoRaw ? await uploadPhotoToStorage(afterPhotoRaw, salonId + '/after') : '';
+
+  // Get real data from analysis
+  const ist = lastAnalysis.ist || {};
+  const soll = lastAnalysis.soll || {};
+  const trend = lastAnalysis.trend || null;
+
+  // Build target color string from SOLL data
+  const targetColor = trend ? trend.name :
+    (soll.farben ? soll.farben.map(f => f.code).join(' / ') : 'Kühles Beige-Blond');
+
+  // Build formula string
+  const formula = lastAnalysis.formula ?
+    (Array.isArray(lastAnalysis.formula) ? lastAnalysis.formula.map(f => f.code + (f.gramm ? ' – ' + f.gramm + 'g' : '')).join(', ') : String(lastAnalysis.formula))
+    : '—';
+
+  const brand = soll.hersteller || ist.hersteller ||
+    document.querySelector('.brand-chip.selected')?.textContent || 'Wella';
+
+  const farblinie = soll.farblinie || '';
+
   const sessionData = {
     id: nextId++,
     clientId: activeClient ? activeClient.id : null,
     date: new Date().toISOString().slice(0,10),
-    target: 'Kühles Beige-Blond',
-    formula: '8/13 – 60g, 9/13 – 20g',
-    dev: '9%',
-    brand: 'Wella',
+    target: targetColor,
+    formula: formula,
+    dev: '—',
+    brand: brand,
     notes: '',
-    hairPhoto: document.getElementById('curr-data')?.value || '',
-    afterPhoto,
+    hairPhoto: beforePhoto,
+    afterPhoto: afterPhoto,
+    pinnedAsZiel: false,
   };
   sessions.unshift(sessionData);
 
-  // Save to Supabase if logged in
+  // Save to Supabase — including photos and real data
   if (currentSalon?.id && activeClient?.id) {
     try {
-      await sb.from('sessions').insert({
+      const { error } = await sb.from('sessions').insert({
         salon_id: currentSalon.id,
         client_id: activeClient.id,
-        target_color: sessionData.target,
-        formula: sessionData.formula,
+        target_color: targetColor,
+        formula: formula,
         developer: sessionData.dev,
-        brand: sessionData.brand,
-        notes: sessionData.notes,
+        brand: brand,
+        notes: '',
+        before_photo_url: beforePhoto || null,
+        after_photo_url: afterPhoto || null,
         created_by: currentUser?.id,
       });
+      if (error) console.error('Session save error:', error);
     } catch(err) { console.error('Session save error:', err); }
   }
 
@@ -2359,6 +2449,7 @@ function confirmDeleteSess(sessId){
 const ADMIN_PASSWORD = 'colormix2024';
 let adminTapCount = 0;
 let adminTapTimer = null;
+let adminMode = false;
 
 function adminTap() {
   adminTapCount++;
@@ -2383,6 +2474,7 @@ function checkAdminPw() {
   const pw = document.getElementById('admin-pw-input').value;
   if (pw === ADMIN_PASSWORD) {
     document.getElementById('admin-pw-error').style.display = 'none';
+    adminMode = true;
     go('s-admin');
     renderAdminAll();
   } else {
@@ -3065,16 +3157,31 @@ function renderAccountScreen() {
             listedCb.checked = data.listed_in_directory || false;
             toggleAccountAddressFields(listedCb.checked);
           }
-          // Show Zielbild section
+          // Show Zielbild section — always show, renderAccZielbilder handles errors
           const zielSection = document.getElementById('account-zielbild-section');
           if (zielSection) {
             zielSection.style.display = 'block';
-            renderAccZielbilder();
-            loadAllSalonSessions().then(function() { renderAccErgebnisGrid(); });
+            // Test if pinned_as_ziel column exists
+            sb.from('sessions').select('pinned_as_ziel').limit(1)
+              .then(function(res) {
+                if (res.error && res.error.message && res.error.message.includes('pinned_as_ziel')) {
+                  const grid = document.getElementById('acc-zielbilder-grid');
+                  if (grid) grid.innerHTML = '<div style="grid-column:1/-1;padding:14px;background:#FEE;border-radius:var(--rs);font-size:12px;color:var(--danger)">' +
+                    '⚠️ <strong>SQL fehlt in Supabase.</strong> Bitte im SQL Editor ausführen:<br><br>' +
+                    '<code style="font-size:11px;background:#fff;padding:8px;display:block;border-radius:4px;margin-top:6px;word-break:break-all">' +
+                    'ALTER TABLE sessions ADD COLUMN IF NOT EXISTS pinned_as_ziel BOOLEAN DEFAULT FALSE;<br>' +
+                    'ALTER TABLE sessions ADD COLUMN IF NOT EXISTS before_photo_url TEXT;<br>' +
+                    'ALTER TABLE sessions ADD COLUMN IF NOT EXISTS after_photo_url TEXT;</code>' +
+                    '</div>';
+                } else {
+                  renderAccZielbilder();
+                }
+              });
           }
           // KI Training nur für Admins
           const mlBtn = document.getElementById('acc-ml-training-btn');
-          if (mlBtn) mlBtn.style.display = adminMode ? 'block' : 'none';
+          const isAdmin = (typeof adminMode !== 'undefined') ? adminMode : false;
+          if (mlBtn) mlBtn.style.display = isAdmin ? 'block' : 'none';
         });
     }
   } else {
@@ -3214,15 +3321,15 @@ go = function(screenId) {
   if (screenId === 's-result') renderResultScreen();
   if (screenId === 's-target') {
     // Load pinned sessions for this salon
-    loadPinnedSessionsForZiel().then(function() { renderZielGrid('trends'); });
+    loadPinnedSessionsForZiel().then(function() { renderZielGrid('trends'); renderZielGrid('trends'); });
   }
   if (screenId === 's-target-detail') { renderZielBloecke(zielCurrentStruktur); }
   if (screenId === 's-ml-training') {
     if (!adminMode) { go('s-landing'); return; }
-    mlTrainingImages = []; // clear cache so fresh load happens
+    mlTrainingImages = [];
     mlRenderHerstellerTabs();
     mlRenderFarbBlocks();
-    mlLoadStats();
+    mlLoadStats(); // Load stats immediately so numbers aren't 0
   }
   if (screenId === 's-ist-detail') {
     renderIstBloecke(istCurrentStruktur);
@@ -3242,7 +3349,7 @@ go = function(screenId) {
     istBlocks = {};
     const btn = document.getElementById('ist-analyse-btn');
     if (btn) { btn.textContent = '🤖 Analysieren'; btn.style.boxShadow = ''; btn.disabled = false; }
-    // Reset photo
+    // Reset IST photo
     const currData = document.getElementById('curr-data');
     if (currData) currData.value = '';
     const currPrev = document.getElementById('curr-preview');
@@ -3250,6 +3357,26 @@ go = function(screenId) {
       currPrev.classList.remove('has-photo');
       currPrev.innerHTML = '<div class="photo-placeholder"><div class="ico">📷</div><p>Foto wird hier angezeigt</p></div>';
     }
+    // Reset Zielbild (BUG 2 fix)
+    const refData = document.getElementById('ref-data');
+    if (refData) refData.value = '';
+    window._selectedTrend = null;
+    const zielWrap = document.getElementById('ziel-selected-wrap');
+    if (zielWrap) zielWrap.style.display = 'none';
+    const trendSwatch = document.getElementById('trend-swatch-preview');
+    if (trendSwatch) trendSwatch.remove();
+    const zielImg = document.getElementById('ziel-selected-img');
+    if (zielImg) { zielImg.src = ''; zielImg.style.display = ''; }
+    // Reset after photo on result screen
+    const afterData = document.getElementById('after-data');
+    if (afterData) afterData.value = '';
+    const afterPrev = document.getElementById('after-preview');
+    if (afterPrev) {
+      afterPrev.classList.remove('has-photo');
+      afterPrev.innerHTML = '<div class="photo-placeholder"><div class="ico">✨</div><p>Foto nach dem Färben</p></div>';
+    }
+    // Reset lastAnalysis
+    lastAnalysis = { ist: null, soll: null, formula: null, trend: null, sessionId: null };
     preSelectHersteller();
   }
 };
@@ -4089,12 +4216,10 @@ async function loadSalonZielbilderFromDB() {
 function filterZielbilder(btn, typ) {
   document.querySelectorAll('#ziel-filter-seg .seg-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  // When switching away from trends, clear trend selection so grid shows correctly
+  // Clear trend selection when switching away
   if (typ !== 'trends' && window._selectedTrend) {
-    // Keep the selected image data but clear trend marker
     const refData = document.getElementById('ref-data');
     if (refData && refData.value === (window._selectedTrend?.id || '')) {
-      // Trend was selected, clear it when switching to other tabs
       refData.value = '';
       window._selectedTrend = null;
       const wrap = document.getElementById('ziel-selected-wrap');
@@ -4112,22 +4237,22 @@ function renderZielGrid(filter) {
   const container = document.getElementById('ziel-grid');
   const emptyEl = document.getElementById('ziel-empty');
   if (!container) return;
-  let uploadImgs = zielbilder.filter(function(z) { return z.type === 'upload'; });
-  let ergebnisImgs = [];
+
+  if (filter === 'trends') { renderTrendsGrid(); return; }
+
+  // "salon" = alle gepinnten Bilder aus diesem Salon (vorher + nachher)
+  let imgs = [];
   sessions.forEach(function(s) {
-    if (s.pinnedAsZiel) {
-      const client = clients.find(function(c) { return String(c.id)===String(s.clientId); });
-      const cname = client ? client.name : '';
-      if (s.afterPhoto) {
-        ergebnisImgs.push({id:'sess_'+s.id, src:s.afterPhoto, type:'ergebnis', clientName: cname});
-      }
+    if (!s.pinnedAsZiel) return;
+    const client = clients.find(function(c) { return String(c.id)===String(s.clientId); });
+    const cname = client ? client.name : '';
+    if (s.afterPhoto) {
+      imgs.push({id:'sess_after_'+s.id, src:s.afterPhoto, type:'salon', clientName: cname, label:'Nachher'});
+    }
+    if (s.hairPhoto) {
+      imgs.push({id:'sess_before_'+s.id, src:s.hairPhoto, type:'salon', clientName: cname, label:'Vorher'});
     }
   });
-  let imgs;
-  if (filter==='ziel') imgs = uploadImgs;
-  else if (filter==='ergebnis') imgs = ergebnisImgs;
-  else if (filter==='trends') { renderTrendsGrid(); return; }
-  else imgs = uploadImgs.concat(ergebnisImgs);
   if (!imgs.length) { container.innerHTML=''; if(emptyEl) emptyEl.style.display='block'; return; }
   if (emptyEl) emptyEl.style.display='none';
   const selSrc = document.getElementById('ref-data')?.value || '';
@@ -4145,10 +4270,11 @@ function renderZielGrid(filter) {
       check.textContent = '✓';
       div.appendChild(check);
     }
-    if (img.type==='ergebnis') {
+    // Badge with client name + label (Vorher/Nachher)
+    if (img.clientName || img.label) {
       const badge = document.createElement('div');
       badge.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);color:#fff;font-size:9px;font-weight:700;padding:3px 4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis';
-      badge.textContent = '✨ ' + (img.clientName||'Ergebnis');
+      badge.textContent = (img.label ? img.label + ' · ' : '') + (img.clientName||'');
       div.appendChild(badge);
     }
     div.onclick = (function(id) { return function() { selectZielbild(id); }; })(img.id);
@@ -4156,14 +4282,29 @@ function renderZielGrid(filter) {
   });
 }
 function selectZielbild(id) {
-  const img = zielbilder.find(i => i.id === id);
-  const sessImg = id.startsWith('sess_') ? sessions.find(s => 'sess_' + s.id === id) : null;
-  const src = img?.src || sessImg?.afterPhoto;
+  let src = null;
+  if (id.startsWith('sess_after_')) {
+    const sessId = id.replace('sess_after_', '');
+    const s = sessions.find(function(x) { return String(x.id) === sessId; });
+    src = s?.afterPhoto || null;
+  } else if (id.startsWith('sess_before_')) {
+    const sessId = id.replace('sess_before_', '');
+    const s = sessions.find(function(x) { return String(x.id) === sessId; });
+    src = s?.hairPhoto || null;
+  } else {
+    const img = zielbilder.find(function(i) { return i.id === id; });
+    src = img?.src || null;
+  }
   if (!src) return;
   document.getElementById('ref-data').value = src;
   const wrap = document.getElementById('ziel-selected-wrap'); if (wrap) wrap.style.display = 'block';
-  const si = document.getElementById('ziel-selected-img'); if (si) si.src = src;
-  renderZielGrid('alle');
+  const si = document.getElementById('ziel-selected-img'); if (si) { si.src = src; si.style.display = ''; }
+  const swatch = document.getElementById('trend-swatch-preview'); if (swatch) swatch.remove();
+  window._selectedTrend = null;
+  // Re-render current tab
+  const activeBtn = document.querySelector('#ziel-filter-seg .seg-btn.active');
+  const activeTab = activeBtn ? activeBtn.textContent.toLowerCase().includes('salon') ? 'salon' : 'trends' : 'trends';
+  renderZielGrid(activeTab);
 }
 
 function clearZielbild() {
@@ -4241,86 +4382,84 @@ function selectTrend(id) {
   renderTrendsGrid();
 }
 
-function accGalleryTab(btn, tab) {
-  document.querySelectorAll('#acc-gallery-seg .seg-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('acc-tab-upload').style.display = tab === 'upload' ? 'block' : 'none';
-  document.getElementById('acc-tab-ergebnis').style.display = tab === 'ergebnis' ? 'block' : 'none';
-  if (tab === 'ergebnis') renderAccErgebnisGrid();
-}
-
-function renderAccZielbilder() {
+async function renderAccZielbilder() {
   const grid = document.getElementById('acc-zielbilder-grid');
+  const empty = document.getElementById('acc-gallery-empty');
   if (!grid) return;
-  const uploads = zielbilder.filter(function(z) { return z.type === 'upload'; });
-  if (!uploads.length) {
-    grid.innerHTML = '<div style="grid-column:1/-1;font-size:12px;color:var(--muted);text-align:center;padding:16px">Noch keine eigenen Zielbilder</div>';
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--muted);font-size:12px">Lade Galerie…</div>';
+  if (empty) empty.style.display = 'none';
+
+  if (!currentSalon?.id) {
+    grid.innerHTML = '<div style="grid-column:1/-1;padding:16px;color:var(--danger);font-size:12px">⚠️ Kein Salon geladen</div>';
     return;
   }
+
+  // Reload ALL sessions fresh (includes pinned_as_ziel + photos)
+  await loadAllSalonSessions();
+
+  const allImgs = [];
+
+  // 1. Uploaded images from zielbilder array
+  zielbilder.filter(function(z) { return z.type === 'upload'; }).forEach(function(img) {
+    allImgs.push({ id: 'upload_' + img.id, src: img.src, label: '📤', clientName: '', isUpload: true, uploadId: img.id });
+  });
+
+  // 2. Pinned sessions
+  sessions.filter(function(s) { return s.pinnedAsZiel; }).forEach(function(s) {
+    const client = clients.find(function(c) { return String(c.id) === String(s.clientId); });
+    const cname = client ? client.name : '';
+    if (s.afterPhoto) allImgs.push({ id: 'after_' + s.id, src: s.afterPhoto, label: 'Nachher', clientName: cname, sessId: s.id });
+    if (s.hairPhoto) allImgs.push({ id: 'before_' + s.id, src: s.hairPhoto, label: 'Vorher', clientName: cname, sessId: s.id });
+  });
+
   grid.innerHTML = '';
-  uploads.forEach(function(img) {
+
+  if (!allImgs.length) {
+    if (empty) {
+      empty.style.display = 'block';
+      empty.textContent = sessions.length === 0
+        ? 'Noch keine Sitzungen — erstelle erst eine Analyse'
+        : 'Noch keine gepinnten Bilder — nutze den 📌 Toggle in der Kundenkartei';
+    }
+    return;
+  }
+
+  allImgs.forEach(function(img) {
     const div = document.createElement('div');
     div.style.cssText = 'position:relative;aspect-ratio:1';
     const image = document.createElement('img');
     image.src = img.src;
     image.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:4px';
     div.appendChild(image);
+    const badge = document.createElement('div');
+    badge.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);color:#fff;font-size:9px;font-weight:700;padding:3px 4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;border-radius:0 0 4px 4px';
+    badge.textContent = (img.label ? img.label + (img.clientName ? ' · ' : '') : '') + img.clientName;
+    div.appendChild(badge);
     const btn = document.createElement('button');
     btn.style.cssText = 'position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:11px;line-height:1';
     btn.textContent = '✕';
-    btn.onclick = (function(id) { return function() { removeZielbild(id); }; })(img.id);
+    btn.title = img.isUpload ? 'Bild entfernen' : 'Entpinnen (Kundendaten bleiben)';
+    btn.onclick = (function(item) {
+      return async function() {
+        if (item.isUpload) {
+          zielbilder = zielbilder.filter(function(z) { return z.id !== item.uploadId; });
+        } else {
+          const sess = sessions.find(function(x) { return String(x.id) === String(item.sessId); });
+          if (sess) {
+            sess.pinnedAsZiel = false;
+            if (currentSalon?.id) {
+              await sb.from('sessions').update({ pinned_as_ziel: false }).eq('id', item.sessId).catch(console.error);
+            }
+          }
+        }
+        renderAccZielbilder();
+      };
+    })(img);
     div.appendChild(btn);
     grid.appendChild(div);
   });
 }
 
-function renderAccErgebnisGrid() {
-  const grid = document.getElementById('acc-ergebnis-grid');
-  const empty = document.getElementById('acc-ergebnis-empty');
-  if (!grid) return;
-  // All pinned sessions with after-photo
-  const pinned = sessions.filter(function(s) { return s.pinnedAsZiel && s.afterPhoto; });
-  if (!pinned.length) {
-    grid.innerHTML = '';
-    if (empty) empty.style.display = 'block';
-    return;
-  }
-  if (empty) empty.style.display = 'none';
-  grid.innerHTML = '';
-  pinned.forEach(function(s) {
-    const client = clients.find(function(c) { return String(c.id) === String(s.clientId); });
-    const div = document.createElement('div');
-    div.style.cssText = 'position:relative;aspect-ratio:1';
-    const img = document.createElement('img');
-    img.src = s.afterPhoto;
-    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:4px';
-    div.appendChild(img);
-    // Client name badge
-    const badge = document.createElement('div');
-    badge.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);color:#fff;font-size:9px;font-weight:700;padding:3px 4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;border-radius:0 0 4px 4px';
-    badge.textContent = client ? client.name : '📌 Ergebnis';
-    div.appendChild(badge);
-    // Delete/unpin button
-    const btn = document.createElement('button');
-    btn.style.cssText = 'position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:11px;line-height:1';
-    btn.textContent = '✕';
-    btn.title = 'Entpinnen (bleibt in Kundenkartei)';
-    btn.onclick = (function(sessId) {
-      return async function() {
-        const sess = sessions.find(function(x) { return String(x.id) === String(sessId); });
-        if (sess) {
-          sess.pinnedAsZiel = false;
-          if (currentSalon?.id) {
-            await sb.from('sessions').update({ pinned_as_ziel: false }).eq('id', sessId).catch(console.error);
-          }
-        }
-        renderAccErgebnisGrid();
-      };
-    })(s.id);
-    div.appendChild(btn);
-    grid.appendChild(div);
-  });
-}
 
 
 function removeZielbild(id) {
@@ -4339,17 +4478,34 @@ async function addZielbildFromAccount(input) {
 
 async function togglePinZielbild(sessionId) {
   const sess = sessions.find(s => String(s.id) === String(sessionId));
-  if (!sess) return;
-  sess.pinnedAsZiel = !sess.pinnedAsZiel;
-  // Save to Supabase
-  if (currentSalon?.id) {
-    try {
-      await sb.from('sessions').update({ pinned_as_ziel: sess.pinnedAsZiel }).eq('id', sessionId);
-    } catch(e) { console.error(e); }
+  if (!sess) { console.error('Session not found:', sessionId); return; }
+  
+  const newVal = !sess.pinnedAsZiel;
+  sess.pinnedAsZiel = newVal;
+  
+  // Save to Supabase immediately
+  try {
+    const { error } = await sb.from('sessions')
+      .update({ pinned_as_ziel: newVal })
+      .eq('id', sessionId);
+    
+    if (error) {
+      console.error('Pin save error:', error.message);
+      // Revert local state if save failed
+      sess.pinnedAsZiel = !newVal;
+      alert('Speichern fehlgeschlagen: ' + error.message + '\n\nBitte SQL ausführen:\nALTER TABLE sessions ADD COLUMN IF NOT EXISTS pinned_as_ziel BOOLEAN DEFAULT FALSE;');
+      renderProfile();
+      return;
+    }
+    console.log('✅ Pin saved:', sessionId, '→', newVal);
+  } catch(e) {
+    console.error('Pin save exception:', e);
+    sess.pinnedAsZiel = !newVal;
+    renderProfile();
+    return;
   }
-  // Don't reload sessions — just re-render to keep photos intact
+  
   renderProfile();
-  // Keep session open
   setTimeout(() => {
     const body = document.getElementById('sb-' + sessionId);
     if (body) body.classList.add('open');
@@ -4373,12 +4529,13 @@ let mlTrainingImages = [];
 function mlTab(btn, tab) {
   document.querySelectorAll('#ml-tab-seg .seg-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  ['upload','gallery','export'].forEach(t => {
+  ['upload','gallery','review','export'].forEach(t => {
     const el = document.getElementById('ml-tab-' + t);
     if (el) el.style.display = t === tab ? 'block' : 'none';
   });
   if (tab === 'gallery') mlLoadGallery(null);
   if (tab === 'export') mlLoadExportStats();
+  if (tab === 'review') mlLoadReviewQueue('alle');
 }
 
 function mlSelectStruktur(btn, typ) {
@@ -4718,7 +4875,7 @@ async function mlLoadGallery(filter) {
       typeLabel.textContent = (strukturLabels[img.strukturtyp]||img.strukturtyp) + ' · ★'.repeat(img.quality_score||3);
       const srcBadge = document.createElement('span');
       srcBadge.style.cssText = 'font-size:10px;font-weight:700;background:rgba(255,255,255,0.2);color:#fff;padding:2px 8px;border-radius:10px';
-      srcBadge.textContent = img.source === 'confirmed' ? '❤️ Bestätigt' : img.source === 'manual' ? '✏️ Manuell' : '📷 Auto';
+      srcBadge.textContent = img.source === 'reviewed' ? '👑 Reviewed' : img.source === 'confirmed' ? '❤️ Bestätigt' : img.source === 'manual' ? '✏️ Manuell' : '📷 Auto';
       const editBtn = document.createElement('button');
       editBtn.style.cssText = 'background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;font-weight:700';
       editBtn.textContent = '✏️ Bearbeiten';
@@ -5170,7 +5327,279 @@ async function mlExportCSV() {
 
 function mlFilterGallery(typ) { mlLoadGallery(typ==='alle'?null:typ); }
 
-/* ═══════════════════ END ML TRAINING LOGIC ═══════════════════ */
+/* ═══════════════════ ML REVIEW QUEUE ═══════════════════ */
+
+let mlReviewCurrentFilter = 'alle';
+let mlReviewData = []; // cached review items
+
+function mlReviewFilter(btn, filter) {
+  mlReviewCurrentFilter = filter;
+  document.querySelectorAll('#ml-review-filter button').forEach(b => {
+    b.style.borderColor = 'var(--border)';
+    b.style.background = 'var(--surface)';
+    b.style.color = 'var(--mid)';
+  });
+  btn.style.borderColor = 'var(--pink)';
+  btn.style.background = 'var(--pink-light)';
+  btn.style.color = 'var(--pink)';
+  mlRenderReviewList(filter);
+}
+
+async function mlLoadReviewQueue(filter) {
+  const list = document.getElementById('ml-review-list');
+  const empty = document.getElementById('ml-review-empty');
+  const stats = document.getElementById('ml-review-stats');
+  if (!list) return;
+  list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Lade…</div>';
+
+  try {
+    // Load ALL sessions from ALL salons that have photos
+    const { data: allSessions, error } = await sb
+      .from('sessions')
+      .select('id, salon_id, client_id, before_photo_url, after_photo_url, target_color, brand, created_at, pinned_as_ziel, formula, developer')
+      .or('before_photo_url.not.is.null,after_photo_url.not.is.null')
+      .order('created_at', { ascending: false })
+      .limit(200);
+
+    if (error) {
+      list.innerHTML = '<div style="padding:16px;color:var(--danger);font-size:13px">❌ ' + error.message + '</div>';
+      return;
+    }
+
+    // Load existing confirmed training images to exclude
+    const { data: existingTraining } = await sb
+      .from('ml_training_images')
+      .select('id, source, notes')
+      .in('source', ['confirmed', 'reviewed']);
+
+    const confirmedNotes = new Set((existingTraining || []).map(t => t.notes || ''));
+    mlReviewData = [];
+
+    (allSessions || []).forEach(function(s) {
+      // Parse IST data from formula/notes if available
+      const farben = [];
+      // Try to extract from formula string
+      if (s.formula && s.formula !== '—') {
+        const parts = s.formula.split(/[,\/]/);
+        parts.slice(0, 3).forEach(function(p, i) {
+          const trimmed = p.trim();
+          const codeMatch = trimmed.match(/(\d+)[.\-](\d+)/);
+          if (codeMatch) {
+            const labels = ['Ansatz', 'Mittelstück', 'Spitzen'];
+            farben.push({ label: labels[i] || ('Wert ' + (i+1)), level: parseInt(codeMatch[1]), nuance: parseInt(codeMatch[2]), code: codeMatch[1] + '.' + codeMatch[2] });
+          }
+        });
+      }
+
+      const noteKey_before = 'Vorher-Foto · ' + (s.target_color || '—') + ' · ' + (s.brand || '—');
+      const noteKey_after = 'Nachher-Foto · ' + (s.target_color || '—') + ' · ' + (s.brand || '—');
+
+      if (s.before_photo_url && !confirmedNotes.has(noteKey_before)) {
+        mlReviewData.push({
+          id: 'before_' + s.id, sessId: s.id, salonId: s.salon_id,
+          src: s.before_photo_url, type: 'vorher',
+          target: s.target_color || '—', brand: s.brand || '—',
+          date: (s.created_at || '').slice(0, 10),
+          farben: farben, strukturtyp: farben.length > 1 ? 'verlauf' : 'global',
+          confirmed: false
+        });
+      }
+      if (s.after_photo_url && !confirmedNotes.has(noteKey_after)) {
+        mlReviewData.push({
+          id: 'after_' + s.id, sessId: s.id, salonId: s.salon_id,
+          src: s.after_photo_url, type: 'nachher',
+          target: s.target_color || '—', brand: s.brand || '—',
+          date: (s.created_at || '').slice(0, 10),
+          farben: farben, strukturtyp: farben.length > 1 ? 'verlauf' : 'global',
+          confirmed: false
+        });
+      }
+    });
+
+    if (stats) stats.textContent = mlReviewData.length + ' Bilder noch nicht reviewed';
+    mlRenderReviewList(filter || mlReviewCurrentFilter);
+
+  } catch(e) {
+    list.innerHTML = '<div style="padding:16px;color:var(--danger);font-size:13px">❌ ' + e.message + '</div>';
+  }
+}
+
+function mlRenderReviewList(filter) {
+  const list = document.getElementById('ml-review-list');
+  const empty = document.getElementById('ml-review-empty');
+  if (!list) return;
+
+  let items = mlReviewData;
+  if (filter === 'vorher') items = items.filter(function(i) { return i.type === 'vorher'; });
+  else if (filter === 'nachher') items = items.filter(function(i) { return i.type === 'nachher'; });
+
+  if (!items.length) {
+    list.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  list.innerHTML = '';
+
+  items.forEach(function(item) {
+    const card = document.createElement('div');
+    card.id = 'review-card-' + item.id;
+    card.style.cssText = 'background:var(--surface);border-radius:var(--r);border:2px solid ' +
+      (item.confirmed ? 'var(--pink)' : 'var(--border)') +
+      ';margin-bottom:16px;overflow:hidden';
+
+    // ── Large photo ──
+    const photoWrap = document.createElement('div');
+    photoWrap.style.cssText = 'position:relative;width:100%;aspect-ratio:4/3';
+    const img = document.createElement('img');
+    img.src = item.src;
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover';
+    photoWrap.appendChild(img);
+
+    // Type + confirmed badge top-left
+    const typeBadge = document.createElement('div');
+    typeBadge.style.cssText = 'position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.65);color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px';
+    typeBadge.textContent = item.type === 'vorher' ? '📷 Vorher' : '✨ Nachher';
+    photoWrap.appendChild(typeBadge);
+
+    if (item.confirmed) {
+      const confBadge = document.createElement('div');
+      confBadge.style.cssText = 'position:absolute;top:8px;right:8px;background:var(--pink);color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px';
+      confBadge.textContent = '⭐ Übernommen';
+      photoWrap.appendChild(confBadge);
+    }
+    card.appendChild(photoWrap);
+
+    // ── Info section ──
+    const info = document.createElement('div');
+    info.style.cssText = 'padding:12px 14px';
+
+    // Meta row: brand + date
+    const meta = document.createElement('div');
+    meta.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:10px';
+    const brandEl = document.createElement('div');
+    brandEl.style.cssText = 'font-size:12px;font-weight:800;color:var(--pink)';
+    brandEl.textContent = (item.brand || '—').toUpperCase();
+    const dateEl = document.createElement('div');
+    dateEl.style.cssText = 'font-size:11px;color:var(--muted)';
+    dateEl.textContent = item.date;
+    meta.appendChild(brandEl); meta.appendChild(dateEl);
+    info.appendChild(meta);
+
+    // Strukturtyp + IST values from session
+    const valBlock = document.createElement('div');
+    valBlock.style.cssText = 'background:var(--bg);border-radius:var(--rs);padding:10px 12px;margin-bottom:10px';
+
+    // Struktur
+    const strukturLabel = {global:'Global', highlights:'Highlights', balayage:'Balayage', verlauf:'Farbverlauf'};
+    const strukturRow = document.createElement('div');
+    strukturRow.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:6px';
+    const strukturTitle = document.createElement('span');
+    strukturTitle.style.cssText = 'font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.5px';
+    strukturTitle.textContent = 'STRUKTUR';
+    const strukturVal = document.createElement('span');
+    strukturVal.style.cssText = 'font-size:13px;font-weight:800;color:var(--ink)';
+    strukturVal.textContent = strukturLabel[item.strukturtyp] || item.strukturtyp || '—';
+    strukturRow.appendChild(strukturTitle); strukturRow.appendChild(strukturVal);
+    valBlock.appendChild(strukturRow);
+
+    // IST values (farben)
+    if (item.farben && item.farben.length) {
+      const divider = document.createElement('div');
+      divider.style.cssText = 'border-top:1px solid var(--border);margin:6px 0';
+      valBlock.appendChild(divider);
+      item.farben.forEach(function(f) {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:3px 0';
+        const lbl = document.createElement('span');
+        lbl.style.cssText = 'font-size:12px;color:var(--mid)';
+        lbl.textContent = f.label || f.bereich || '';
+        const code = document.createElement('span');
+        code.style.cssText = 'font-size:16px;font-weight:900;font-family:monospace;color:var(--charcoal)';
+        code.textContent = f.code || (f.level + '.' + f.nuance);
+        row.appendChild(lbl); row.appendChild(code);
+        valBlock.appendChild(row);
+      });
+    } else if (item.ist_raw) {
+      // Fallback: show raw IST data if available
+      const rawEl = document.createElement('div');
+      rawEl.style.cssText = 'font-size:12px;color:var(--muted);font-style:italic';
+      rawEl.textContent = item.ist_raw;
+      valBlock.appendChild(rawEl);
+    } else {
+      const noVal = document.createElement('div');
+      noVal.style.cssText = 'font-size:12px;color:var(--muted)';
+      noVal.textContent = 'Keine IST-Werte verfügbar';
+      valBlock.appendChild(noVal);
+    }
+
+    info.appendChild(valBlock);
+
+    // Target color
+    if (item.target && item.target !== '—') {
+      const targetRow = document.createElement('div');
+      targetRow.style.cssText = 'font-size:12px;color:var(--muted);margin-bottom:10px';
+      targetRow.innerHTML = '<span style="font-weight:700">Ziel:</span> ' + item.target;
+      info.appendChild(targetRow);
+    }
+
+    // Confirm button
+    const confirmBtn = document.createElement('button');
+    confirmBtn.style.cssText = 'width:100%;padding:12px;border-radius:var(--rs);font-size:14px;font-weight:800;cursor:pointer;border:2px solid ' +
+      (item.confirmed ? 'var(--pink)' : 'var(--border)') + ';background:' +
+      (item.confirmed ? 'var(--pink)' : 'var(--surface)') + ';color:' +
+      (item.confirmed ? '#fff' : 'var(--mid)');
+    confirmBtn.textContent = item.confirmed ? '👑 Übernommen — erscheint in Galerie' : '👑 Für KI übernehmen';
+    confirmBtn.onclick = (function(it) { return function() { mlConfirmReviewItem(it); }; })(item);
+    info.appendChild(confirmBtn);
+
+    card.appendChild(info);
+    list.appendChild(card);
+  });
+}
+
+async function mlConfirmReviewItem(item) {
+  if (item.confirmed) return; // already done
+  try {
+    // Save to ml_training_images as 'reviewed' (admin-approved)
+    const { data: imgRecord, error } = await sb.from('ml_training_images').insert({
+      image_base64: item.src,
+      strukturtyp: item.strukturtyp || 'global',
+      quality_score: 4, // admin reviewed = higher quality
+      notes: (item.type === 'nachher' ? 'Nachher-Foto' : 'Vorher-Foto') + ' · ' + item.target + ' · ' + item.brand,
+      created_by: currentUser?.id,
+      source: 'reviewed',
+    }).select().single();
+
+    if (error) { alert('Fehler: ' + error.message); return; }
+
+    // Remove from review queue
+    mlReviewData = mlReviewData.filter(function(i) { return i.id !== item.id; });
+
+    // Animate card out then re-render
+    const card = document.getElementById('review-card-' + item.id);
+    if (card) {
+      card.style.transition = 'opacity .3s, transform .3s';
+      card.style.opacity = '0';
+      card.style.transform = 'translateX(40px)';
+      setTimeout(function() {
+        mlRenderReviewList(mlReviewCurrentFilter);
+        // Update stats
+        const stats = document.getElementById('ml-review-stats');
+        const remaining = mlReviewData.length;
+        if (stats) stats.textContent = remaining + ' Bilder noch nicht reviewed';
+        mlLoadStats();
+      }, 300);
+    } else {
+      mlRenderReviewList(mlReviewCurrentFilter);
+      mlLoadStats();
+    }
+  } catch(e) { alert('Fehler: ' + e.message); }
+}
+
+/* ═══════════════════ END ML REVIEW QUEUE ═══════════════════ */
+
+
 
 async function doGoogleLogin() {
   const { error } = await sb.auth.signInWithOAuth({
