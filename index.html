@@ -786,10 +786,19 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
     <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Von KI erkannt oder manuell auswählen</div>
     <div id="problem-chips" style="display:flex;flex-wrap:wrap;gap:8px"></div>
     <input type="hidden" id="curr-problem-json"/>
-
     <input type="hidden" id="curr-ist-json"/>
 
     <div class="divider"></div>
+
+    <!-- Herz = Als KI-Trainingsbeispiel speichern -->
+    <div id="ist-favorite-wrap" style="background:var(--bg);border-radius:var(--r);padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;border:2px solid var(--border);cursor:pointer" onclick="toggleIstFavorite()">
+      <div id="ist-fav-icon" style="font-size:28px;line-height:1;transition:transform .2s">🤍</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:800;color:var(--ink)" id="ist-fav-label">Als KI-Trainingsbeispiel merken</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Hilft der KI, künftige Analysen zu verbessern</div>
+      </div>
+    </div>
+
     <button class="btn btn-pink btn-full" onclick="proceedToTarget()">Weiter zur Zielfarbe →</button>
     <div style="height:24px"></div>
   </div>
@@ -1114,6 +1123,51 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
     <div class="modal-body" id="modal-body">This cannot be undone.</div>
     <button class="btn btn-danger btn-full" id="modal-btn" style="margin-bottom:8px">Delete</button>
     <button class="btn btn-ghost btn-full" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- ML Edit Modal -->
+<div id="ml-edit-modal-bg" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;overflow-y:auto" onclick="mlCloseEditModal(event)">
+  <div id="ml-edit-modal" style="background:var(--surface);border-radius:var(--r) var(--r) 0 0;margin-top:60px;min-height:calc(100vh - 60px);padding:0 0 40px" onclick="event.stopPropagation()">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:2px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:1">
+      <button onclick="mlCloseEditModal()" style="font-size:13px;font-weight:700;color:var(--mid);background:none;border:none;cursor:pointer">✕ Schließen</button>
+      <span style="font-size:15px;font-weight:800">Werte bearbeiten</span>
+      <button onclick="mlSaveEditModal()" style="font-size:13px;font-weight:800;color:var(--pink);background:none;border:none;cursor:pointer">Speichern ✓</button>
+    </div>
+    <div style="padding:16px 20px">
+
+      <!-- Strukturtyp -->
+      <div class="lbl" style="margin-top:0">Farbstruktur</div>
+      <div class="seg" id="ml-edit-struktur-seg" style="margin-bottom:16px">
+        <button class="seg-btn active" onclick="mlEditSelectStruktur(this,'global')">Global</button>
+        <button class="seg-btn" onclick="mlEditSelectStruktur(this,'highlights')">Highlights</button>
+        <button class="seg-btn" onclick="mlEditSelectStruktur(this,'balayage')">Balayage</button>
+        <button class="seg-btn" onclick="mlEditSelectStruktur(this,'verlauf')">Verlauf</button>
+      </div>
+
+      <!-- Hersteller Tabs -->
+      <div class="lbl">Hersteller</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Tippe auf einen Hersteller um Werte zu bearbeiten, oder füge neue hinzu</div>
+      <div id="ml-edit-h-tabs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px"></div>
+
+      <!-- Farbwerte für aktuellen Hersteller -->
+      <div id="ml-edit-farb-blocks"></div>
+
+      <!-- Qualität -->
+      <div class="lbl">Bildqualität</div>
+      <div style="display:flex;gap:6px;margin-bottom:16px" id="ml-edit-quality-btns">
+        <button onclick="mlEditSetQuality(1)" style="flex:1;padding:8px;border-radius:var(--rs);border:2px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px">★</button>
+        <button onclick="mlEditSetQuality(2)" style="flex:1;padding:8px;border-radius:var(--rs);border:2px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px">★★</button>
+        <button onclick="mlEditSetQuality(3)" style="flex:1;padding:8px;border-radius:var(--rs);border:2px solid var(--pink);background:var(--pink-light);cursor:pointer;font-size:14px">★★★</button>
+        <button onclick="mlEditSetQuality(4)" style="flex:1;padding:8px;border-radius:var(--rs);border:2px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px">★★★★</button>
+        <button onclick="mlEditSetQuality(5)" style="flex:1;padding:8px;border-radius:var(--rs);border:2px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px">★★★★★</button>
+      </div>
+
+      <!-- Save status -->
+      <div id="ml-edit-status" style="display:none;border-radius:var(--rs);padding:10px;margin-bottom:10px;font-size:13px;font-weight:600"></div>
+      <button class="btn btn-pink btn-full" onclick="mlSaveEditModal()">💾 Änderungen speichern</button>
+    </div>
   </div>
 </div>
 
@@ -3008,6 +3062,14 @@ go = function(screenId) {
     renderIstBloecke(istCurrentStruktur);
     selectedProblems = new Set();
     renderProblemChips();
+    // Reset heart
+    istIsFavorited = false;
+    const icon = document.getElementById('ist-fav-icon');
+    const label = document.getElementById('ist-fav-label');
+    const wrap = document.getElementById('ist-favorite-wrap');
+    if (icon) icon.textContent = '🤍';
+    if (label) label.textContent = 'Als KI-Trainingsbeispiel merken';
+    if (wrap) { wrap.style.borderColor = 'var(--border)'; wrap.style.background = 'var(--bg)'; }
   }
   if (screenId === 's-current') {
     istManualOverride = false;
@@ -3477,6 +3539,13 @@ function proceedToTarget() {
   const istData = getIstData();
   document.getElementById('curr-ist-json').value = JSON.stringify(istData);
   lastAnalysis.ist = { ...istData, confidence: 0.85 };
+
+  // If hearted → save as training example
+  if (istIsFavorited) {
+    const imageBase64 = document.getElementById('curr-data')?.value || null;
+    saveIstAsFavorite(istData, imageBase64);
+  }
+
   go('s-target');
 }
 
@@ -3537,9 +3606,74 @@ function toggleProblem(id) {
 
 
 
-/* ═══════════════════ END PROBLEMFÄLLE ═══════════════════ */
+/* ═══════════════════ IST FAVORIT / KI-TRAINING ═══════════════════ */
 
-/* ═══════════════════ ZIELFARBE LOGIC ═══════════════════ */
+let istIsFavorited = false;
+
+function toggleIstFavorite() {
+  istIsFavorited = !istIsFavorited;
+  const icon = document.getElementById('ist-fav-icon');
+  const label = document.getElementById('ist-fav-label');
+  const wrap = document.getElementById('ist-favorite-wrap');
+  if (istIsFavorited) {
+    icon.textContent = '❤️';
+    icon.style.transform = 'scale(1.3)';
+    setTimeout(() => { icon.style.transform = 'scale(1)'; }, 200);
+    label.textContent = 'Als KI-Trainingsbeispiel gespeichert ✓';
+    wrap.style.borderColor = 'var(--pink)';
+    wrap.style.background = 'var(--pink-light)';
+  } else {
+    icon.textContent = '🤍';
+    label.textContent = 'Als KI-Trainingsbeispiel merken';
+    wrap.style.borderColor = 'var(--border)';
+    wrap.style.background = 'var(--bg)';
+  }
+}
+
+async function saveIstAsFavorite(istData, imageBase64) {
+  if (!istData || !currentUser?.id) return;
+  try {
+    // Save image record
+    const { data: imgRecord, error } = await sb.from('ml_training_images').insert({
+      image_base64: imageBase64 || null,
+      strukturtyp: istData.strukturtyp || 'global',
+      quality_score: 4, // vom Friseur bestätigt = gute Qualität
+      notes: 'Auto-gespeichert: vom Friseur als korrekt bestätigt',
+      created_by: currentUser.id,
+      source: 'confirmed' // unterscheidet sich von 'manual' (Melissa)
+    }).select().single();
+
+    if (error) { console.error('Favorite save error:', error); return; }
+
+    // Save values for each Farbblock
+    const hersteller = istData.hersteller || 'unbekannt';
+    if (istData.farben && istData.farben.length) {
+      await sb.from('ml_training_values').insert({
+        image_id: imgRecord.id,
+        hersteller: hersteller,
+        bereich_1_label: istData.farben[0]?.label || null,
+        bereich_1_level: istData.farben[0]?.level || null,
+        bereich_1_nuance: istData.farben[0]?.nuance || null,
+        bereich_1_code: istData.farben[0]?.code || null,
+        bereich_2_label: istData.farben[1]?.label || null,
+        bereich_2_level: istData.farben[1]?.level || null,
+        bereich_2_nuance: istData.farben[1]?.nuance || null,
+        bereich_2_code: istData.farben[1]?.code || null,
+        bereich_3_label: istData.farben[2]?.label || null,
+        bereich_3_level: istData.farben[2]?.level || null,
+        bereich_3_nuance: istData.farben[2]?.nuance || null,
+        bereich_3_code: istData.farben[2]?.code || null,
+        problemfaelle: istData.problemfaelle || [],
+        labeled_by: currentUser.id
+      });
+    }
+    console.log('✅ IST als KI-Trainingsbeispiel gespeichert');
+  } catch(e) { console.error('Favorite save error:', e); }
+}
+
+/* ═══════════════════ END IST FAVORIT ═══════════════════ */
+
+
 
 const FARBLINIEN = {
   wella:       ['Koleston Perfect ME+', 'Illumina Color', 'Color Touch', 'Blondor', 'Welloxon Perfect'],
@@ -4124,27 +4258,62 @@ async function mlSaveTrainingImage() {
   if (!imgData) { mlShowStatus('⚠️ Bitte zuerst ein Bild hochladen','error'); return false; }
   mlShowStatus('💾 Speichern…','info');
   const blocks = STRUKTUR_CONFIG[mlCurrentStruktur]||STRUKTUR_CONFIG.global;
+
+  // Read current values from DOM (not just mlLabels, which may not have been updated)
+  function readBlockValues(h, block) {
+    const lvEl = document.getElementById('ml-lv-' + h + '-' + block.id);
+    const codeEl = document.getElementById('ml-code-' + h + '-' + block.id);
+    const saved = (mlLabels[h] && mlLabels[h][block.id]) ? mlLabels[h][block.id] : {level:6, nuance:0};
+    const level = lvEl ? parseInt(lvEl.textContent) : saved.level;
+    const code = codeEl ? codeEl.textContent : level + '.' + saved.nuance;
+    const nuance = parseInt(code.split('.')[1]) || saved.nuance;
+    return { level, nuance, code };
+  }
+
   try {
     const { data: imgRecord, error } = await sb.from('ml_training_images').insert({
-      image_base64: imgData, strukturtyp: mlCurrentStruktur, quality_score: mlQuality,
-      notes: document.getElementById('ml-notes')?.value||'', created_by: currentUser?.id, source:'manual'
+      image_base64: imgData,
+      strukturtyp: mlCurrentStruktur,
+      quality_score: mlQuality,
+      notes: document.getElementById('ml-notes')?.value || '',
+      created_by: currentUser?.id,
+      source: 'manual'
     }).select().single();
-    if (error) throw error;
-    for (const h of mlActiveHersteller) {
-      const hB = blocks.map(b => mlLabels[h]?.[b.id]||{level:6,nuance:0});
-      await sb.from('ml_training_values').insert({
-        image_id: imgRecord.id, hersteller: h,
-        bereich_1_label: blocks[0]?.label, bereich_1_level: hB[0]?.level, bereich_1_nuance: hB[0]?.nuance, bereich_1_code: (hB[0]?.level||6)+'.'+(hB[0]?.nuance||0),
-        bereich_2_label: blocks[1]?.label||null, bereich_2_level: hB[1]?.level||null, bereich_2_nuance: hB[1]?.nuance||null, bereich_2_code: blocks[1] ? (hB[1]?.level||6)+'.'+(hB[1]?.nuance||0) : null,
-        bereich_3_label: blocks[2]?.label||null, bereich_3_level: hB[2]?.level||null, bereich_3_nuance: hB[2]?.nuance||null, bereich_3_code: blocks[2] ? (hB[2]?.level||6)+'.'+(hB[2]?.nuance||0) : null,
-        problemfaelle: [...mlSelectedProblems], labeled_by: currentUser?.id
-      });
+
+    if (error) {
+      // Helpful error messages
+      if (error.message && error.message.includes('relation') && error.message.includes('does not exist')) {
+        mlShowStatus('❌ Tabelle fehlt — bitte ml_training_schema.sql in Supabase ausführen!', 'error');
+      } else {
+        mlShowStatus('❌ Fehler: ' + error.message, 'error');
+      }
+      return false;
     }
-    mlTrainingImages.unshift({id:imgRecord.id, src:imgData, strukturtyp:mlCurrentStruktur, quality_score:mlQuality});
-    mlShowStatus('✅ Gespeichert! '+mlActiveHersteller.size+' Hersteller gelabelt.','success');
+
+    for (const h of mlActiveHersteller) {
+      const b0 = readBlockValues(h, blocks[0]);
+      const b1 = blocks[1] ? readBlockValues(h, blocks[1]) : null;
+      const b2 = blocks[2] ? readBlockValues(h, blocks[2]) : null;
+      const { error: valErr } = await sb.from('ml_training_values').insert({
+        image_id: imgRecord.id,
+        hersteller: h,
+        bereich_1_label: blocks[0].label, bereich_1_level: b0.level, bereich_1_nuance: b0.nuance, bereich_1_code: b0.code,
+        bereich_2_label: b1 ? blocks[1].label : null, bereich_2_level: b1?.level||null, bereich_2_nuance: b1?.nuance||null, bereich_2_code: b1?.code||null,
+        bereich_3_label: b2 ? blocks[2].label : null, bereich_3_level: b2?.level||null, bereich_3_nuance: b2?.nuance||null, bereich_3_code: b2?.code||null,
+        problemfaelle: [...mlSelectedProblems],
+        labeled_by: currentUser?.id
+      });
+      if (valErr) console.error('Values save error:', valErr);
+    }
+
+    mlTrainingImages.unshift({id: imgRecord.id, src: imgData, strukturtyp: mlCurrentStruktur, quality_score: mlQuality});
+    mlShowStatus('✅ Gespeichert! ' + mlActiveHersteller.size + ' Hersteller gelabelt.', 'success');
     mlLoadStats();
     return true;
-  } catch(err) { mlShowStatus('❌ Fehler: '+err.message,'error'); return false; }
+  } catch(err) {
+    mlShowStatus('❌ ' + err.message, 'error');
+    return false;
+  }
 }
 
 async function mlSaveAndNext() {
@@ -4178,21 +4347,433 @@ async function mlLoadGallery(filter) {
   const grid = document.getElementById('ml-gallery-grid');
   const empty = document.getElementById('ml-gallery-empty');
   if (!grid) return;
+  grid.style.display = 'block';
+  grid.style.gridTemplateColumns = '';
+  grid.style.gap = '';
+  grid.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Lade…</div>';
   try {
-    let q = sb.from('ml_training_images').select('id,strukturtyp,quality_score').order('created_at',{ascending:false}).limit(60);
+    let q = sb.from('ml_training_images')
+      .select('id, strukturtyp, quality_score, is_verified, notes, source, image_base64')
+      .order('created_at', {ascending: false})
+      .limit(60);
     if (filter) q = q.eq('strukturtyp', filter);
-    const {data} = await q;
-    if (!data?.length) { grid.innerHTML=''; if(empty) empty.style.display='block'; return; }
-    if(empty) empty.style.display='none';
-    const colors = {global:'#E8185A',highlights:'#FFB300',balayage:'#7B1FA2',verlauf:'#1565C0'};
-    grid.innerHTML = data.map(img => {
-      const cached = mlTrainingImages.find(m=>m.id===img.id);
-      return '<div style="position:relative;aspect-ratio:1;background:'+(colors[img.strukturtyp]||'#888')+';overflow:hidden">' +
-        (cached?.src?'<img src="'+cached.src+'" style="width:100%;height:100%;object-fit:cover"/>':'') +
-        '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);padding:3px 4px;font-size:9px;font-weight:700;color:#fff">'+img.strukturtyp+' ★'+(img.quality_score||'?')+'</div></div>';
-    }).join('');
-  } catch(e) {}
+    const {data: images} = await q;
+
+    if (!images?.length) {
+      grid.innerHTML = '';
+      if (empty) empty.style.display = 'block';
+      return;
+    }
+    if (empty) empty.style.display = 'none';
+
+    // Load values for all images
+    const imageIds = images.map(i => i.id);
+    const {data: values} = await sb.from('ml_training_values')
+      .select('*')
+      .in('image_id', imageIds);
+
+    grid.innerHTML = '';
+    const strukturLabels = {global:'Global', highlights:'Highlights', balayage:'Balayage', verlauf:'Farbverlauf'};
+    const strukturColors = {global:'#E8185A', highlights:'#FFB300', balayage:'#7B1FA2', verlauf:'#1565C0'};
+
+    images.forEach(function(img) {
+      const imgValues = (values||[]).filter(v => v.image_id === img.id);
+      const cached = mlTrainingImages.find(m => m.id === img.id);
+      const src = cached?.src || img.image_base64 || '';
+
+      const card = document.createElement('div');
+      card.style.cssText = 'background:var(--surface);border-radius:var(--r);border:2px solid var(--border);margin-bottom:12px;overflow:hidden;box-shadow:var(--sh)';
+
+      // Header with strukturtyp color + delete button
+      const hdr = document.createElement('div');
+      hdr.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px 14px;background:' + (strukturColors[img.strukturtyp]||'#888');
+      const typeLabel = document.createElement('span');
+      typeLabel.style.cssText = 'font-size:13px;font-weight:800;color:#fff;flex:1';
+      typeLabel.textContent = (strukturLabels[img.strukturtyp]||img.strukturtyp) + ' · ★'.repeat(img.quality_score||3);
+      const srcBadge = document.createElement('span');
+      srcBadge.style.cssText = 'font-size:10px;font-weight:700;background:rgba(255,255,255,0.2);color:#fff;padding:2px 8px;border-radius:10px';
+      srcBadge.textContent = img.source === 'confirmed' ? '❤️ Bestätigt' : img.source === 'manual' ? '✏️ Manuell' : '📷 Auto';
+      const editBtn = document.createElement('button');
+      editBtn.style.cssText = 'background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;font-weight:700';
+      editBtn.textContent = '✏️ Bearbeiten';
+      editBtn.onclick = (function(imgObj, vals) { return function() { mlOpenEditModal(imgObj, vals); }; })(img, imgValues);
+      const delBtn = document.createElement('button');
+      delBtn.style.cssText = 'background:rgba(0,0,0,0.3);color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;font-weight:700';
+      delBtn.textContent = '🗑';
+      delBtn.onclick = (function(id) { return function() { mlDeleteTrainingImage(id); }; })(img.id);
+      hdr.appendChild(typeLabel); hdr.appendChild(srcBadge); hdr.appendChild(editBtn); hdr.appendChild(delBtn);
+      card.appendChild(hdr);
+
+      // Body: image + values side by side
+      const body = document.createElement('div');
+      body.style.cssText = 'display:flex;gap:0';
+
+      // Photo
+      if (src) {
+        const photo = document.createElement('img');
+        photo.src = src;
+        photo.style.cssText = 'width:110px;min-width:110px;object-fit:cover;border-right:2px solid var(--border)';
+        body.appendChild(photo);
+      }
+
+      // Values per hersteller
+      const valWrap = document.createElement('div');
+      valWrap.style.cssText = 'flex:1;padding:10px 12px;overflow:hidden';
+
+      if (imgValues.length) {
+        imgValues.forEach(function(v) {
+          const hDiv = document.createElement('div');
+          hDiv.style.cssText = 'margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)';
+          const hName = document.createElement('div');
+          hName.style.cssText = 'font-size:11px;font-weight:800;color:var(--pink);letter-spacing:0.5px;margin-bottom:4px';
+          hName.textContent = (NUANCEN_DB[v.hersteller]?.name || v.hersteller).toUpperCase();
+          hDiv.appendChild(hName);
+          // Bereiche
+          [[v.bereich_1_label, v.bereich_1_code],
+           [v.bereich_2_label, v.bereich_2_code],
+           [v.bereich_3_label, v.bereich_3_code]].forEach(function(pair) {
+            if (!pair[0]) return;
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:2px 0';
+            const lbl = document.createElement('span');
+            lbl.style.cssText = 'font-size:11px;color:var(--mid)';
+            lbl.textContent = pair[0];
+            const code = document.createElement('span');
+            code.style.cssText = 'font-size:14px;font-weight:900;font-family:monospace;color:var(--charcoal)';
+            code.textContent = pair[1] || '—';
+            row.appendChild(lbl); row.appendChild(code);
+            hDiv.appendChild(row);
+          });
+          // Problemfälle
+          if (v.problemfaelle && v.problemfaelle.length) {
+            const prob = document.createElement('div');
+            prob.style.cssText = 'font-size:10px;color:var(--muted);margin-top:3px';
+            prob.textContent = v.problemfaelle.join(', ');
+            hDiv.appendChild(prob);
+          }
+          valWrap.appendChild(hDiv);
+        });
+      } else {
+        const noVal = document.createElement('div');
+        noVal.style.cssText = 'font-size:12px;color:var(--muted);padding:8px 0';
+        noVal.textContent = 'Keine Werte gespeichert';
+        valWrap.appendChild(noVal);
+      }
+
+      if (img.notes) {
+        const notes = document.createElement('div');
+        notes.style.cssText = 'font-size:11px;color:var(--muted);font-style:italic;margin-top:4px';
+        notes.textContent = '📝 ' + img.notes;
+        valWrap.appendChild(notes);
+      }
+
+      body.appendChild(valWrap);
+      card.appendChild(body);
+      grid.appendChild(card);
+    });
+  } catch(e) {
+    grid.innerHTML = '<div style="padding:16px;color:var(--danger);font-size:13px">Fehler: ' + e.message + '</div>';
+  }
 }
+
+/* ═══════════════════ ML EDIT MODAL ═══════════════════ */
+
+let mlEditCurrentImage = null;
+let mlEditCurrentValues = [];
+let mlEditCurrentHersteller = 'wella';
+let mlEditActiveHersteller = new Set();
+let mlEditStruktur = 'global';
+let mlEditQuality = 3;
+let mlEditLabels = {}; // { wella: { block0: {level,nuance}, ... }, ... }
+
+function mlOpenEditModal(img, values) {
+  mlEditCurrentImage = img;
+  mlEditCurrentValues = values || [];
+  mlEditStruktur = img.strukturtyp || 'global';
+  mlEditQuality = img.quality_score || 3;
+  mlEditLabels = {};
+
+  // Pre-fill labels from existing values
+  mlEditActiveHersteller = new Set();
+  values.forEach(function(v) {
+    mlEditActiveHersteller.add(v.hersteller);
+    mlEditLabels[v.hersteller] = {};
+    const blocks = STRUKTUR_CONFIG[mlEditStruktur] || STRUKTUR_CONFIG.global;
+    if (blocks[0] && v.bereich_1_code) mlEditLabels[v.hersteller][blocks[0].id] = { level: v.bereich_1_level||6, nuance: v.bereich_1_nuance||0 };
+    if (blocks[1] && v.bereich_2_code) mlEditLabels[v.hersteller][blocks[1].id] = { level: v.bereich_2_level||6, nuance: v.bereich_2_nuance||0 };
+    if (blocks[2] && v.bereich_3_code) mlEditLabels[v.hersteller][blocks[2].id] = { level: v.bereich_3_level||6, nuance: v.bereich_3_nuance||0 };
+  });
+
+  // Default to first active hersteller
+  mlEditCurrentHersteller = mlEditActiveHersteller.size ? [...mlEditActiveHersteller][0] : 'wella';
+  if (!mlEditActiveHersteller.size) mlEditActiveHersteller.add('wella');
+
+  // Set struktur buttons
+  document.querySelectorAll('#ml-edit-struktur-seg .seg-btn').forEach(function(b) {
+    b.classList.toggle('active', b.textContent.toLowerCase().startsWith(mlEditStruktur.substring(0,4)));
+  });
+
+  // Set quality
+  mlEditSetQuality(mlEditQuality);
+
+  // Render
+  mlEditRenderHTabs();
+  mlEditRenderBlocks();
+
+  // Clear status
+  const st = document.getElementById('ml-edit-status');
+  if (st) st.style.display = 'none';
+
+  document.getElementById('ml-edit-modal-bg').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function mlCloseEditModal(e) {
+  if (e && e.target !== document.getElementById('ml-edit-modal-bg')) return;
+  document.getElementById('ml-edit-modal-bg').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function mlEditSelectStruktur(btn, typ) {
+  document.querySelectorAll('#ml-edit-struktur-seg .seg-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  mlEditStruktur = typ;
+  mlEditRenderBlocks();
+}
+
+function mlEditSelectHersteller(h) {
+  mlEditSaveCurrentFromDOM();
+  if (mlEditActiveHersteller.has(h)) {
+    if (mlEditActiveHersteller.size > 1) {
+      if (!confirm((NUANCEN_DB[h]?.name||h) + ' entfernen?')) return;
+      mlEditActiveHersteller.delete(h);
+      delete mlEditLabels[h];
+      mlEditCurrentHersteller = [...mlEditActiveHersteller][0];
+    }
+  } else {
+    mlEditActiveHersteller.add(h);
+    mlEditCurrentHersteller = h;
+    if (!mlEditLabels[h]) {
+      mlEditLabels[h] = {};
+      const blocks = STRUKTUR_CONFIG[mlEditStruktur] || STRUKTUR_CONFIG.global;
+      blocks.forEach(function(b) { mlEditLabels[h][b.id] = { level: 6, nuance: 0 }; });
+    }
+  }
+  mlEditRenderHTabs();
+  mlEditRenderBlocks();
+}
+
+function mlEditSaveCurrentFromDOM() {
+  const h = mlEditCurrentHersteller;
+  const blocks = STRUKTUR_CONFIG[mlEditStruktur] || STRUKTUR_CONFIG.global;
+  if (!mlEditLabels[h]) mlEditLabels[h] = {};
+  blocks.forEach(function(block) {
+    const lvEl = document.getElementById('ml-edit-lv-' + h + '-' + block.id);
+    const cdEl = document.getElementById('ml-edit-cd-' + h + '-' + block.id);
+    if (lvEl && cdEl) {
+      const level = parseInt(lvEl.textContent) || 6;
+      const nuance = parseInt((cdEl.textContent || '0').split('.')[1]) || 0;
+      mlEditLabels[h][block.id] = { level, nuance };
+    }
+  });
+}
+
+function mlEditSwitchHersteller(h) {
+  mlEditSaveCurrentFromDOM();
+  mlEditCurrentHersteller = h;
+  mlEditRenderHTabs();
+  mlEditRenderBlocks();
+}
+
+function mlEditRenderHTabs() {
+  const container = document.getElementById('ml-edit-h-tabs');
+  if (!container) return;
+  container.innerHTML = '';
+  const allH = ['wella','loreal','schwarzkopf','redken','gold'];
+  allH.forEach(function(h) {
+    const active = mlEditActiveHersteller.has(h);
+    const current = mlEditCurrentHersteller === h;
+    const btn = document.createElement('button');
+    btn.style.cssText = 'padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid ' +
+      (active ? 'var(--pink)' : 'var(--border)') + ';background:' +
+      (current ? 'var(--pink)' : active ? 'var(--pink-light)' : 'var(--surface)') + ';color:' +
+      (current ? '#fff' : active ? 'var(--pink)' : 'var(--mid)');
+    btn.textContent = (NUANCEN_DB[h]?.name?.split(' ')[0] || h) + (active ? ' ✓' : ' +');
+    btn.onclick = active ? (function(hh) { return function() { mlEditSwitchHersteller(hh); }; })(h)
+                        : (function(hh) { return function() { mlEditSelectHersteller(hh); }; })(h);
+    container.appendChild(btn);
+  });
+}
+
+function mlEditRenderBlocks() {
+  const container = document.getElementById('ml-edit-farb-blocks');
+  if (!container) return;
+  const blocks = STRUKTUR_CONFIG[mlEditStruktur] || STRUKTUR_CONFIG.global;
+  const h = mlEditCurrentHersteller;
+  const nuancen = NUANCEN_DB[h]?.nuancen || [0,1,2,3,4,5,6,7,8];
+  const saved = mlEditLabels[h] || {};
+  container.innerHTML = '';
+
+  const hdrDiv = document.createElement('div');
+  hdrDiv.style.cssText = 'font-size:12px;font-weight:800;color:var(--pink);margin-bottom:10px;letter-spacing:0.5px';
+  hdrDiv.textContent = (NUANCEN_DB[h]?.name || h).toUpperCase();
+  container.appendChild(hdrDiv);
+
+  blocks.forEach(function(block) {
+    const s = saved[block.id] || {level:6, nuance:0};
+    const pct = Math.round((s.level-1)/9*100);
+
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'border:1.5px solid var(--border);border-radius:var(--rs);padding:12px;margin-bottom:10px;background:var(--bg)';
+
+    const blbl = document.createElement('div');
+    blbl.style.cssText = 'font-size:13px;font-weight:800;margin-bottom:10px;color:var(--ink)';
+    blbl.textContent = block.label;
+    wrap.appendChild(blbl);
+
+    // Level row
+    const lvRow = document.createElement('div');
+    lvRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:8px';
+    const lvNum = document.createElement('span');
+    lvNum.id = 'ml-edit-lv-' + h + '-' + block.id;
+    lvNum.style.cssText = 'font-size:20px;font-weight:900;color:var(--pink);min-width:24px';
+    lvNum.textContent = s.level;
+    const lvName = document.createElement('span');
+    lvName.id = 'ml-edit-ln-' + h + '-' + block.id;
+    lvName.style.cssText = 'font-size:12px;color:var(--mid);min-width:80px';
+    lvName.textContent = LEVEL_NAMES[s.level] || '';
+    const slider = document.createElement('input');
+    slider.type = 'range'; slider.min = 1; slider.max = 10; slider.value = s.level;
+    slider.style.cssText = 'flex:1';
+    slider.style.setProperty('--pct', pct + '%');
+    const bid = block.id;
+    slider.oninput = function() {
+      const val = parseInt(this.value);
+      if (!mlEditLabels[h]) mlEditLabels[h] = {};
+      if (!mlEditLabels[h][bid]) mlEditLabels[h][bid] = {level:val, nuance:0};
+      mlEditLabels[h][bid].level = val;
+      this.style.setProperty('--pct', Math.round((val-1)/9*100) + '%');
+      document.getElementById('ml-edit-lv-'+h+'-'+bid).textContent = val;
+      document.getElementById('ml-edit-ln-'+h+'-'+bid).textContent = LEVEL_NAMES[val]||'';
+      const cd = document.getElementById('ml-edit-cd-'+h+'-'+bid);
+      if (cd) cd.textContent = val + '.' + (mlEditLabels[h][bid].nuance||0);
+    };
+    lvRow.appendChild(lvNum); lvRow.appendChild(lvName); lvRow.appendChild(slider);
+    wrap.appendChild(lvRow);
+
+    // Nuance
+    const nuLbl = document.createElement('div');
+    nuLbl.className = 'lbl'; nuLbl.textContent = 'Nuance';
+    wrap.appendChild(nuLbl);
+    const sel = document.createElement('select');
+    sel.className = 'inp'; sel.style.marginBottom = '6px';
+    nuancen.forEach(function(n) {
+      const opt = document.createElement('option');
+      opt.value = n; opt.textContent = n === 0 ? '0 — Natur/Rein' : '.' + n;
+      if (n === s.nuance) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.onchange = function() {
+      const val = parseInt(this.value);
+      if (!mlEditLabels[h]) mlEditLabels[h] = {};
+      if (!mlEditLabels[h][bid]) mlEditLabels[h][bid] = {level:6, nuance:val};
+      mlEditLabels[h][bid].nuance = val;
+      const cd = document.getElementById('ml-edit-cd-'+h+'-'+bid);
+      if (cd) cd.textContent = (mlEditLabels[h][bid].level||6) + '.' + val;
+    };
+    wrap.appendChild(sel);
+
+    // Code display
+    const codeDiv = document.createElement('div');
+    codeDiv.style.cssText = 'font-size:12px;color:var(--muted)';
+    const codeVal = document.createElement('strong');
+    codeVal.id = 'ml-edit-cd-' + h + '-' + block.id;
+    codeVal.textContent = s.level + '.' + s.nuance;
+    codeDiv.textContent = 'Code: ';
+    codeDiv.appendChild(codeVal);
+    wrap.appendChild(codeDiv);
+    container.appendChild(wrap);
+  });
+}
+
+function mlEditSetQuality(q) {
+  mlEditQuality = q;
+  document.querySelectorAll('#ml-edit-quality-btns button').forEach(function(btn, i) {
+    btn.style.borderColor = i < q ? 'var(--pink)' : 'var(--border)';
+    btn.style.background = i < q ? 'var(--pink-light)' : 'var(--surface)';
+  });
+}
+
+async function mlSaveEditModal() {
+  if (!mlEditCurrentImage) return;
+  mlEditSaveCurrentFromDOM(); // capture any unsaved DOM changes
+  const statusEl = document.getElementById('ml-edit-status');
+  const showStatus = function(msg, type) {
+    if (!statusEl) return;
+    statusEl.style.display = 'block';
+    statusEl.style.background = type==='ok' ? '#EAF4EE' : 'var(--pink-light)';
+    statusEl.style.color = type==='ok' ? '#0A7C55' : 'var(--pink)';
+    statusEl.textContent = msg;
+  };
+  showStatus('💾 Speichern…', 'info');
+
+  try {
+    const blocks = STRUKTUR_CONFIG[mlEditStruktur] || STRUKTUR_CONFIG.global;
+
+    // Update image record
+    await sb.from('ml_training_images').update({
+      strukturtyp: mlEditStruktur,
+      quality_score: mlEditQuality
+    }).eq('id', mlEditCurrentImage.id);
+
+    // Delete existing values and re-insert for all active hersteller
+    await sb.from('ml_training_values').delete().eq('image_id', mlEditCurrentImage.id);
+
+    for (const h of mlEditActiveHersteller) {
+      const hLabels = mlEditLabels[h] || {};
+      const b0 = hLabels[blocks[0]?.id] || {level:6,nuance:0};
+      const b1 = blocks[1] ? (hLabels[blocks[1].id] || {level:6,nuance:0}) : null;
+      const b2 = blocks[2] ? (hLabels[blocks[2].id] || {level:6,nuance:0}) : null;
+      await sb.from('ml_training_values').insert({
+        image_id: mlEditCurrentImage.id,
+        hersteller: h,
+        bereich_1_label: blocks[0]?.label, bereich_1_level: b0.level, bereich_1_nuance: b0.nuance, bereich_1_code: b0.level+'.'+b0.nuance,
+        bereich_2_label: b1?blocks[1].label:null, bereich_2_level: b1?.level||null, bereich_2_nuance: b1?.nuance||null, bereich_2_code: b1?(b1.level+'.'+b1.nuance):null,
+        bereich_3_label: b2?blocks[2].label:null, bereich_3_level: b2?.level||null, bereich_3_nuance: b2?.nuance||null, bereich_3_code: b2?(b2.level+'.'+b2.nuance):null,
+        labeled_by: currentUser?.id
+      });
+    }
+
+    showStatus('✅ Gespeichert!', 'ok');
+    mlLoadStats();
+    setTimeout(function() {
+      document.getElementById('ml-edit-modal-bg').style.display = 'none';
+      document.body.style.overflow = '';
+      mlLoadGallery(null);
+    }, 1000);
+  } catch(e) {
+    showStatus('❌ ' + e.message, 'error');
+  }
+}
+
+/* ═══════════════════ END ML EDIT MODAL ═══════════════════ */
+
+async function mlDeleteTrainingImage(id) {
+  if (!confirm('Dieses KI-Trainingsbeispiel löschen? Die Kundendaten bleiben erhalten.')) return;
+  try {
+    // Delete values first (cascade should handle it, but be explicit)
+    await sb.from('ml_training_values').delete().eq('image_id', id);
+    const { error } = await sb.from('ml_training_images').delete().eq('id', id);
+    if (error) throw error;
+    // Remove from local cache
+    mlTrainingImages = mlTrainingImages.filter(m => m.id !== id);
+    mlLoadStats();
+    mlLoadGallery(null);
+  } catch(e) {
+    alert('Löschen fehlgeschlagen: ' + e.message);
+  }
+}
+
 
 async function mlLoadExportStats() {
   const el = document.getElementById('ml-export-stats');
