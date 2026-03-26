@@ -258,6 +258,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 
 .field-error{font-size:12px;color:var(--danger);margin-bottom:6px;margin-top:-2px;min-height:16px;font-weight:600}
 
+/* ── IST-Block Styling ── */
+.ist-block{border:2px solid var(--border);border-radius:var(--r);margin-bottom:14px;background:var(--surface);overflow:hidden;box-shadow:var(--sh)}
+.ist-block-header{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--ink);color:#fff}
+.ist-block-icon{font-size:18px}
+.ist-block-label{font-size:14px;font-weight:800;flex:1;letter-spacing:-0.2px}
+.ist-block-code{font-size:13px;font-weight:700;background:var(--pink);color:#fff;padding:3px 10px;border-radius:20px}
+.ist-block-body{padding:4px 16px 16px}
+
 .auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;padding:36px 28px;padding-bottom:calc(36px + env(safe-area-inset-bottom))}
 .auth-logo{font-family:'Outfit',sans-serif;font-size:30px;font-weight:900;letter-spacing:-1px;margin-bottom:8px}
 .auth-logo span{color:var(--pink)}
@@ -672,19 +680,31 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 <section class="screen" id="s-current">
   <div class="hdr">
     <button class="hdr-back" onclick="go('s-select-client')">← Zurück</button>
-    <span class="hdr-title">Aktuelles Haar</span>
+    <span class="hdr-title">Ist-Aufnahme</span>
     <span style="width:60px"></span>
   </div>
   <div class="prog"><div class="prog-fill" style="width:33%"></div></div>
   <div class="body">
     <div id="banner-current"></div>
 
+    <!-- 1. HERSTELLER -->
+    <div class="lbl" style="margin-top:0">Farbsystem / Hersteller</div>
+    <select class="inp" id="ist-hersteller" onchange="onHerstellerChange()" style="margin-bottom:4px">
+      <option value="">— Bitte wählen —</option>
+      <option value="wella">Wella Professionals</option>
+      <option value="loreal">L'Oréal Professionnel</option>
+      <option value="schwarzkopf">Schwarzkopf Professional</option>
+      <option value="redken">Redken</option>
+      <option value="gold">GOLD</option>
+    </select>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Aus Salon-Profil vorausgewählt wenn hinterlegt</div>
+
+    <!-- 2. FOTO + LICHT -->
     <div class="lbl">Lichtverhältnisse</div>
-    <div class="chip-grid">
-      <div class="chip selected" onclick="selectChip(this)"><div class="chip-name">☀️ Natürliches Licht</div></div>
-      <div class="chip" onclick="selectChip(this)"><div class="chip-name">🌤 Direktes Sonnenlicht</div></div>
-      <div class="chip" onclick="selectChip(this)"><div class="chip-name">💡 Innenbeleuchtung</div></div>
-      <div class="chip" onclick="selectChip(this)"><div class="chip-name">🎬 Studiolicht</div></div>
+    <div class="chip-grid" id="ist-licht-grid">
+      <div class="chip selected" onclick="selectChipIn(this,'ist-licht-grid')"><div class="chip-name">☀️ Tageslicht</div></div>
+      <div class="chip" onclick="selectChipIn(this,'ist-licht-grid')"><div class="chip-name">🌤 Sonnenlicht</div></div>
+      <div class="chip" onclick="selectChipIn(this,'ist-licht-grid')"><div class="chip-name">💡 Innenlicht</div></div>
     </div>
 
     <div class="lbl">Haarfoto</div>
@@ -697,12 +717,32 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
         <button class="btn btn-dark btn-full" onclick="triggerCamera('curr-file')">📷 Kamera</button>
         <button class="btn btn-outline btn-full" onclick="triggerGallery('curr-file')">🖼 Galerie</button>
       </div>
-      <input type="file" id="curr-file" accept="image/*" onchange="handlePhoto(this,'curr-preview','curr-data')"/>
+      <input type="file" id="curr-file" accept="image/*" onchange="handleCurrPhoto(this)"/>
       <input type="hidden" id="curr-data"/>
     </div>
 
+    <!-- AI Status -->
+    <div id="ist-ai-status" style="display:none;background:var(--pink-light);border:1.5px solid var(--pink-mid);border-radius:var(--rs);padding:10px 14px;margin-top:12px;font-size:13px;color:var(--pink);font-weight:600">
+      🤖 KI analysiert Haarfarbe…
+    </div>
+
+    <!-- 3. STRUKTURTYP -->
+    <div class="lbl">Farbstruktur</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Wird von KI erkannt — kann manuell geändert werden</div>
+    <div class="seg" id="ist-struktur-seg">
+      <button class="seg-btn active" onclick="selectStruktur(this,'global')">Global</button>
+      <button class="seg-btn" onclick="selectStruktur(this,'highlights')">Highlights</button>
+      <button class="seg-btn" onclick="selectStruktur(this,'balayage')">Balayage</button>
+      <button class="seg-btn" onclick="selectStruktur(this,'verlauf')">Verlauf</button>
+    </div>
+
+    <!-- 4. DYNAMISCHE FARBBLÖCKE -->
+    <div id="ist-farbbloecke" style="margin-top:20px"></div>
+
+    <input type="hidden" id="curr-ist-json"/>
+
     <div class="divider"></div>
-    <button class="btn btn-pink btn-full" onclick="go('s-target')">Weiter →</button>
+    <button class="btn btn-pink btn-full" onclick="proceedToTarget()">Weiter →</button>
     <div style="height:24px"></div>
   </div>
 </section>
@@ -2602,6 +2642,11 @@ go = function(screenId) {
   _goOrigAuth(screenId);
   if (screenId === 's-account') renderAccountScreen();
   if (screenId === 's-result') renderResultScreen();
+  if (screenId === 's-current') {
+    istManualOverride = false;
+    istBlocks = {};
+    preSelectHersteller();
+  }
 };
 
 /* ── App starten ── */
@@ -2784,7 +2829,226 @@ async function submitFeedback(good) {
   }
 }
 
-/* ═══════════════════ GOOGLE LOGIN ═══════════════════ */
+/* ═══════════════════ IST-AUFNAHME LOGIC ═══════════════════ */
+
+// Nuancen-Datenbank pro Hersteller
+const NUANCEN_DB = {
+  wella: {
+    name: 'Wella Professionals',
+    nuancen: [0, 1, 2, 3, 4, 5, 6, 7, 8, 13, 16, 43, 65, 66, 71, 73, 89]
+  },
+  loreal: {
+    name: "L'Oréal Professionnel",
+    nuancen: [0, 1, 11, 2, 3, 4, 5, 6, 7, 8, 15, 16, 20, 21, 31, 32, 35, 52, 65]
+  },
+  schwarzkopf: {
+    name: 'Schwarzkopf Professional',
+    nuancen: [0, 1, 11, 2, 3, 4, 5, 6, 7, 8, 16, 19, 63, 65, 89]
+  },
+  redken: {
+    name: 'Redken',
+    nuancen: [0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 14, 15, 16]
+  },
+  gold: {
+    name: 'GOLD',
+    nuancen: [0, 1, 3, 13, 2, 4, 5, 6, 7, 8, 16, 43, 65]
+  }
+};
+
+// Struktur-Konfiguration
+const STRUKTUR_CONFIG = {
+  global:     [{ id: 'block0', label: 'Aktuelle Farbe', icon: '🎨' }],
+  highlights: [{ id: 'block0', label: 'Basisfarbe', icon: '🎨' }, { id: 'block1', label: 'Highlights', icon: '✨' }],
+  balayage:   [{ id: 'block0', label: 'Basisfarbe', icon: '🎨' }, { id: 'block1', label: 'Balayage-Partien', icon: '🌅' }],
+  verlauf:    [{ id: 'block0', label: 'Ansatz', icon: '🔝' }, { id: 'block1', label: 'Mittelstück', icon: '↕️' }, { id: 'block2', label: 'Spitzen', icon: '🔻' }]
+};
+
+let istCurrentStruktur = 'global';
+let istManualOverride = false; // true wenn User manuell geändert hat
+let istBlocks = {}; // { block0: {level:6, nuance:0}, ... }
+
+function onHerstellerChange() {
+  renderIstBloecke(istCurrentStruktur);
+}
+
+function selectChipIn(el, gridId) {
+  document.querySelectorAll('#' + gridId + ' .chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function selectStruktur(btn, typ) {
+  document.querySelectorAll('#ist-struktur-seg .seg-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  istCurrentStruktur = typ;
+  istManualOverride = true;
+  renderIstBloecke(typ);
+}
+
+function renderIstBloecke(typ) {
+  const container = document.getElementById('ist-farbbloecke');
+  if (!container) return;
+  const blocks = STRUKTUR_CONFIG[typ] || STRUKTUR_CONFIG.global;
+  const hersteller = document.getElementById('ist-hersteller')?.value || '';
+  const nuancen = hersteller && NUANCEN_DB[hersteller] ? NUANCEN_DB[hersteller].nuancen : [0,1,2,3,4,5,6,7,8];
+
+  container.innerHTML = blocks.map(block => {
+    const saved = istBlocks[block.id] || { level: 6, nuance: 0 };
+    const pct = Math.round((saved.level - 1) / 9 * 100);
+    const code = saved.level + '.' + saved.nuance;
+    const nuanceOpts = nuancen.map(n =>
+      '<option value="' + n + '"' + (n === saved.nuance ? ' selected' : '') + '>' +
+      (n === 0 ? '0 — Natur/Rein' : '.' + n) + '</option>'
+    ).join('');
+
+    return '<div class="ist-block" id="' + block.id + '-wrap">' +
+      '<div class="ist-block-header">' +
+        '<span class="ist-block-icon">' + block.icon + '</span>' +
+        '<span class="ist-block-label">' + block.label + '</span>' +
+        '<span class="ist-block-code" id="' + block.id + '-code">' + code + '</span>' +
+      '</div>' +
+      '<div class="ist-block-body">' +
+        // Level Slider
+        '<div class="lbl" style="margin-top:12px">Level (Tonhöhe)</div>' +
+        '<div class="slider-wrap">' +
+          '<div class="slider-row">' +
+            '<span class="slider-val" id="' + block.id + '-level-val">' + saved.level + '</span>' +
+            '<input type="range" min="1" max="10" value="' + saved.level + '" style="--pct:' + pct + '%" ' +
+              'oninput="onIstLevelChange(this,\'' + block.id + '\')">' +
+          '</div>' +
+          '<div class="slider-lbls"><span>1 Schwarz</span><span>5 Mittel</span><span>10 Hellstes</span></div>' +
+        '</div>' +
+        // Nuance Dropdown
+        '<div class="lbl">Nuance / Reflex</div>' +
+        '<select class="inp" id="' + block.id + '-nuance" onchange="onIstNuanceChange(this,\'' + block.id + '\')">' +
+          nuanceOpts +
+        '</select>' +
+        // Code (readonly)
+        '<div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 14px;background:var(--bg);border-radius:var(--rs)">' +
+          '<span style="font-size:12px;color:var(--muted);font-weight:700">CODE:</span>' +
+          '<span style="font-size:18px;font-weight:900;color:var(--ink);letter-spacing:-0.5px" id="' + block.id + '-codedisplay">' + code + '</span>' +
+          '<span style="font-size:11px;color:var(--muted);margin-left:4px">(automatisch)</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function onIstLevelChange(input, blockId) {
+  istManualOverride = true;
+  const val = parseInt(input.value);
+  if (!istBlocks[blockId]) istBlocks[blockId] = { level: val, nuance: 0 };
+  istBlocks[blockId].level = val;
+  const pct = Math.round((val - 1) / 9 * 100);
+  input.style.setProperty('--pct', pct + '%');
+  document.getElementById(blockId + '-level-val').textContent = val;
+  updateIstCode(blockId);
+}
+
+function onIstNuanceChange(select, blockId) {
+  istManualOverride = true;
+  const val = parseInt(select.value);
+  if (!istBlocks[blockId]) istBlocks[blockId] = { level: 6, nuance: val };
+  istBlocks[blockId].nuance = val;
+  updateIstCode(blockId);
+}
+
+function updateIstCode(blockId) {
+  const b = istBlocks[blockId] || { level: 6, nuance: 0 };
+  const code = b.level + '.' + b.nuance;
+  const codeEl = document.getElementById(blockId + '-codedisplay');
+  if (codeEl) codeEl.textContent = code;
+  const codeEl2 = document.getElementById(blockId + '-code');
+  if (codeEl2) codeEl2.textContent = code;
+}
+
+function getIstData() {
+  const hersteller = document.getElementById('ist-hersteller')?.value || '';
+  const blocks = STRUKTUR_CONFIG[istCurrentStruktur] || STRUKTUR_CONFIG.global;
+  const farben = blocks.map(block => {
+    const level = parseInt(document.getElementById(block.id + '-level-val')?.textContent) ||
+      (istBlocks[block.id]?.level || 6);
+    const nuance = parseInt(document.getElementById(block.id + '-nuance')?.value) ||
+      (istBlocks[block.id]?.nuance || 0);
+    return {
+      bereich: block.id.replace('block', 'bereich'),
+      label: block.label,
+      level,
+      nuance,
+      code: level + '.' + nuance
+    };
+  });
+  return { hersteller, strukturtyp: istCurrentStruktur, farben };
+}
+
+async function handleCurrPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const url = await compressImage(file, 1200, 0.8);
+  const prev = document.getElementById('curr-preview');
+  prev.classList.add('has-photo');
+  prev.innerHTML = '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover"/>';
+  document.getElementById('curr-data').value = url;
+
+  // Trigger AI analysis if hersteller selected
+  if (!istManualOverride) {
+    triggerIstAIAnalysis(url);
+  }
+}
+
+async function triggerIstAIAnalysis(imageData) {
+  const statusEl = document.getElementById('ist-ai-status');
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = '🤖 KI analysiert Haarfarbe…'; }
+
+  try {
+    const result = await analyzeHairWithAI(imageData, 'ist');
+    if (!result || istManualOverride) return;
+
+    // Map AI result to structure
+    const suggestedStruktur = result.strukturtyp || 'global';
+
+    // Update struktur button
+    document.querySelectorAll('#ist-struktur-seg .seg-btn').forEach(b => {
+      b.classList.remove('active');
+      if (b.textContent.toLowerCase().includes(suggestedStruktur.substring(0,4))) b.classList.add('active');
+    });
+    istCurrentStruktur = suggestedStruktur;
+
+    // Set block values from AI
+    if (result.level) {
+      istBlocks['block0'] = { level: Math.round(result.level), nuance: 0 };
+    }
+
+    renderIstBloecke(istCurrentStruktur);
+    if (statusEl) statusEl.innerHTML = '🤖 KI-Ergebnis: <strong>' + suggestedStruktur + '</strong> · Level ~' + Math.round(result.level || 6) + ' · ' + (result.undertone === 'warm' ? 'Warmer Unterton' : result.undertone === 'cool' ? 'Kühler Unterton' : 'Neutraler Unterton');
+  } catch(e) {
+    if (statusEl) statusEl.style.display = 'none';
+  }
+}
+
+function proceedToTarget() {
+  // Save IST data
+  const istData = getIstData();
+  document.getElementById('curr-ist-json').value = JSON.stringify(istData);
+  lastAnalysis.ist = { ...istData, confidence: 0.85 };
+  go('s-target');
+}
+
+// Pre-select hersteller from salon profile
+function preSelectHersteller() {
+  // Use first brand from salon's color database or default
+  const el = document.getElementById('ist-hersteller');
+  if (!el) return;
+  // Check if salon has a preferred brand stored
+  const preferred = currentSalon?.preferred_brand || '';
+  if (preferred && NUANCEN_DB[preferred]) {
+    el.value = preferred;
+  }
+  renderIstBloecke(istCurrentStruktur);
+}
+
+/* ═══════════════════ END IST-AUFNAHME LOGIC ═══════════════════ */
+
+
 async function doGoogleLogin() {
   const { error } = await sb.auth.signInWithOAuth({
     provider: 'google',
