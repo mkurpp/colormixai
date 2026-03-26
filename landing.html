@@ -335,10 +335,10 @@ footer{
 .salon-list-preview{margin-top:16px;display:flex;flex-direction:column;gap:8px}
 .salon-item{
   display:flex;align-items:center;gap:10px;
-  background:rgba(255,255,255,0.05);border-radius:8px;padding:10px 12px;
-  border:1px solid rgba(255,255,255,0.08);cursor:pointer;transition:all .2s;
+  background:#F8F8F8;border-radius:8px;padding:10px 12px;
+  border:1px solid #E8E8E8;cursor:pointer;transition:all .2s;
 }
-.salon-item:hover{background:rgba(232,24,90,0.1);border-color:rgba(232,24,90,0.3)}
+.salon-item:hover{background:#FFF0F4;border-color:rgba(232,24,90,0.3)}
 .salon-item-dot{width:8px;height:8px;border-radius:50%;background:#E8185A;flex-shrink:0}
 .salon-item-name{font-size:13px;font-weight:600;color:#fff}
 .salon-item-city{font-size:11px;color:rgba(255,255,255,0.45)}
@@ -735,35 +735,18 @@ footer{
       <div class="map-overlay-card">
         <div class="map-salon-count">
           <div style="width:7px;height:7px;border-radius:50%;background:#E8185A;animation:pulse 2s infinite"></div>
-          <span id="salon-count">Salons werden geladen…</span>
+          <span id="salon-count">Wird geladen…</span>
         </div>
         <div class="map-overlay-title">ColorMixAI-Salons</div>
-        <div class="map-overlay-sub">Friseure in deiner Nähe die mit KI-Formeln arbeiten</div>
+        <!-- Standort-Suche -->
+        <button id="location-btn" onclick="findNearMe()" style="width:100%;margin:8px 0;padding:8px 12px;background:#E8185A;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+          📍 Salons in meiner Nähe
+        </button>
+        <div id="location-status" style="font-size:11px;color:#9A9A9A;text-align:center;margin-bottom:6px;min-height:14px"></div>
         <div class="salon-list-preview" id="salon-list-preview">
-          <!-- Wird per JS befüllt aus Supabase -->
-          <div class="salon-item">
-            <div class="salon-item-dot"></div>
-            <div>
-              <div class="salon-item-name">Salon Bella</div>
-              <div class="salon-item-city">München · 0,8 km</div>
-            </div>
-          </div>
-          <div class="salon-item">
-            <div class="salon-item-dot"></div>
-            <div>
-              <div class="salon-item-name">Hair Studio Nova</div>
-              <div class="salon-item-city">München · 1,4 km</div>
-            </div>
-          </div>
-          <div class="salon-item">
-            <div class="salon-item-dot"></div>
-            <div>
-              <div class="salon-item-name">Color Lounge</div>
-              <div class="salon-item-city">München · 2,1 km</div>
-            </div>
-          </div>
+          <div style="font-size:12px;color:#9A9A9A;padding:8px 0;text-align:center">Wird geladen…</div>
         </div>
-        <div style="margin-top:14px;font-size:11px;color:#9A9A9A">
+        <div style="margin-top:10px;font-size:11px;color:#9A9A9A">
           Salon-Inhaberin? <a href="index.html" style="color:#E8185A;font-weight:700">Jetzt listen lassen →</a>
         </div>
       </div>
@@ -842,49 +825,120 @@ function toggleFaq(btn) {
 }
 
 
-/* Load listed salons from Supabase */
+const SUPA_URL = 'https://kncltnmzocufnhdrzswt.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtuY2x0bm16b2N1Zm5oZHJ6c3d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0MDA0MDMsImV4cCI6MjA4OTk3NjQwM30.HTzpw0qgORUhQHd1fcx1x6y2hVmn78udPz6WrsWlljU';
+let allSalons = [];
+
+function dist(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2-lat1)*Math.PI/180;
+  const dLng = (lng2-lng1)*Math.PI/180;
+  const a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+    Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function renderSalonList(salons, userLat, userLng) {
+  const listEl = document.getElementById('salon-list-preview');
+  const countEl = document.getElementById('salon-count');
+  if (!listEl) return;
+  if (!salons.length) {
+    listEl.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,0.5);padding:8px 0;text-align:center">Noch keine Salons in dieser Region</div>';
+    if (countEl) countEl.textContent = 'Keine Salons gefunden';
+    return;
+  }
+  if (countEl) countEl.textContent = salons.length + ' Salon' + (salons.length !== 1 ? 's' : '') + ' gefunden';
+  listEl.innerHTML = salons.slice(0, 5).map(s => {
+    const d = (userLat && s.lat) ? dist(userLat, userLng, s.lat, s.lng) : null;
+    const distStr = d ? (d < 1 ? Math.round(d*1000)+'m' : d.toFixed(1)+'km') : '';
+    return '<div class="salon-item" onclick="focusSalonOnMap(' + (s.lat||0) + ',' + (s.lng||0) + ')">' +
+      '<div class="salon-item-dot"></div>' +
+      '<div style="flex:1">' +
+        '<div style="font-size:13px;font-weight:700;color:#0A0A0A">' + s.name + '</div>' +
+        '<div style="font-size:11px;color:#666;margin-top:2px">' + (s.city||'') + (distStr ? ' · '+distStr : '') + '</div>' +
+      '</div>' +
+      '</div>';
+  }).join('');
+}
+
+function updateMapForLocation(lat, lng, zoom) {
+  const iframe = document.getElementById('salon-map');
+  if (!iframe) return;
+  iframe.src = 'https://www.google.com/maps/embed/v1/search?key=AIzaSyD-placeholder&q=Friseursalon&center=' + lat + ',' + lng + '&zoom=' + (zoom||12);
+  // Fallback without API key - use standard embed centered on location
+  iframe.src = 'https://maps.google.com/maps?q=' + lat + ',' + lng + '&z=' + (zoom||12) + '&output=embed';
+}
+
+function focusSalonOnMap(lat, lng) {
+  if (!lat || !lng) return;
+  const iframe = document.getElementById('salon-map');
+  if (iframe) iframe.src = 'https://maps.google.com/maps?q=' + lat + ',' + lng + '&z=15&output=embed';
+}
+
 async function loadListedSalons() {
-  const SUPABASE_URL = 'https://kncltnmzocufnhdrzswt.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtuY2x0bm16b2N1Zm5oZHJ6c3d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0MDA0MDMsImV4cCI6MjA4OTk3NjQwM30.HTzpw0qgORUhQHd1fcx1x6y2hVmn78udPz6WrsWlljU';
-  
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/salons?listed_in_directory=eq.true&select=name,city,street,lat,lng`, {
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    const res = await fetch(SUPA_URL + '/rest/v1/salons?listed_in_directory=eq.true&select=name,city,street,lat,lng', {
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
     });
-    const salons = await res.json();
-    
-    const countEl = document.getElementById('salon-count');
-    const listEl = document.getElementById('salon-list-preview');
-    
-    if (salons && salons.length > 0) {
-      if (countEl) countEl.textContent = salons.length + ' Salons gefunden';
-      if (listEl) {
-        listEl.innerHTML = salons.slice(0, 4).map(s => `
-          <div class="salon-item">
-            <div class="salon-item-dot"></div>
-            <div>
-              <div class="salon-item-name">${s.name}</div>
-              <div class="salon-item-city">${s.city || 'Deutschland'}</div>
-            </div>
-          </div>`).join('');
+    allSalons = await res.json();
+    if (!Array.isArray(allSalons)) allSalons = [];
+
+    // If we have salons with coordinates, center map on first one
+    const withCoords = allSalons.filter(s => s.lat && s.lng);
+    if (withCoords.length > 0) {
+      // Center on Germany by default
+      const iframe = document.getElementById('salon-map');
+      if (iframe) {
+        // Build search query from first salon
+        const first = withCoords[0];
+        iframe.src = 'https://maps.google.com/maps?q=' + first.lat + ',' + first.lng + '&z=6&output=embed';
       }
-    } else {
-      if (countEl) countEl.textContent = 'Noch keine Salons gelistet';
-      if (listEl) listEl.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,0.4);padding:8px 0">Sei der erste Salon in deiner Stadt!</div>';
     }
+    renderSalonList(allSalons, null, null);
   } catch(e) {
     const countEl = document.getElementById('salon-count');
-    if (countEl) countEl.textContent = 'Salons in ganz Deutschland';
+    if (countEl) countEl.textContent = 'Salons in DACH';
   }
+}
+
+function findNearMe() {
+  const btn = document.getElementById('location-btn');
+  const status = document.getElementById('location-status');
+  if (!navigator.geolocation) {
+    if (status) status.textContent = 'Standort nicht verfügbar';
+    return;
+  }
+  if (btn) { btn.textContent = '⏳ Standort wird ermittelt…'; btn.disabled = true; }
+  if (status) status.textContent = '';
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      if (btn) { btn.textContent = '✅ Standort gefunden'; btn.disabled = false; }
+      // Sort by distance
+      const sorted = allSalons
+        .filter(s => s.lat && s.lng)
+        .sort((a,b) => dist(lat,lng,a.lat,a.lng) - dist(lat,lng,b.lat,b.lng));
+      const nearby = sorted.filter(s => dist(lat,lng,s.lat,s.lng) < 50);
+      renderSalonList(nearby.length ? nearby : allSalons, lat, lng);
+      if (status) status.textContent = nearby.length ? nearby.length + ' Salons in 50km Umkreis' : 'Alle Salons angezeigt';
+      // Center map on user
+      updateMapForLocation(lat, lng, 11);
+      setTimeout(() => { if (btn) btn.textContent = '📍 Salons in meiner Nähe'; }, 3000);
+    },
+    (err) => {
+      if (btn) { btn.textContent = '📍 Salons in meiner Nähe'; btn.disabled = false; }
+      if (status) {
+        status.textContent = err.code === 1 ? 'Standort-Zugriff verweigert' : 'Standort nicht verfügbar';
+      }
+    },
+    { timeout: 8000, maximumAge: 300000 }
+  );
 }
 
 loadListedSalons();
 
 /* Scroll reveal */
 const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-}, { threshold: 0.1 });
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-</script>
-</body>
-</html>
+  entries.forEach(e => { if (e.isIntersecting) e.target.cla
