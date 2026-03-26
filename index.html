@@ -602,6 +602,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
     </div>
 
     <div class="divider"></div>
+    <button class="btn btn-outline btn-full" onclick="go('s-ml-training')" style="margin-bottom:8px">🧠 KI Training</button>
     <button class="btn btn-danger btn-full" onclick="doLogout()">Ausloggen</button>
     <div style="height:24px"></div>
   </div>
@@ -807,7 +808,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 
     <!-- Filter Tabs -->
     <div class="seg" id="ziel-filter-seg" style="margin-bottom:16px">
-      <button class="seg-btn active" onclick="filterZielbilder(this,'alle')">Alle</button>
+      <button class="seg-btn active" onclick="filterZielbilder(this,'trends')">Color Trends</button>
       <button class="seg-btn" onclick="filterZielbilder(this,'ziel')">Zielbilder</button>
       <button class="seg-btn" onclick="filterZielbilder(this,'ergebnis')">Ergebnis</button>
     </div>
@@ -938,26 +939,38 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   </div>
   <div class="prog"><div class="prog-fill" style="width:100%"></div></div>
   <div class="body">
+
+    <!-- Kunde -->
     <div class="card" id="result-client-card">
-      <div class="card-lbl">Kundin</div>
+      <div class="card-lbl">Kunde</div>
       <div class="card-val" id="result-client-name">Kein Kunde ausgewählt</div>
     </div>
-    <div class="card">
-      <div class="card-lbl">Zielfarbe</div>
-      <div class="card-val">Kühles Beige-Blond</div>
-      <div style="height:7px;border-radius:4px;background:linear-gradient(90deg,#D4B89C,#C4A07A);margin-top:10px"></div>
+
+    <!-- Ziel (dynamisch aus zielData) -->
+    <div class="card" id="result-ziel-card">
+      <div class="card-lbl">Ziel</div>
+      <div id="result-ziel-content">
+        <div class="card-val">Kühles Beige-Blond</div>
+      </div>
     </div>
-    <div class="card">
-      <div class="card-lbl">Erkannte Basis</div>
-      <div class="card-val">Stufe 6</div>
-      <div class="card-sub">Warmer Unterton · Mittelbraun</div>
+
+    <!-- IST-Basis (dynamisch aus istData) -->
+    <div class="card" id="result-ist-card">
+      <div class="card-lbl">Erkannte Basis (IST)</div>
+      <div id="result-ist-content">
+        <div class="card-val" id="result-client-name-2">—</div>
+      </div>
     </div>
+
+    <!-- Formel -->
     <div class="card">
-      <div class="card-lbl">Formel — Wella Koleston Perfect ME+</div>
+      <div class="card-lbl" id="result-formel-lbl">Formel — Wella Koleston Perfect ME+</div>
       <div class="formula-row"><div class="formula-swatch" style="background:#C8A870"></div><span class="formula-code">8/13</span><span class="formula-amount">60 g</span></div>
       <div class="formula-row"><div class="formula-swatch" style="background:#D4BF99"></div><span class="formula-code">9/13</span><span class="formula-amount">20 g</span></div>
       <div class="formula-row"><div class="formula-swatch" style="background:#E8E0D8"></div><span class="formula-code">Entwickler 9%</span><span class="formula-amount">80 ml</span></div>
     </div>
+
+    <!-- Anwendung -->
     <div class="card">
       <div class="card-lbl">Anwendung</div>
       <div style="font-size:13px;line-height:1.9">
@@ -966,9 +979,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
         <div>🌡 Körperwärme am Ansatz — keine Wärmequelle nötig</div>
       </div>
     </div>
+
+    <!-- Hinweis -->
     <div class="card">
       <div class="card-lbl">Hinweis</div>
-      <div class="warn-box"><span>⚠️</span><div class="warn-text">Vorblondierung empfohlen, um das gewünschte Farbergebnis exakt zu erzielen.</div></div>
+      <div class="warn-box"><span>⚠️</span><div class="warn-text" id="result-hint">Vorblondierung empfohlen, um das gewünschte Farbergebnis exakt zu erzielen.</div></div>
     </div>
 
     <!-- After-Color Photo -->
@@ -1101,6 +1116,114 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
     <button class="btn btn-ghost btn-full" onclick="closeModal()">Cancel</button>
   </div>
 </div>
+
+<!-- ══════════════════ ML TRAINING SCREEN ══════════════════ -->
+<section class="screen" id="s-ml-training">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-landing')">← Zurück</button>
+    <span class="hdr-title">🧠 KI Training</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="body">
+
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:20px">
+      <div style="background:var(--ink);border-radius:var(--rs);padding:10px;text-align:center">
+        <div style="font-size:20px;font-weight:900;color:#fff" id="ml-stat-total">0</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.5)">Bilder</div>
+      </div>
+      <div style="background:var(--ink);border-radius:var(--rs);padding:10px;text-align:center">
+        <div style="font-size:20px;font-weight:900;color:var(--pink)" id="ml-stat-labels">0</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.5)">Labels</div>
+      </div>
+      <div style="background:var(--ink);border-radius:var(--rs);padding:10px;text-align:center">
+        <div style="font-size:20px;font-weight:900;color:#4CAF50" id="ml-stat-verified">0</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.5)">Verifiziert</div>
+      </div>
+      <div style="background:var(--ink);border-radius:var(--rs);padding:10px;text-align:center">
+        <div style="font-size:20px;font-weight:900;color:#FFD600" id="ml-stat-quality">—</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.5)">⭐ Ø</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="seg" id="ml-tab-seg" style="margin-bottom:16px">
+      <button class="seg-btn active" onclick="mlTab(this,'upload')">+ Neu</button>
+      <button class="seg-btn" onclick="mlTab(this,'gallery')">Galerie</button>
+      <button class="seg-btn" onclick="mlTab(this,'export')">Export</button>
+    </div>
+
+    <!-- TAB: Upload -->
+    <div id="ml-tab-upload">
+      <div class="lbl" style="margin-top:0">Haarfoto</div>
+      <div class="photo-btns" style="margin-bottom:10px">
+        <button class="btn btn-dark btn-full" onclick="triggerCamera('ml-img-file')">📷 Kamera</button>
+        <button class="btn btn-outline btn-full" onclick="triggerGallery('ml-img-file')">🖼 Galerie</button>
+      </div>
+      <input type="file" id="ml-img-file" accept="image/*" onchange="mlHandleImage(this)"/>
+      <div class="photo-preview" id="ml-img-preview" style="margin-bottom:16px">
+        <div class="photo-placeholder"><div class="ico">🧠</div><p>Trainingsbild hochladen</p></div>
+      </div>
+      <input type="hidden" id="ml-img-data"/>
+
+      <div class="lbl">Farbstruktur</div>
+      <div class="seg" id="ml-struktur-seg" style="margin-bottom:16px">
+        <button class="seg-btn active" onclick="mlSelectStruktur(this,'global')">Global</button>
+        <button class="seg-btn" onclick="mlSelectStruktur(this,'highlights')">Highlights</button>
+        <button class="seg-btn" onclick="mlSelectStruktur(this,'balayage')">Balayage</button>
+        <button class="seg-btn" onclick="mlSelectStruktur(this,'verlauf')">Verlauf</button>
+      </div>
+
+      <div class="lbl">Labels pro Hersteller</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Ein Bild kann für mehrere Hersteller gleichzeitig gelabelt werden</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px" id="ml-hersteller-tabs"></div>
+
+      <div id="ml-farb-blocks"></div>
+
+      <div class="lbl">Bildqualität</div>
+      <div style="display:flex;gap:6px;margin-bottom:12px" id="ml-quality-btns">
+        <button onclick="mlSetQuality(1)" style="flex:1;padding:8px;border-radius:var(--rs);border:2px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px">★</button>
+        <button onclick="mlSetQuality(2)" style="flex:1;padding:8px;border-radius:var(--rs);border:2px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px">★★</button>
+        <button onclick="mlSetQuality(3)" style="flex:1;padding:8px;border-radius:var(--rs);border:2px solid var(--pink);background:var(--pink-light);cursor:pointer;font-size:14px">★★★</button>
+        <button onclick="mlSetQuality(4)" style="flex:1;padding:8px;border-radius:var(--rs);border:2px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px">★★★★</button>
+        <button onclick="mlSetQuality(5)" style="flex:1;padding:8px;border-radius:var(--rs);border:2px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px">★★★★★</button>
+      </div>
+
+      <div class="lbl">Notizen (optional)</div>
+      <textarea class="inp" id="ml-notes" placeholder="z.B. Tageslicht, schwieriger Unterton..." style="height:60px;margin-bottom:12px;padding:10px"></textarea>
+
+      <div class="lbl">Sichtbare Problemfälle</div>
+      <div id="ml-problem-chips-training" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px"></div>
+
+      <div id="ml-save-status" style="display:none;border-radius:var(--rs);padding:10px;margin-bottom:10px;font-size:13px;font-weight:600"></div>
+      <button class="btn btn-pink btn-full" onclick="mlSaveTrainingImage()" style="margin-bottom:8px">💾 Speichern</button>
+      <button class="btn btn-ghost btn-full" onclick="mlSaveAndNext()">💾 Speichern & nächstes →</button>
+      <div style="height:24px"></div>
+    </div>
+
+    <!-- TAB: Galerie -->
+    <div id="ml-tab-gallery" style="display:none">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px" id="ml-gallery-filter"></div>
+      <div id="ml-gallery-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px"></div>
+      <div id="ml-gallery-empty" style="display:none;text-align:center;padding:32px;color:var(--muted);font-size:13px">Noch keine Trainingsbilder</div>
+      <div style="height:24px"></div>
+    </div>
+
+    <!-- TAB: Export -->
+    <div id="ml-tab-export" style="display:none">
+      <div style="background:var(--ink);border-radius:var(--r);padding:20px;margin-bottom:16px;color:#fff">
+        <div style="font-size:16px;font-weight:800;margin-bottom:6px">📊 Export für Melissa</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.7">
+          Strukturierte JSON/CSV für PyTorch Training. Jedes Bild mit allen Labels, Strukturtypen und Hersteller-Werten.
+        </div>
+      </div>
+      <div id="ml-export-stats" style="margin-bottom:16px"></div>
+      <button class="btn btn-pink btn-full" onclick="mlExportJSON()" style="margin-bottom:8px">📥 JSON für PyTorch</button>
+      <button class="btn btn-outline btn-full" onclick="mlExportCSV()">📊 CSV exportieren</button>
+      <div style="height:24px"></div>
+    </div>
+  </div>
+</section>
 
 <!-- ══════════════════ ADMIN LOGIN ══════════════════ -->
 <section class="screen" id="s-admin-login">
@@ -1405,7 +1528,7 @@ function renderProfile() {
   const clientSessions = sessions.filter(s=>s.clientId===c.id).sort((a,b)=>b.date.localeCompare(a.date));
 
   document.getElementById('profile-top').innerHTML = `
-    <div class="profile-avatar">${c.photo?`<img src="${c.photo}"/>`:'👤'}</div>
+    <div class="profile-avatar" style="${c.photo?'':'background:linear-gradient(135deg,var(--pink),var(--pink-dark))'}">${c.photo?`<img src="${c.photo}"/>`:`<span style="color:#fff;font-weight:900;font-size:26px">${c.name[0].toUpperCase()}</span>`}</div>
     <div>
       <div class="profile-name">${c.name}</div>
       <div class="profile-meta">${c.hairState} · ${c.hairHistory||'Keine Haarhistorie'}</div>
@@ -1513,35 +1636,24 @@ async function saveAfterPhotoToSession(input, sessionId) {
   const sess = sessions.find(s => String(s.id) === String(sessionId));
   if (sess) sess.afterPhoto = dataUrl;
 
-  // Show immediately in UI without waiting for Supabase
-  renderProfile();
-  setTimeout(() => {
-    const body = document.getElementById('sb-' + sessionId);
-    if (body) body.classList.add('open');
-    const arr = document.getElementById('arr-' + sessionId);
-    if (arr) arr.textContent = '∨';
-  }, 50);
-
-  // Save to Supabase in background
+  // Save to Supabase first, THEN update local state and render
   if (currentSalon?.id) {
     try {
       const { error } = await sb.from('sessions')
         .update({ after_photo_url: dataUrl })
         .eq('id', sessionId);
       if (error) console.error('After photo save error:', error);
-      else {
-        // Reload to confirm saved
-        await loadSessionsForClient(viewingClient.id);
-        renderProfile();
-        setTimeout(() => {
-          const body = document.getElementById('sb-' + sessionId);
-          if (body) body.classList.add('open');
-          const arr = document.getElementById('arr-' + sessionId);
-          if (arr) arr.textContent = '∨';
-        }, 50);
-      }
     } catch(err) { console.error('After photo save error:', err); }
   }
+  // Reload from DB to ensure correct state
+  if (viewingClient?.id) await loadSessionsForClient(viewingClient.id);
+  renderProfile();
+  setTimeout(() => {
+    const body = document.getElementById('sb-' + sessionId);
+    if (body) body.classList.add('open');
+    const arr = document.getElementById('arr-' + sessionId);
+    if (arr) arr.textContent = '∨';
+  }, 80);
 }
 
 /* ── Bild komprimieren ── */
@@ -1751,12 +1863,16 @@ async function startAnalysis() {
   document.getElementById(steps[1].t).className='step-txt done';
   document.getElementById(steps[1].c).className='step-chk show';
 
-  // Schritt 3: Farbdatenbank abgleichen
+  // Schritt 3: Zieldaten aus neuem Screen lesen
   document.getElementById(steps[2].d).className='dot active';
   document.getElementById(steps[2].t).className='step-txt active';
-  const colorBarLbl = document.getElementById('color-bar-lbl')?.textContent || 'Kühles Blond';
-  const levelVal = document.getElementById('level-val')?.textContent || '7';
-  lastAnalysis.soll = { color_name: colorBarLbl, level: parseFloat(levelVal) };
+  // Zieldaten aus dem neuen Zielfarbe-Screen lesen
+  const zielData = (typeof getZielData === 'function') ? getZielData() : {};
+  lastAnalysis.soll = zielData;
+  // Falls ein Color Trend ausgewählt wurde
+  if (window._selectedTrend) {
+    lastAnalysis.trend = window._selectedTrend;
+  }
   await new Promise(r => setTimeout(r, 800));
   document.getElementById(steps[2].d).className='dot done';
   document.getElementById(steps[2].t).className='step-txt done';
@@ -1765,7 +1881,7 @@ async function startAnalysis() {
   // Schritt 4: Formel berechnen
   document.getElementById(steps[3].d).className='dot active';
   document.getElementById(steps[3].t).className='step-txt active';
-  const brand = document.querySelector('.brand-chip.selected')?.textContent || 'Wella';
+  const brand = zielData.hersteller || 'wella';
   lastAnalysis.formula = await getFormulaFromML(lastAnalysis.ist, lastAnalysis.soll, { brand });
   await new Promise(r => setTimeout(r, 900));
   document.getElementById(steps[3].d).className='dot done';
@@ -1780,24 +1896,168 @@ async function startAnalysis() {
 }
 
 function updateResultWithAI() {
-  if (!lastAnalysis.ist) return;
   const ist = lastAnalysis.ist;
-  
-  // Erkannte Basis updaten
-  const baseEl = document.querySelector('#s-result .card:nth-child(3) .card-val');
-  const baseSubEl = document.querySelector('#s-result .card:nth-child(3) .card-sub');
-  if (baseEl) baseEl.textContent = 'Stufe ' + ist.level?.toFixed(1);
-  if (baseSubEl) {
-    const undertoneDE = ist.undertone === 'warm' ? 'Warmer Unterton' : ist.undertone === 'cool' ? 'Kühler Unterton' : 'Neutraler Unterton';
-    baseSubEl.textContent = undertoneDE + ' · ' + (ist.base_color || 'Mittelbraun');
+  const soll = lastAnalysis.soll;
+  const trend = lastAnalysis.trend;
+
+  // ── IST-Karte befüllen ──
+  const istContent = document.getElementById('result-ist-content');
+  if (istContent && ist) {
+    let html = '';
+    if (ist.farben && ist.farben.length) {
+      // Strukturierte IST-Daten aus neuem Screen
+      const strukturLabel = { global:'Global', highlights:'Highlights', balayage:'Balayage', verlauf:'Farbverlauf' };
+      html += '<div style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:6px">' +
+        (strukturLabel[ist.strukturtyp] || ist.strukturtyp || 'Global').toUpperCase() + '</div>';
+      html += ist.farben.map(f =>
+        '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)">' +
+        '<span style="font-size:13px;color:var(--mid)">' + f.label + '</span>' +
+        '<span style="font-size:16px;font-weight:900;font-family:monospace;color:var(--charcoal)">' + f.code + '</span>' +
+        '</div>'
+      ).join('');
+    } else if (ist.level) {
+      // Legacy AI result
+      const undertoneDE = ist.undertone === 'warm' ? '🔶 Warm' : ist.undertone === 'cool' ? '🔷 Kühl' : '⬜ Neutral';
+      html = '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0">' +
+        '<span style="font-size:13px;color:var(--mid)">Level</span>' +
+        '<span style="font-size:16px;font-weight:900;font-family:monospace">' + (ist.level?.toFixed(1)||'—') + '</span>' +
+        '</div>' +
+        '<div style="font-size:12px;color:var(--muted);margin-top:4px">' + undertoneDE + (ist.base_color ? ' · ' + ist.base_color : '') + '</div>';
+    }
+    if (ist.strukturtyp === 'verlauf' || ist.strukturtyp === 'highlights' || ist.strukturtyp === 'balayage') {
+      html += '<div style="font-size:11px;color:var(--pink);margin-top:6px;font-weight:700">⚠️ Vorblondierung auf Ausgangsbasis prüfen</div>';
+    }
+    istContent.innerHTML = html;
   }
-  
-  // Konfidenz anzeigen wenn niedrig
-  if (ist.confidence < 0.7) {
-    const warnCard = document.querySelector('#s-result .warn-box .warn-text');
-    if (warnCard) warnCard.textContent = `KI-Konfidenz: ${Math.round(ist.confidence * 100)}% — Bitte Ergebnis manuell prüfen. ` + warnCard.textContent;
+
+  // ── ZIEL-Karte befüllen ──
+  const zielContent = document.getElementById('result-ziel-content');
+  if (zielContent) {
+    let html = '';
+
+    // Color Trend gewählt?
+    if (trend) {
+      html = '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">' +
+        '<div style="width:32px;height:32px;border-radius:8px;background:' + trend.hex + ';flex-shrink:0;border:2px solid var(--border)"></div>' +
+        '<div><div style="font-size:14px;font-weight:800">' + trend.name + '</div>' +
+        '<div style="font-size:11px;color:var(--muted)">' + trend.brand + '</div></div>' +
+        '</div>' +
+        '<div style="background:rgba(232,24,90,0.08);border-radius:8px;padding:8px 12px;margin-bottom:8px">' +
+        '<div style="font-size:11px;font-weight:800;color:var(--pink);margin-bottom:4px">⚠️ VORBEHANDLUNG ERFORDERLICH</div>' +
+        '<div style="font-size:12px;color:var(--mid)">Ausgangsbasis: <strong>' + trend.ausgangsbasis + '</strong> — ' + trend.vorbehandlung + '</div>' +
+        '</div>' +
+        trend.formel.map(f =>
+          '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)">' +
+          '<span style="font-size:13px;font-family:monospace;font-weight:700;color:var(--charcoal)">' + f.code + '</span>' +
+          '<span style="font-size:14px;font-weight:800;color:var(--ink)">' + f.gramm + ' g</span>' +
+          '</div>'
+        ).join('');
+    } else if (soll && soll.farben && soll.farben.length) {
+      // Strukturierte Zieldaten aus neuem Screen
+      const strukturLabel = { global:'Global', highlights:'Highlights', balayage:'Balayage', verlauf:'Farbverlauf' };
+      html += '<div style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:1px;margin-bottom:6px">' +
+        (strukturLabel[soll.strukturtyp] || soll.strukturtyp || 'Global').toUpperCase() + '</div>';
+      html += soll.farben.map(f =>
+        '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)">' +
+        '<span style="font-size:13px;color:var(--mid)">' + f.bereich + '</span>' +
+        '<span style="font-size:16px;font-weight:900;font-family:monospace;color:var(--charcoal)">' + f.code + '</span>' +
+        '</div>'
+      ).join('');
+      if (soll.farblinie) {
+        html += '<div style="font-size:11px;color:var(--muted);margin-top:6px">' + (NUANCEN_DB[soll.hersteller]?.name || '') + (soll.farblinie ? ' · ' + soll.farblinie : '') + '</div>';
+      }
+    } else {
+      html = '<div style="font-size:13px;color:var(--muted)">Kein Ziel definiert</div>';
+    }
+    zielContent.innerHTML = html;
+
+    // Formula label
+    const fl = document.getElementById('result-formel-lbl');
+    if (fl) {
+      if (trend) fl.textContent = 'Formel — ' + trend.brand;
+      else if (soll?.hersteller && NUANCEN_DB[soll.hersteller]) {
+        fl.textContent = 'Formel — ' + NUANCEN_DB[soll.hersteller].name + (soll.farblinie ? ' · ' + soll.farblinie : '');
+      }
+    }
+
+    // Hinweis anpassen für Trends
+    if (trend) {
+      const hint = document.getElementById('result-hint');
+      if (hint) hint.textContent = 'Ausgangsbasis ' + trend.ausgangsbasis + ' erforderlich. ' + trend.mischverhaeltnis + '. Einwirkzeit: ' + trend.einwirkzeit + '.';
+    }
   }
 }
+
+/* ── GOLD Color Trends (salon-übergreifend) ── */
+const COLOR_TRENDS = [
+  {
+    id: 'gold_cloudy_blond',
+    name: 'Cloudy Blond',
+    brand: 'GOLD Professional',
+    ausgangsbasis: '10.3',
+    vorbehandlung: 'Aufhellung auf Stufe 10.3 notwendig (1% Peroxid, EWZ 20 Min.)',
+    mischverhaeltnis: '1:2 mit 1% Peroxid',
+    einwirkzeit: '20 Min.',
+    formel: [
+      { code: '10.2', gramm: 10 },
+      { code: '8.32', gramm: 2 },
+      { code: 'Magic Gloss', gramm: 24 }
+    ],
+    hex: '#D4D0C0',
+    typ: 'global'
+  },
+  {
+    id: 'gold_chantilly',
+    name: 'Chantilly',
+    brand: 'GOLD Professional',
+    ausgangsbasis: '10.3',
+    vorbehandlung: 'Aufhellung auf Stufe 10.3 notwendig (1% Peroxid, EWZ 20 Min.)',
+    mischverhaeltnis: '1:2 mit 1% Peroxid',
+    einwirkzeit: '20 Min.',
+    formel: [
+      { code: '9.3', gramm: 10 },
+      { code: '8.44', gramm: 2 },
+      { code: '000SSSWhite', gramm: 2 },
+      { code: 'Magic Gloss', gramm: 28 }
+    ],
+    hex: '#C8B882',
+    typ: 'global'
+  },
+  {
+    id: 'gold_burgundy',
+    name: 'Burgundy',
+    brand: 'GOLD Professional',
+    ausgangsbasis: '10.3',
+    vorbehandlung: 'Aufhellung auf Stufe 10.3 notwendig (1% Peroxid, EWZ 20 Min.)',
+    mischverhaeltnis: '1:2 mit 1% Peroxid',
+    einwirkzeit: '20 Min.',
+    formel: [
+      { code: '5.66', gramm: 10 },
+      { code: '6.22', gramm: 10 },
+      { code: '3%', gramm: 30 }
+    ],
+    hex: '#7B2040',
+    typ: 'global'
+  },
+  {
+    id: 'gold_mocha',
+    name: 'Mocha',
+    brand: 'GOLD Professional',
+    ausgangsbasis: '10.3',
+    vorbehandlung: 'Aufhellung auf Stufe 10.3 notwendig (1% Peroxid, EWZ 20 Min.)',
+    mischverhaeltnis: '1:2 mit 1% Peroxid',
+    einwirkzeit: '20 Min.',
+    formel: [
+      { code: '7.14', gramm: 10 },
+      { code: '7.21', gramm: 10 },
+      { code: '3%', gramm: 30 }
+    ],
+    hex: '#8B6855',
+    typ: 'global'
+  }
+];
+
+
 
 /* ═══════════════════ SAVE RESULT ═══════════════════ */
 async function saveResult(e) {
@@ -2726,8 +2986,13 @@ go = function(screenId) {
   _goOrigAuth(screenId);
   if (screenId === 's-account') renderAccountScreen();
   if (screenId === 's-result') renderResultScreen();
-  if (screenId === 's-target') { renderZielGrid('alle'); }
+  if (screenId === 's-target') { renderZielGrid('trends'); }
   if (screenId === 's-target-detail') { renderZielBloecke(zielCurrentStruktur); }
+  if (screenId === 's-ml-training') {
+    mlRenderHerstellerTabs();
+    mlRenderFarbBlocks();
+    mlLoadStats();
+  }
   if (screenId === 's-ist-detail') {
     renderIstBloecke(istCurrentStruktur);
     selectedProblems = new Set();
@@ -3362,10 +3627,18 @@ function renderZielGrid(filter) {
   const container = document.getElementById('ziel-grid');
   const emptyEl = document.getElementById('ziel-empty');
   if (!container) return;
-  let imgs = [...zielbilder];
-  sessions.forEach(s => { if (s.afterPhoto && s.pinnedAsZiel) imgs.push({ id: 'sess_' + s.id, src: s.afterPhoto, type: 'ergebnis', clientName: clients.find(c=>String(c.id)===String(s.clientId))?.name||'' }); });
-  if (filter === 'ziel') imgs = imgs.filter(i => i.type === 'upload');
-  else if (filter === 'ergebnis') imgs = imgs.filter(i => i.type === 'ergebnis');
+  let uploadImgs = [...zielbilder.filter(z => z.type === 'upload')];
+  let ergebnisImgs = [];
+  sessions.forEach(s => { if (s.afterPhoto && s.pinnedAsZiel) ergebnisImgs.push({ id: 'sess_' + s.id, src: s.afterPhoto, type: 'ergebnis', clientName: clients.find(c=>String(c.id)===String(s.clientId))?.name||'' }); });
+  let imgs;
+  if (filter === 'ziel') imgs = uploadImgs;
+  else if (filter === 'ergebnis') imgs = ergebnisImgs;
+  else if (filter === 'trends') {
+    // Show COLOR_TRENDS as special cards
+    renderTrendsGrid();
+    return;
+  }
+  else imgs = [...uploadImgs, ...ergebnisImgs];
   if (!imgs.length) { container.innerHTML = ''; if (emptyEl) emptyEl.style.display = 'block'; return; }
   if (emptyEl) emptyEl.style.display = 'none';
   const sel = document.getElementById('ref-data')?.value;
@@ -3404,6 +3677,54 @@ async function handleZielbildUpload(input) {
   const wrap = document.getElementById('ziel-selected-wrap'); if (wrap) wrap.style.display = 'block';
   const si = document.getElementById('ziel-selected-img'); if (si) si.src = url;
   renderZielGrid('alle');
+}
+
+function renderTrendsGrid() {
+  const container = document.getElementById('ziel-grid');
+  const emptyEl = document.getElementById('ziel-empty');
+  if (!container) return;
+  if (emptyEl) emptyEl.style.display = 'none';
+  const sel = document.getElementById('ref-data')?.value;
+
+  container.innerHTML = COLOR_TRENDS.map(trend => {
+    const isSel = sel && sel === trend.id;
+    return '<div onclick="selectTrend(\'' + trend.id + '\')" style="position:relative;cursor:pointer;aspect-ratio:1;border-radius:4px;overflow:hidden;' +
+      (isSel ? 'outline:3px solid var(--pink);outline-offset:-3px;' : '') + '">' +
+      '<div style="width:100%;height:100%;background:' + trend.hex + ';display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">' +
+      '<div style="width:36px;height:36px;border-radius:50%;background:' + trend.hex + ';border:3px solid rgba(255,255,255,0.5)"></div>' +
+      '<div style="font-size:10px;font-weight:800;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.4);text-align:center;padding:0 4px">' + trend.name + '</div>' +
+      '</div>' +
+      (isSel ? '<div style="position:absolute;top:4px;right:4px;background:var(--pink);color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">✓</div>' : '') +
+    '</div>';
+  }).join('');
+}
+
+function selectTrend(id) {
+  const trend = COLOR_TRENDS.find(t => t.id === id);
+  if (!trend) return;
+  // Store trend ID as ref-data marker
+  document.getElementById('ref-data').value = id;
+  // Store trend data for formula screen
+  window._selectedTrend = trend;
+  const wrap = document.getElementById('ziel-selected-wrap');
+  const selImg = document.getElementById('ziel-selected-img');
+  if (wrap) wrap.style.display = 'block';
+  // Show color swatch as preview
+  if (selImg) {
+    selImg.style.display = 'none';
+    const parent = selImg.parentElement;
+    let swatchDiv = document.getElementById('trend-swatch-preview');
+    if (!swatchDiv) {
+      swatchDiv = document.createElement('div');
+      swatchDiv.id = 'trend-swatch-preview';
+      parent.insertBefore(swatchDiv, selImg);
+    }
+    swatchDiv.style.cssText = 'width:100%;aspect-ratio:3/4;border-radius:var(--r);background:' + trend.hex + ';display:flex;flex-direction:column;align-items:center;justify-content:center;border:3px solid var(--pink)';
+    swatchDiv.innerHTML = '<div style="font-size:24px;font-weight:900;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.3)">' + trend.name + '</div>' +
+      '<div style="font-size:13px;color:rgba(255,255,255,0.8);margin-top:4px">' + trend.brand + '</div>' +
+      '<div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:8px;text-align:center;padding:0 16px">Basis: ' + trend.ausgangsbasis + '</div>';
+  }
+  renderTrendsGrid();
 }
 
 function renderAccZielbilder() {
@@ -3445,7 +3766,7 @@ async function togglePinZielbild(sessionId) {
       await sb.from('sessions').update({ pinned_as_ziel: sess.pinnedAsZiel }).eq('id', sessionId);
     } catch(e) { console.error(e); }
   }
-  if (viewingClient?.id) await loadSessionsForClient(viewingClient.id);
+  // Don't reload sessions — just re-render to keep photos intact
   renderProfile();
   // Keep session open
   setTimeout(() => {
@@ -3457,6 +3778,281 @@ async function togglePinZielbild(sessionId) {
 }
 
 
+
+/* ═══════════════════ ML TRAINING LOGIC ═══════════════════ */
+
+let mlCurrentStruktur = 'global';
+let mlCurrentHersteller = 'wella';
+let mlActiveHersteller = new Set(['wella']);
+let mlQuality = 3;
+let mlSelectedProblems = new Set();
+let mlLabels = {};
+let mlTrainingImages = [];
+
+function mlTab(btn, tab) {
+  document.querySelectorAll('#ml-tab-seg .seg-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ['upload','gallery','export'].forEach(t => {
+    const el = document.getElementById('ml-tab-' + t);
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+  });
+  if (tab === 'gallery') mlLoadGallery(null);
+  if (tab === 'export') mlLoadExportStats();
+}
+
+function mlSelectStruktur(btn, typ) {
+  document.querySelectorAll('#ml-struktur-seg .seg-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  mlCurrentStruktur = typ;
+  mlRenderHerstellerTabs();
+  mlRenderFarbBlocks();
+}
+
+function mlSelectHersteller(btn, h) {
+  if (mlActiveHersteller.has(h)) { if (mlActiveHersteller.size > 1) mlActiveHersteller.delete(h); }
+  else mlActiveHersteller.add(h);
+  mlCurrentHersteller = h;
+  mlRenderHerstellerTabs();
+  mlRenderFarbBlocks();
+}
+
+function mlRenderHerstellerTabs() {
+  const container = document.getElementById('ml-hersteller-tabs');
+  if (!container) return;
+  const hs = [{id:'wella',name:'Wella'},{id:'loreal',name:"L'Oréal"},{id:'schwarzkopf',name:'Schwarzkopf'},{id:'redken',name:'Redken'},{id:'gold',name:'GOLD'}];
+  container.innerHTML = hs.map(h => {
+    const active = mlActiveHersteller.has(h.id);
+    const current = mlCurrentHersteller === h.id;
+    return '<button onclick="mlSelectHersteller(this,'' + h.id + '')" ' +
+      'style="padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid ' +
+      (active?'var(--pink)':'var(--border)') + ';background:' + (current?'var(--pink)':active?'var(--pink-light)':'var(--surface)') +
+      ';color:' + (current?'#fff':active?'var(--pink)':'var(--mid)') + '">' + h.name + (active?' ✓':'') + '</button>';
+  }).join('');
+}
+
+function mlRenderFarbBlocks() {
+  const container = document.getElementById('ml-farb-blocks');
+  if (!container) return;
+  const blocks = STRUKTUR_CONFIG[mlCurrentStruktur] || STRUKTUR_CONFIG.global;
+  const h = mlCurrentHersteller;
+  const nuancen = NUANCEN_DB[h]?.nuancen || [0,1,2,3,4,5,6,7,8];
+  const saved = mlLabels[h] || {};
+  container.innerHTML = '<div style="background:var(--bg);border-radius:var(--r);padding:12px;margin-bottom:16px">' +
+    '<div style="font-size:12px;font-weight:800;color:var(--mid);margin-bottom:10px">' + (NUANCEN_DB[h]?.name||h).toUpperCase() + '</div>' +
+    blocks.map(block => {
+      const s = saved[block.id] || {level:6,nuance:0};
+      const pct = Math.round((s.level-1)/9*100);
+      const opts = nuancen.map(n => '<option value="'+n+'"'+(n===s.nuance?' selected':'')+'>'+(n===0?'0 — Natur/Rein':'.'+n)+'</option>').join('');
+      return '<div style="border:1.5px solid var(--border);border-radius:var(--rs);padding:12px;margin-bottom:8px">' +
+        '<div style="font-size:13px;font-weight:800;margin-bottom:10px">' + block.label + '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
+          '<span style="font-size:20px;font-weight:900;color:var(--pink);min-width:24px" id="ml-lv-'+h+'-'+block.id+'">' + s.level + '</span>' +
+          '<span style="font-size:12px;color:var(--mid);min-width:80px" id="ml-ln-'+h+'-'+block.id+'">' + (LEVEL_NAMES[s.level]||'') + '</span>' +
+          '<input type="range" min="1" max="10" value="'+s.level+'" style="flex:1;--pct:'+pct+'%" oninput="mlOnLevel(this,''+h+'',''+block.id+'')">' +
+        '</div>' +
+        '<select class="inp" style="margin-bottom:6px" onchange="mlOnNuance(this,''+h+'',''+block.id+'')">' + opts + '</select>' +
+        '<div style="font-size:12px;color:var(--muted)">Code: <strong id="ml-code-'+h+'-'+block.id+'">' + s.level + '.' + s.nuance + '</strong></div>' +
+      '</div>';
+    }).join('') + '</div>';
+  mlRenderProblemChipsTraining();
+}
+
+function mlOnLevel(input, h, id) {
+  const val = parseInt(input.value);
+  if (!mlLabels[h]) mlLabels[h]={};
+  if (!mlLabels[h][id]) mlLabels[h][id]={level:val,nuance:0};
+  mlLabels[h][id].level = val;
+  input.style.setProperty('--pct', Math.round((val-1)/9*100)+'%');
+  const lv=document.getElementById('ml-lv-'+h+'-'+id); if(lv) lv.textContent=val;
+  const ln=document.getElementById('ml-ln-'+h+'-'+id); if(ln) ln.textContent=LEVEL_NAMES[val]||'';
+  const cd=document.getElementById('ml-code-'+h+'-'+id); if(cd) cd.textContent=val+'.'+(mlLabels[h][id].nuance||0);
+}
+
+function mlOnNuance(sel, h, id) {
+  const val = parseInt(sel.value);
+  if (!mlLabels[h]) mlLabels[h]={};
+  if (!mlLabels[h][id]) mlLabels[h][id]={level:6,nuance:val};
+  mlLabels[h][id].nuance = val;
+  const cd=document.getElementById('ml-code-'+h+'-'+id); if(cd) cd.textContent=(mlLabels[h][id].level||6)+'.'+val;
+}
+
+function mlRenderProblemChipsTraining() {
+  const c = document.getElementById('ml-problem-chips-training');
+  if (!c) return;
+  c.innerHTML = PROBLEMFAELLE.map(p => {
+    const sel = mlSelectedProblems.has(p.id);
+    return '<button onclick="mlToggleProblem(''+p.id+'')" style="padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid '+(sel?'var(--pink)':'var(--border)')+';background:'+(sel?'var(--pink-light)':'var(--surface)')+';color:'+(sel?'var(--pink)':'var(--mid)')+'">'+p.label+'</button>';
+  }).join('');
+}
+
+function mlToggleProblem(id) {
+  if (mlSelectedProblems.has(id)) mlSelectedProblems.delete(id); else mlSelectedProblems.add(id);
+  mlRenderProblemChipsTraining();
+}
+
+function mlSetQuality(q) {
+  mlQuality = q;
+  const btns = document.querySelectorAll('#ml-quality-btns button');
+  btns.forEach((btn, i) => {
+    btn.style.borderColor = i < q ? 'var(--pink)' : 'var(--border)';
+    btn.style.background = i < q ? 'var(--pink-light)' : 'var(--surface)';
+  });
+}
+
+async function mlHandleImage(input) {
+  const file = input.files[0]; if(!file) return;
+  const url = await compressImage(file, 1200, 0.8);
+  const prev = document.getElementById('ml-img-preview');
+  prev.classList.add('has-photo');
+  prev.innerHTML = '<img src="'+url+'" style="width:100%;height:100%;object-fit:cover"/>';
+  document.getElementById('ml-img-data').value = url;
+}
+
+function mlShowStatus(msg, type) {
+  const el = document.getElementById('ml-save-status');
+  if (!el) return;
+  if (!msg) { el.style.display='none'; return; }
+  el.style.display='block';
+  const colors = {success:['#EAF4EE','#0A7C55','#4A7C59'], error:['#FEE','var(--danger)','var(--danger)'], info:['var(--pink-light)','var(--pink)','var(--pink-mid)']};
+  const [bg,color,border] = colors[type]||colors.info;
+  el.style.background=bg; el.style.color=color; el.style.border='1.5px solid '+border;
+  el.textContent = msg;
+}
+
+async function mlSaveTrainingImage() {
+  const imgData = document.getElementById('ml-img-data')?.value;
+  if (!imgData) { mlShowStatus('⚠️ Bitte zuerst ein Bild hochladen','error'); return false; }
+  mlShowStatus('💾 Speichern…','info');
+  const blocks = STRUKTUR_CONFIG[mlCurrentStruktur]||STRUKTUR_CONFIG.global;
+  try {
+    const { data: imgRecord, error } = await sb.from('ml_training_images').insert({
+      image_base64: imgData, strukturtyp: mlCurrentStruktur, quality_score: mlQuality,
+      notes: document.getElementById('ml-notes')?.value||'', created_by: currentUser?.id, source:'manual'
+    }).select().single();
+    if (error) throw error;
+    for (const h of mlActiveHersteller) {
+      const hB = blocks.map(b => mlLabels[h]?.[b.id]||{level:6,nuance:0});
+      await sb.from('ml_training_values').insert({
+        image_id: imgRecord.id, hersteller: h,
+        bereich_1_label: blocks[0]?.label, bereich_1_level: hB[0]?.level, bereich_1_nuance: hB[0]?.nuance, bereich_1_code: (hB[0]?.level||6)+'.'+(hB[0]?.nuance||0),
+        bereich_2_label: blocks[1]?.label||null, bereich_2_level: hB[1]?.level||null, bereich_2_nuance: hB[1]?.nuance||null, bereich_2_code: blocks[1] ? (hB[1]?.level||6)+'.'+(hB[1]?.nuance||0) : null,
+        bereich_3_label: blocks[2]?.label||null, bereich_3_level: hB[2]?.level||null, bereich_3_nuance: hB[2]?.nuance||null, bereich_3_code: blocks[2] ? (hB[2]?.level||6)+'.'+(hB[2]?.nuance||0) : null,
+        problemfaelle: [...mlSelectedProblems], labeled_by: currentUser?.id
+      });
+    }
+    mlTrainingImages.unshift({id:imgRecord.id, src:imgData, strukturtyp:mlCurrentStruktur, quality_score:mlQuality});
+    mlShowStatus('✅ Gespeichert! '+mlActiveHersteller.size+' Hersteller gelabelt.','success');
+    mlLoadStats();
+    return true;
+  } catch(err) { mlShowStatus('❌ Fehler: '+err.message,'error'); return false; }
+}
+
+async function mlSaveAndNext() {
+  const ok = await mlSaveTrainingImage();
+  if (ok) setTimeout(() => {
+    document.getElementById('ml-img-data').value='';
+    const prev = document.getElementById('ml-img-preview');
+    prev.classList.remove('has-photo');
+    prev.innerHTML='<div class="photo-placeholder"><div class="ico">🧠</div><p>Trainingsbild hochladen</p></div>';
+    document.getElementById('ml-notes').value='';
+    mlLabels={}; mlSelectedProblems=new Set();
+    mlRenderFarbBlocks(); mlShowStatus('','');
+  }, 1500);
+}
+
+async function mlLoadStats() {
+  try {
+    const {data:imgs} = await sb.from('ml_training_images').select('id,quality_score,is_verified');
+    const {data:vals} = await sb.from('ml_training_values').select('id');
+    if (imgs) {
+      document.getElementById('ml-stat-total').textContent = imgs.length;
+      document.getElementById('ml-stat-verified').textContent = imgs.filter(d=>d.is_verified).length;
+      const avg = imgs.reduce((s,d)=>s+(d.quality_score||3),0)/(imgs.length||1);
+      document.getElementById('ml-stat-quality').textContent = avg.toFixed(1);
+    }
+    if (vals) document.getElementById('ml-stat-labels').textContent = vals.length;
+  } catch(e) {}
+}
+
+async function mlLoadGallery(filter) {
+  const grid = document.getElementById('ml-gallery-grid');
+  const empty = document.getElementById('ml-gallery-empty');
+  if (!grid) return;
+  try {
+    let q = sb.from('ml_training_images').select('id,strukturtyp,quality_score').order('created_at',{ascending:false}).limit(60);
+    if (filter) q = q.eq('strukturtyp', filter);
+    const {data} = await q;
+    if (!data?.length) { grid.innerHTML=''; if(empty) empty.style.display='block'; return; }
+    if(empty) empty.style.display='none';
+    const colors = {global:'#E8185A',highlights:'#FFB300',balayage:'#7B1FA2',verlauf:'#1565C0'};
+    grid.innerHTML = data.map(img => {
+      const cached = mlTrainingImages.find(m=>m.id===img.id);
+      return '<div style="position:relative;aspect-ratio:1;background:'+(colors[img.strukturtyp]||'#888')+';overflow:hidden">' +
+        (cached?.src?'<img src="'+cached.src+'" style="width:100%;height:100%;object-fit:cover"/>':'') +
+        '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);padding:3px 4px;font-size:9px;font-weight:700;color:#fff">'+img.strukturtyp+' ★'+(img.quality_score||'?')+'</div></div>';
+    }).join('');
+  } catch(e) {}
+}
+
+async function mlLoadExportStats() {
+  const el = document.getElementById('ml-export-stats');
+  if (!el) return;
+  try {
+    const {data:imgs} = await sb.from('ml_training_images').select('strukturtyp');
+    const {data:vals} = await sb.from('ml_training_values').select('hersteller');
+    const byTyp={}, byH={};
+    if(imgs) imgs.forEach(d=>byTyp[d.strukturtyp]=(byTyp[d.strukturtyp]||0)+1);
+    if(vals) vals.forEach(v=>byH[v.hersteller]=(byH[v.hersteller]||0)+1);
+    el.innerHTML = '<div style="background:var(--bg);border-radius:var(--rs);padding:12px;margin-bottom:8px">' +
+      '<div style="font-size:12px;font-weight:800;margin-bottom:8px">Nach Strukturtyp:</div>' +
+      Object.entries(byTyp).map(([k,v])=>'<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0"><span>'+k+'</span><strong>'+v+' Bilder</strong></div>').join('') +
+      '</div><div style="background:var(--bg);border-radius:var(--rs);padding:12px">' +
+      '<div style="font-size:12px;font-weight:800;margin-bottom:8px">Nach Hersteller:</div>' +
+      Object.entries(byH).map(([k,v])=>'<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0"><span>'+(NUANCEN_DB[k]?.name||k)+'</span><strong>'+v+' Labels</strong></div>').join('') +
+      '</div>';
+  } catch(e) {}
+}
+
+async function mlExportJSON() {
+  try {
+    const {data:images} = await sb.from('ml_training_images').select('*');
+    const {data:values} = await sb.from('ml_training_values').select('*');
+    const out = (images||[]).map(img => ({
+      id:img.id, strukturtyp:img.strukturtyp, quality_score:img.quality_score,
+      is_verified:img.is_verified, notes:img.notes, created_at:img.created_at,
+      labels: (values||[]).filter(v=>v.image_id===img.id).map(v=>({
+        hersteller:v.hersteller,
+        bereiche:[
+          v.bereich_1_label?{label:v.bereich_1_label,level:v.bereich_1_level,nuance:v.bereich_1_nuance,code:v.bereich_1_code}:null,
+          v.bereich_2_label?{label:v.bereich_2_label,level:v.bereich_2_level,nuance:v.bereich_2_nuance,code:v.bereich_2_code}:null,
+          v.bereich_3_label?{label:v.bereich_3_label,level:v.bereich_3_level,nuance:v.bereich_3_nuance,code:v.bereich_3_code}:null,
+        ].filter(Boolean), problemfaelle:v.problemfaelle
+      }))
+    }));
+    const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='colormixai_training_'+new Date().toISOString().slice(0,10)+'.json';
+    a.click();
+  } catch(e) { alert('Export Fehler: '+e.message); }
+}
+
+async function mlExportCSV() {
+  try {
+    const {data} = await sb.from('ml_export_flat').select('*');
+    if (!data?.length) return;
+    const headers=Object.keys(data[0]);
+    const csv=[headers.join(','),...data.map(row=>headers.map(h=>JSON.stringify(row[h]??'')).join(','))].join('\n');
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+    a.download='colormixai_training_'+new Date().toISOString().slice(0,10)+'.csv';
+    a.click();
+  } catch(e) { alert('CSV Fehler: '+e.message); }
+}
+
+function mlFilterGallery(typ) { mlLoadGallery(typ==='alle'?null:typ); }
+
+/* ═══════════════════ END ML TRAINING LOGIC ═══════════════════ */
 
 async function doGoogleLogin() {
   const { error } = await sb.auth.signInWithOAuth({
