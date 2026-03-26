@@ -377,7 +377,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 <!-- ══════════════════ ONBOARDING STEP 1: SALON-INFO ══════════════════ -->
 <section class="screen" id="s-onboarding-salon">
   <div class="hdr">
-    <span style="width:60px"></span>
+    <button class="hdr-back" onclick="doLogout()" style="font-size:12px;color:var(--muted)">Ausloggen</button>
     <span class="hdr-title">Dein Salon</span>
     <span style="width:60px"></span>
   </div>
@@ -2192,13 +2192,14 @@ async function doForgot() {
 async function doLogout() {
   try {
     if (currentUser) {
-      await sb.from('active_sessions').delete().eq('user_id', currentUser.id).catch(()=>{});
+      try { await sb.from('active_sessions').delete().eq('user_id', currentUser.id); } catch(e) {}
     }
     await sb.auth.signOut();
-  } catch(e) { console.warn('Logout error:', e); }
+  } catch(e) {}
   currentUser = null;
   currentSalon = null;
-  // Use original go to bypass auth guard
+  clients = [];
+  sessions = [];
   _goOrigAuth('s-login');
 }
 
@@ -2518,7 +2519,7 @@ async function redeemVoucher() {
     await loadSalon();
     if (currentSalon?.id) {
       // Salon wurde doch angelegt — Plan updaten und weitermachen
-      await sb.from('salons').update({ plan: voucher.plan, plan_status: 'active' }).eq('id', currentSalon.id).catch(()=>{});
+      try { await sb.from('salons').update({ plan: voucher.plan, plan_status: 'active' }).eq('id', currentSalon.id); } catch(e) {}
       currentSalon.plan = voucher.plan;
       currentSalon.plan_status = 'active';
       // Kein return — weiter unten weitermachen
@@ -2536,8 +2537,8 @@ async function redeemVoucher() {
 
   // Einlösung + Zähler
   if (salon?.id) {
-    await sb.from('voucher_redemptions').insert({ voucher_id: voucher.id, user_id: currentUser.id, salon_id: salon.id }).catch(()=>{});
-    await sb.from('vouchers').update({ used_count: voucher.used_count + 1 }).eq('id', voucher.id).catch(()=>{});
+    try { await sb.from('voucher_redemptions').insert({ voucher_id: voucher.id, user_id: currentUser.id, salon_id: salon.id }); } catch(e) {}
+    try { await sb.from('vouchers').update({ used_count: voucher.used_count + 1 }).eq('id', voucher.id); } catch(e) {}
   }
 
   // Salon neu laden bis er verfügbar ist (max 5 Versuche)
