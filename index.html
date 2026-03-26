@@ -9,13 +9,13 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#FAFAFA;
+  --bg:#F4F4F6;
   --surface:#FFFFFF;
-  --charcoal:#0F0F0F;
-  --graphite:#2A2A2A;
-  --mid:#6B6B6B;
-  --muted:#ABABAB;
-  --border:#EBEBEB;
+  --charcoal:#0A0A0A;
+  --graphite:#1A1A1A;
+  --mid:#444444;
+  --muted:#888888;
+  --border:#D8D8E0;
   --pink:#E8185A;
   --pink-light:#FFF0F4;
   --pink-mid:#F5ACCB;
@@ -24,10 +24,10 @@
   --danger:#C83030;
   --r:12px;
   --rs:8px;
-  --sh:0 2px 16px rgba(0,0,0,0.06);
-  --sh-md:0 8px 40px rgba(0,0,0,0.10);
+  --sh:0 2px 16px rgba(0,0,0,0.08);
+  --sh-md:0 8px 40px rgba(0,0,0,0.14);
 }
-html,body{height:100%;background:var(--bg);font-family:'Outfit',sans-serif;color:var(--charcoal);-webkit-font-smoothing:antialiased}
+html,body{height:100%;background:#EEEEF2;font-family:'Outfit',sans-serif;color:var(--charcoal);-webkit-font-smoothing:antialiased}
 #app{min-height:100vh;display:flex;flex-direction:column;align-items:center;width:100%;overflow-x:hidden}
 
 /* ── SCREENS ── */
@@ -36,7 +36,7 @@ html,body{height:100%;background:var(--bg);font-family:'Outfit',sans-serif;color
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
 /* ── HEADER ── */
-.hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:20}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:2px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:0 1px 8px rgba(0,0,0,0.06)}
 .hdr-logo{font-family:'Outfit',sans-serif;font-size:18px;font-weight:800;letter-spacing:-0.5px;color:var(--charcoal)}
 .hdr-logo span{color:var(--pink)}
 .hdr-back{display:flex;align-items:center;gap:4px;color:var(--mid);font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;padding:4px 0}
@@ -45,16 +45,16 @@ html,body{height:100%;background:var(--bg);font-family:'Outfit',sans-serif;color
 .hdr-action{font-size:13px;font-weight:600;color:var(--danger);background:none;border:none;cursor:pointer;padding:4px 0}
 
 /* ── PROGRESS ── */
-.prog{height:2px;background:var(--border);flex-shrink:0}
+.prog{height:3px;background:#E0E0E8;flex-shrink:0}
 .prog-fill{height:100%;background:var(--pink);transition:width .4s ease}
 
 /* ── SCROLL ── */
-.body{flex:1;overflow-y:auto;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+.body{flex:1;overflow-y:auto;padding:20px;padding-bottom:calc(24px + env(safe-area-inset-bottom));background:var(--bg)}
 .body::-webkit-scrollbar{width:3px}
 .body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
 /* ── LABELS ── */
-.lbl{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;margin-top:22px}
+.lbl{font-size:11px;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:var(--mid);margin-bottom:10px;margin-top:24px}
 .lbl:first-child{margin-top:0}
 
 /* ── BUTTONS ── */
@@ -72,9 +72,9 @@ html,body{height:100%;background:var(--bg);font-family:'Outfit',sans-serif;color
 .btn-full{width:100%}
 
 /* ── INPUTS ── */
-.inp{width:100%;height:48px;border:1.5px solid var(--border);border-radius:var(--rs);padding:0 14px;font-family:'Outfit',sans-serif;font-size:14px;color:var(--charcoal);background:var(--surface);outline:none;transition:border-color .2s}
-.inp:focus{border-color:var(--pink)}
-.inp::placeholder{color:var(--muted)}
+.inp{width:100%;height:50px;border:2px solid var(--border);border-radius:var(--rs);padding:0 14px;font-family:'Outfit',sans-serif;font-size:15px;color:var(--charcoal);background:var(--surface);outline:none;transition:all .2s;font-weight:500}
+.inp:focus{border-color:var(--pink);box-shadow:0 0 0 3px rgba(232,24,90,0.12)}
+.inp::placeholder{color:#AAAAAA;font-weight:400}
 textarea.inp{height:70px;padding:12px 14px;resize:none}
 select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23ABABAB' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer}
 input[type=file]{display:none}
@@ -82,29 +82,29 @@ input[type=range]{flex:1;-webkit-appearance:none;height:3px;background:linear-gr
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid var(--pink);box-shadow:0 2px 8px rgba(232,24,90,0.25);cursor:pointer}
 
 /* ── SEGMENT ── */
-.seg{display:flex;background:var(--bg);border-radius:var(--rs);padding:3px;gap:2px}
+.seg{display:flex;background:#E8E8F0;border-radius:var(--rs);padding:3px;gap:2px}
 .seg-btn{flex:1;border:none;background:transparent;padding:8px 6px;border-radius:6px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;color:var(--mid);cursor:pointer;transition:all .18s}
-.seg-btn.active{background:var(--surface);color:var(--charcoal);font-weight:700;box-shadow:var(--sh)}
+.seg-btn.active{background:var(--surface);color:var(--charcoal);font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.12)}
 
 /* ── CHIPS ── */
 .chip-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.chip{border:1.5px solid var(--border);border-radius:var(--rs);padding:12px 14px;cursor:pointer;transition:all .18s;background:var(--surface)}
+.chip{border:2px solid var(--border);border-radius:var(--rs);padding:12px 14px;cursor:pointer;transition:all .18s;background:var(--surface);box-shadow:0 1px 4px rgba(0,0,0,0.05)}
 .chip:hover,.chip.selected{border-color:var(--pink);background:var(--pink-light)}
-.chip-name{font-size:13px;font-weight:600}
+.chip-name{font-size:13px;font-weight:700;color:var(--charcoal)}
 .chip-dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle}
 
 /* ── PHOTO ── */
 .photo-area{position:relative}
-.photo-preview{width:100%;aspect-ratio:3/4;background:var(--bg);border-radius:var(--r);overflow:hidden;display:flex;align-items:center;justify-content:center;border:2px dashed var(--border)}
+.photo-preview{width:100%;aspect-ratio:3/4;background:var(--bg);border-radius:var(--r);overflow:hidden;display:flex;align-items:center;justify-content:center;border:2.5px dashed #C8C8D0}
 .photo-preview.has-photo{border:none}
 .photo-preview img{width:100%;height:100%;object-fit:cover}
-.photo-placeholder{text-align:center;color:var(--muted)}
-.photo-placeholder .ico{font-size:32px;margin-bottom:8px}
-.photo-placeholder p{font-size:12px;line-height:1.5}
+.photo-placeholder{text-align:center;color:#888888}
+.photo-placeholder .ico{font-size:40px;margin-bottom:10px}
+.photo-placeholder p{font-size:13px;line-height:1.5;font-weight:500}
 .photo-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 
 /* ── CARDS ── */
-.card{border:1.5px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px;background:var(--surface)}
+.card{border:1.5px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:12px;background:var(--surface);box-shadow:var(--sh)}
 .card-lbl{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--pink);margin-bottom:6px}
 .card-val{font-size:16px;font-weight:700;line-height:1.4}
 .card-sub{font-size:13px;color:var(--mid);margin-top:2px}
@@ -126,8 +126,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 .avatar{width:46px;height:46px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:18px;overflow:hidden;flex-shrink:0;border:1.5px solid var(--border)}
 .avatar img{width:100%;height:100%;object-fit:cover}
 .lc-info{flex:1;min-width:0}
-.lc-name{font-size:15px;font-weight:700;letter-spacing:-0.2px}
-.lc-sub{font-size:12px;color:var(--mid);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lc-name{font-size:15px;font-weight:800;letter-spacing:-0.2px;color:var(--charcoal)}
+.lc-sub{font-size:12px;color:#666666;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
 .lc-badge{font-size:11px;color:var(--pink);font-weight:700;flex-shrink:0;background:var(--pink-light);padding:3px 8px;border-radius:20px}
 
 /* ── PROFILE ── */
@@ -153,8 +153,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 .sess-detail{font-size:13px;line-height:1.9;color:var(--graphite)}
 
 /* ── BANNER ── */
-.banner{display:flex;align-items:center;gap:10px;background:var(--pink-light);border:1.5px solid var(--pink-mid);border-radius:var(--rs);padding:10px 14px;margin-bottom:16px}
-.banner-name{font-size:13px;font-weight:700;flex:1;color:var(--charcoal)}
+.banner{display:flex;align-items:center;gap:10px;background:var(--pink-light);border:2px solid var(--pink-mid);border-radius:var(--rs);padding:12px 16px;margin-bottom:16px;box-shadow:0 2px 8px rgba(232,24,90,0.1)}
+.banner-name{font-size:14px;font-weight:800;flex:1;color:var(--charcoal)}
 .banner-change{border:none;background:none;color:var(--pink);font-size:12px;cursor:pointer;font-weight:600}
 
 /* ── ANALYSIS ── */
@@ -194,7 +194,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 .brand-chip:hover,.brand-chip.selected{border-color:var(--pink);color:var(--pink);background:var(--pink-light)}
 
 /* ── MISC ── */
-.divider{height:1px;background:var(--border);margin:18px 0}
+.divider{height:1px;background:#D0D0DC;margin:20px 0}
 .empty{text-align:center;padding:40px 20px;color:var(--muted)}
 .empty .ico{font-size:36px;margin-bottom:10px}
 .empty p{font-size:13px;line-height:1.6}
@@ -256,11 +256,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 .inp-sm{height:40px;font-size:13px}
 
 
-/* ── AUTH ── */
-.auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;padding:32px 24px;padding-bottom:calc(32px + env(safe-area-inset-bottom))}
-.auth-logo{font-family:'Outfit',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;margin-bottom:6px}
+.field-error{font-size:12px;color:var(--danger);margin-bottom:6px;margin-top:-2px;min-height:16px;font-weight:600}
+
+.auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;padding:36px 28px;padding-bottom:calc(36px + env(safe-area-inset-bottom))}
+.auth-logo{font-family:'Outfit',sans-serif;font-size:30px;font-weight:900;letter-spacing:-1px;margin-bottom:8px}
 .auth-logo span{color:var(--pink)}
-.auth-sub{font-size:14px;color:var(--muted);margin-bottom:28px;line-height:1.5}
+.auth-sub{font-size:15px;color:var(--mid);margin-bottom:28px;line-height:1.6;font-weight:500}
 .auth-switch{text-align:center;font-size:13px;color:var(--mid);margin-top:16px}
 .auth-switch a{color:var(--pink);font-weight:700;cursor:pointer}
 .auth-error{background:#FDF2F2;border:1.5px solid #F5C4C4;color:var(--danger);font-size:13px;border-radius:var(--rs);padding:10px 14px;margin-bottom:12px;display:none}
@@ -388,25 +389,50 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
       <div style="font-size:13px;color:var(--muted);margin-top:6px">Schritt 1 von 3</div>
     </div>
 
-    <div class="lbl" style="margin-top:0">Salon-Name</div>
-    <input class="inp" type="text" placeholder="z.B. Salon Bella" id="ob-salon-name" style="margin-bottom:8px"/>
+    <div class="lbl" style="margin-top:0">Salon-Name *</div>
+    <input class="inp" type="text" placeholder="z.B. Salon Bella" id="ob-salon-name" style="margin-bottom:4px" oninput="clearFieldError('ob-salon-name')"/>
+    <div class="field-error" id="err-salon-name"></div>
 
-    <div class="lbl">Adresse</div>
-    <input class="inp" type="text" placeholder="Straße & Hausnummer" id="ob-street" style="margin-bottom:8px"/>
-    <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-bottom:8px">
-      <input class="inp" type="text" placeholder="PLZ" id="ob-zip"/>
-      <input class="inp" type="text" placeholder="Stadt" id="ob-city"/>
+    <div class="lbl">Adresse *</div>
+
+    <!-- Autocomplete-Suchfeld -->
+    <div style="position:relative;margin-bottom:8px">
+      <input class="inp" type="text" placeholder="🔍 Adresse suchen…" id="ob-address-search"
+        oninput="searchAddress(this.value)"
+        autocomplete="off"
+        style="padding-right:40px"/>
+      <div id="ob-address-suggestions" style="display:none;position:absolute;top:52px;left:0;right:0;background:#fff;border:2px solid var(--pink);border-radius:var(--rs);z-index:50;box-shadow:var(--sh-md);max-height:200px;overflow-y:auto"></div>
     </div>
-    <input class="inp" type="text" placeholder="Webseite (optional)" id="ob-website" style="margin-bottom:8px"/>
+
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-bottom:8px">
+      <input class="inp" type="text" placeholder="Straße *" id="ob-street" oninput="clearFieldError('ob-street')"/>
+      <input class="inp" type="text" placeholder="Nr. *" id="ob-housenr" oninput="clearFieldError('ob-housenr')"/>
+    </div>
+    <div class="field-error" id="err-street"></div>
+
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-bottom:8px">
+      <input class="inp" type="text" placeholder="PLZ *" id="ob-zip" oninput="validateZip(this)" maxlength="5"/>
+      <input class="inp" type="text" placeholder="Stadt *" id="ob-city" oninput="clearFieldError('ob-city')"/>
+    </div>
+    <div class="field-error" id="err-zip"></div>
+
+    <!-- Land — nur Deutschland -->
+    <select class="inp" id="ob-country" style="margin-bottom:8px">
+      <option value="DE" selected>🇩🇪 Deutschland</option>
+      <option value="AT">🇦🇹 Österreich</option>
+      <option value="CH">🇨🇭 Schweiz</option>
+    </select>
+
+    <input class="inp" type="url" placeholder="Webseite (optional)" id="ob-website" style="margin-bottom:8px"/>
     <input class="inp" type="tel" placeholder="Telefon (optional)" id="ob-phone"/>
 
     <!-- Directory opt-in -->
-    <div style="background:var(--pink-light);border:1.5px solid var(--pink-mid);border-radius:var(--rs);padding:14px;margin-top:16px">
+    <div style="background:var(--pink-light);border:2px solid var(--pink-mid);border-radius:var(--rs);padding:14px;margin-top:16px">
       <div style="display:flex;align-items:flex-start;gap:12px">
-        <input type="checkbox" id="ob-directory" style="width:18px;height:18px;margin-top:2px;accent-color:var(--pink);flex-shrink:0" checked/>
+        <input type="checkbox" id="ob-directory" style="width:20px;height:20px;margin-top:2px;accent-color:var(--pink);flex-shrink:0" checked/>
         <div>
-          <div style="font-size:13px;font-weight:700;margin-bottom:4px">📍 Salon auf ColorMixAI-Karte listen</div>
-          <div style="font-size:12px;color:var(--mid);line-height:1.6">Dein Salon wird auf unserer öffentlichen Salon-Karte angezeigt — kostenlos. Kundinnen in deiner Nähe können dich so einfacher finden.</div>
+          <div style="font-size:13px;font-weight:800;margin-bottom:4px">📍 Salon auf ColorMixAI-Karte listen</div>
+          <div style="font-size:12px;color:var(--mid);line-height:1.6">Dein Salon wird auf unserer öffentlichen Salon-Karte angezeigt — kostenlos. Kundinnen in deiner Nähe finden dich einfacher.</div>
         </div>
       </div>
     </div>
@@ -2076,8 +2102,12 @@ async function doRegister() {
   if (error) { showAuthError('reg-error', error.message); return; }
   currentUser = data.user;
   window._pendingSalonName = salon;
-  // Direkt zu Salon-Info gehen
+  // Pre-fill salon name field
   go('s-onboarding-salon');
+  setTimeout(() => {
+    const nameField = document.getElementById('ob-salon-name');
+    if (nameField && salon) nameField.value = salon;
+  }, 100);
 }
 
 /* ── ABO WÄHLEN ── */
@@ -2090,25 +2120,46 @@ function selectPlan(plan) {
 async function completeOnboarding() {
   const btn = document.querySelector('#s-onboarding .btn-pink');
   btn.textContent = 'Wird eingerichtet…'; btn.disabled = true;
-  // Salon anlegen
   const ob = window._pendingOnboarding || {};
   const salonName = ob.name || window._pendingSalonName || currentUser?.user_metadata?.salon_name || 'Mein Salon';
+
+  // Geocode if no GPS coords yet
+  let lat = ob.lat || null, lng = ob.lng || null;
+  if (!lat && ob.street && ob.city) {
+    try {
+      const q = encodeURIComponent(`${ob.street}, ${ob.zip||''} ${ob.city}, ${ob.country||'DE'}`);
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`);
+      const data = await res.json();
+      if (data[0]) { lat = parseFloat(data[0].lat); lng = parseFloat(data[0].lon); }
+    } catch(e) {}
+  }
+
   const { data: salon, error } = await sb.from('salons').insert({
     name: salonName,
     owner_id: currentUser.id,
     plan: selectedPlan,
-    plan_status: 'trial'
+    plan_status: 'trial',
+    street: ob.street || null,
+    zip: ob.zip || null,
+    city: ob.city || null,
+    website: ob.website || null,
+    phone: ob.phone || null,
+    listed_in_directory: ob.listed || false,
+    lat, lng,
   }).select().single();
   btn.textContent = '14 Tage kostenlos starten →'; btn.disabled = false;
-  if (error) { alert('Fehler beim Anlegen des Salons: ' + error.message); return; }
+  if (error) { alert('Fehler: ' + error.message); return; }
   currentSalon = salon;
   currentSalon.role = 'owner';
   window._pendingSalonName = null;
-  await new Promise(r => setTimeout(r, 1500));
+  window._pendingOnboarding = null;
+  await new Promise(r => setTimeout(r, 1200));
   await loadSalon();
+  await loadClientsFromDB();
   renderLandingUserBar();
   go('s-landing');
 }
+
 
 /* ── PASSWORT VERGESSEN ── */
 async function doForgot() {
@@ -2241,22 +2292,104 @@ go = function(screenId) {
 
 
 /* ── Onboarding Step 1 → 2 ── */
+
+/* ── Adresse Autocomplete (OpenStreetMap Nominatim) ── */
+let _addrTimer = null;
+function searchAddress(query) {
+  clearTimeout(_addrTimer);
+  const sug = document.getElementById('ob-address-suggestions');
+  if (!query || query.length < 4) { if(sug) sug.style.display='none'; return; }
+  _addrTimer = setTimeout(async () => {
+    try {
+      const country = document.getElementById('ob-country')?.value || 'DE';
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&countrycodes=${country.toLowerCase()}&format=json&addressdetails=1&limit=5`;
+      const res = await fetch(url, {headers:{'Accept-Language':'de'}});
+      const data = await res.json();
+      if (!sug) return;
+      if (!data.length) { sug.style.display='none'; return; }
+      sug.innerHTML = data.map((item) => {
+        const parts = [item.address?.road, item.address?.house_number, item.address?.postcode, item.address?.city||item.address?.town||item.address?.village].filter(Boolean).join(', ');
+        const div = document.createElement('div');
+        div.style.cssText = 'padding:10px 14px;cursor:pointer;border-bottom:1px solid #E0E0E8;font-size:13px;transition:background .15s';
+        div.textContent = '📍 ' + parts;
+        div.dataset.street = item.address?.road || '';
+        div.dataset.housenr = item.address?.house_number || '';
+        div.dataset.zip = item.address?.postcode || '';
+        div.dataset.city = item.address?.city || item.address?.town || item.address?.village || '';
+        div.dataset.lat = item.lat;
+        div.dataset.lng = item.lon;
+        div.addEventListener('mouseover', () => div.style.background = 'var(--pink-light)');
+        div.addEventListener('mouseout', () => div.style.background = '');
+        div.addEventListener('click', () => selectAddress(div));
+        return div.outerHTML;
+      }).join('');
+      sug.style.display = 'block';
+    } catch(e) {}
+  }, 400);
+}
+
+function selectAddress(el) {
+  document.getElementById('ob-street').value = el.dataset.street || '';
+  document.getElementById('ob-housenr').value = el.dataset.housenr || '';
+  document.getElementById('ob-zip').value = el.dataset.zip || '';
+  document.getElementById('ob-city').value = el.dataset.city || '';
+  document.getElementById('ob-address-search').value = '';
+  window._pendingLat = parseFloat(el.dataset.lat);
+  window._pendingLng = parseFloat(el.dataset.lng);
+  const sug = document.getElementById('ob-address-suggestions');
+  if (sug) sug.style.display = 'none';
+}
+
+function validateZip(input) {
+  input.value = input.value.replace(/\D/g,'');
+  const country = document.getElementById('ob-country')?.value || 'DE';
+  const el = document.getElementById('err-zip');
+  const len = (country==='DE') ? 5 : 4;
+  if (el) el.textContent = (input.value.length > 0 && input.value.length !== len) ? `⚠️ ${country==='DE'?'Deutsche':'':''} PLZ muss ${len} Ziffern haben` : '';
+}
+
+function clearFieldError(id) {
+  const map = {'ob-salon-name':'err-salon-name','ob-street':'err-street','ob-housenr':'err-street','ob-zip':'err-zip','ob-city':'err-zip'};
+  const el = document.getElementById(map[id]||'');
+  if (el) el.textContent = '';
+}
+
+function showFieldError(errId, msg) {
+  const el = document.getElementById(errId);
+  if (el) { el.textContent = msg; el.scrollIntoView({behavior:'smooth',block:'center'}); }
+}
+
 function onboardingStep2() {
   const name = document.getElementById('ob-salon-name').value.trim();
-  if (!name) { alert('Bitte Salon-Namen eingeben.'); return; }
-  // Store salon info for completeOnboarding
+  const street = document.getElementById('ob-street').value.trim();
+  const housenr = document.getElementById('ob-housenr')?.value.trim() || '';
+  const zip = document.getElementById('ob-zip').value.trim();
+  const city = document.getElementById('ob-city').value.trim();
+  const country = document.getElementById('ob-country')?.value || 'DE';
+
+  let valid = true;
+  if (!name) { showFieldError('err-salon-name','⚠️ Salon-Name ist Pflicht'); valid=false; }
+  if (!street || !housenr) { showFieldError('err-street','⚠️ Straße und Hausnummer sind Pflicht'); valid=false; }
+  if (!zip) { showFieldError('err-zip','⚠️ PLZ ist Pflicht'); valid=false; }
+  else if (country==='DE' && zip.length!==5) { showFieldError('err-zip','⚠️ Deutsche PLZ muss 5 Ziffern haben'); valid=false; }
+  else if ((country==='AT'||country==='CH') && zip.length!==4) { showFieldError('err-zip','⚠️ PLZ muss 4 Ziffern haben'); valid=false; }
+  if (!city) { showFieldError('err-zip','⚠️ Stadt ist Pflicht'); valid=false; }
+  if (!valid) return;
+
   window._pendingOnboarding = {
     name,
-    street: document.getElementById('ob-street').value.trim(),
-    zip: document.getElementById('ob-zip').value.trim(),
-    city: document.getElementById('ob-city').value.trim(),
+    street: street + (housenr ? ' ' + housenr : ''),
+    zip, city, country,
     website: document.getElementById('ob-website').value.trim(),
     phone: document.getElementById('ob-phone').value.trim(),
     listed: document.getElementById('ob-directory').checked,
+    lat: window._pendingLat || null,
+    lng: window._pendingLng || null,
   };
   window._pendingSalonName = name;
   go('s-onboarding');
 }
+
 
 /* ── Go to client profile after saving result ── */
 function goToClientProfile() {
