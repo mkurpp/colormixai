@@ -2,943 +2,2608 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>ColorMixAI — Die perfekte Farbformel, in Sekunden.</title>
-<meta name="description" content="KI-gestützte Haarfarb-Formelberechnung für professionelle Friseure. Wella, L'Oréal, Schwarzkopf, Redken und mehr."/>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>ColorMixAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Cormorant:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --ink:#0A0A0A;
+  --bg:#F4F4F6;
+  --surface:#FFFFFF;
+  --charcoal:#0A0A0A;
   --graphite:#1A1A1A;
-  --mid:#5A5A5A;
-  --muted:#9A9A9A;
-  --border:#E8E8E8;
-  --bg:#FAFAFA;
-  --white:#FFFFFF;
+  --mid:#444444;
+  --muted:#888888;
+  --border:#D8D8E0;
   --pink:#E8185A;
-  --pink-dark:#B5104A;
   --pink-light:#FFF0F4;
-  --gold:#C4963A;
+  --pink-mid:#F5ACCB;
+  --pink-dark:#B5104A;
+  --success:#0A7C55;
+  --danger:#C83030;
+  --r:12px;
+  --rs:8px;
+  --sh:0 2px 16px rgba(0,0,0,0.08);
+  --sh-md:0 8px 40px rgba(0,0,0,0.14);
 }
-html{scroll-behavior:smooth}
-body{font-family:'Outfit',sans-serif;color:var(--ink);background:var(--white);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+html,body{height:100%;background:#EEEEF2;font-family:'Outfit',sans-serif;color:var(--charcoal);-webkit-font-smoothing:antialiased}
+#app{min-height:100vh;display:flex;flex-direction:column;align-items:center;width:100%;overflow-x:hidden}
 
-/* ══ NAV ══════════════════════════════════════════════ */
-nav{
-  position:fixed;top:0;left:0;right:0;z-index:100;
-  padding:0 5%;
-  display:flex;align-items:center;justify-content:space-between;
-  height:68px;
-  background:rgba(255,255,255,0.85);
-  backdrop-filter:blur(20px);
-  border-bottom:1px solid rgba(0,0,0,0.06);
-  transition:all .3s;
-}
-.nav-logo{font-size:20px;font-weight:800;letter-spacing:-0.5px;text-decoration:none;color:var(--ink)}
-.nav-logo span{color:var(--pink)}
-.nav-links{display:flex;align-items:center;gap:32px}
-.nav-links a{font-size:14px;font-weight:500;color:var(--mid);text-decoration:none;transition:color .2s}
-.nav-links a:hover{color:var(--ink)}
-.nav-cta{
-  background:var(--pink);color:#fff;
-  font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;
-  padding:10px 22px;border-radius:8px;border:none;cursor:pointer;
-  text-decoration:none;transition:all .2s;
-  box-shadow:0 4px 16px rgba(232,24,90,0.28);
-}
-.nav-cta:hover{background:var(--pink-dark);transform:translateY(-1px)}
-.nav-mobile-toggle{display:none;background:none;border:none;cursor:pointer;padding:4px}
-.nav-mobile-menu{display:none;position:fixed;inset:0;top:68px;background:#fff;z-index:99;padding:32px 5%;flex-direction:column;gap:24px}
-.nav-mobile-menu.open{display:flex}
-.nav-mobile-menu a{font-size:18px;font-weight:600;color:var(--ink);text-decoration:none;padding:12px 0;border-bottom:1px solid var(--border)}
+/* ── SCREENS ── */
+.screen{display:none;width:100%;max-width:min(430px,100vw);min-height:100vh;flex-direction:column;background:var(--surface);position:relative}
+.screen.active{display:flex;animation:fadeUp .22s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
-/* ══ HERO ══════════════════════════════════════════════ */
-.hero{
-  min-height:100vh;
-  display:grid;grid-template-columns:1fr 1fr;
-  align-items:center;
-  padding:0 5%;
-  padding-top:68px;
-  gap:60px;
-  position:relative;overflow:hidden;
+/* ── HEADER ── */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:2px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:20;box-shadow:0 1px 8px rgba(0,0,0,0.06)}
+.hdr-logo{font-family:'Outfit',sans-serif;font-size:18px;font-weight:800;letter-spacing:-0.5px;color:var(--charcoal)}
+.hdr-logo span{color:var(--pink)}
+.hdr-back{display:flex;align-items:center;gap:4px;color:var(--mid);font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;padding:4px 0}
+.hdr-back:hover{color:var(--charcoal)}
+.hdr-title{font-size:15px;font-weight:700;letter-spacing:-0.2px}
+.hdr-action{font-size:13px;font-weight:600;color:var(--danger);background:none;border:none;cursor:pointer;padding:4px 0}
+
+/* ── PROGRESS ── */
+.prog{height:3px;background:#E0E0E8;flex-shrink:0}
+.prog-fill{height:100%;background:var(--pink);transition:width .4s ease}
+
+/* ── SCROLL ── */
+.body{flex:1;overflow-y:auto;padding:20px;padding-bottom:calc(24px + env(safe-area-inset-bottom));background:var(--bg)}
+.body::-webkit-scrollbar{width:3px}
+.body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* ── LABELS ── */
+.lbl{font-size:11px;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:var(--mid);margin-bottom:10px;margin-top:24px}
+.lbl:first-child{margin-top:0}
+
+/* ── BUTTONS ── */
+.btn{display:flex;align-items:center;justify-content:center;gap:7px;border-radius:var(--rs);font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .18s;border:none;padding:0 18px;letter-spacing:0.1px}
+.btn-pink{background:var(--pink);color:#fff;height:52px;box-shadow:0 4px 20px rgba(232,24,90,0.28)}
+.btn-pink:hover{background:var(--pink-dark);transform:translateY(-1px);box-shadow:0 6px 24px rgba(232,24,90,0.36)}
+.btn-dark{background:var(--charcoal);color:#fff;height:52px}
+.btn-dark:hover{background:var(--graphite);transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--charcoal);height:44px;border:1.5px solid var(--border);font-weight:500}
+.btn-outline:hover{border-color:var(--charcoal)}
+.btn-ghost{background:transparent;color:var(--mid);height:40px;font-weight:500;font-size:13px}
+.btn-ghost:hover{color:var(--charcoal)}
+.btn-danger{background:#FDF2F2;color:var(--danger);height:44px;border:1.5px solid #F5C4C4;font-weight:600}
+.btn-danger:hover{background:#FAEAEA}
+.btn-full{width:100%}
+
+/* ── INPUTS ── */
+.inp{width:100%;height:50px;border:2px solid var(--border);border-radius:var(--rs);padding:0 14px;font-family:'Outfit',sans-serif;font-size:15px;color:var(--charcoal);background:var(--surface);outline:none;transition:all .2s;font-weight:500}
+.inp:focus{border-color:var(--pink);box-shadow:0 0 0 3px rgba(232,24,90,0.12)}
+.inp::placeholder{color:#AAAAAA;font-weight:400}
+textarea.inp{height:70px;padding:12px 14px;resize:none}
+select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23ABABAB' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer}
+input[type=file]{display:none}
+input[type=range]{flex:1;-webkit-appearance:none;height:3px;background:linear-gradient(to right,var(--pink) 0%,var(--pink) var(--pct,60%),var(--border) var(--pct,60%));border-radius:2px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid var(--pink);box-shadow:0 2px 8px rgba(232,24,90,0.25);cursor:pointer}
+
+/* ── SEGMENT ── */
+.seg{display:flex;background:#E8E8F0;border-radius:var(--rs);padding:3px;gap:2px}
+.seg-btn{flex:1;border:none;background:transparent;padding:8px 6px;border-radius:6px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;color:var(--mid);cursor:pointer;transition:all .18s}
+.seg-btn.active{background:var(--surface);color:var(--charcoal);font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.12)}
+
+/* ── CHIPS ── */
+.chip-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chip{border:2px solid var(--border);border-radius:var(--rs);padding:12px 14px;cursor:pointer;transition:all .18s;background:var(--surface);box-shadow:0 1px 4px rgba(0,0,0,0.05)}
+.chip:hover,.chip.selected{border-color:var(--pink);background:var(--pink-light)}
+.chip-name{font-size:13px;font-weight:700;color:var(--charcoal)}
+.chip-dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle}
+
+/* ── PHOTO ── */
+.photo-area{position:relative}
+.photo-preview{width:100%;aspect-ratio:3/4;background:var(--bg);border-radius:var(--r);overflow:hidden;display:flex;align-items:center;justify-content:center;border:2.5px dashed #C8C8D0}
+.photo-preview.has-photo{border:none}
+.photo-preview img{width:100%;height:100%;object-fit:cover}
+.photo-placeholder{text-align:center;color:#888888}
+.photo-placeholder .ico{font-size:40px;margin-bottom:10px}
+.photo-placeholder p{font-size:13px;line-height:1.5;font-weight:500}
+.photo-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+
+/* ── CARDS ── */
+.card{border:1.5px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:12px;background:var(--surface);box-shadow:var(--sh)}
+.card-lbl{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--pink);margin-bottom:6px}
+.card-val{font-size:16px;font-weight:700;line-height:1.4}
+.card-sub{font-size:13px;color:var(--mid);margin-top:2px}
+
+/* ── FORMULA ── */
+.formula-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.formula-row:last-child{border-bottom:none}
+.formula-swatch{width:24px;height:24px;border-radius:6px;flex-shrink:0}
+.formula-code{font-size:14px;font-weight:700;flex:1}
+.formula-amount{font-size:13px;color:var(--mid);font-weight:500}
+
+/* ── WARNING ── */
+.warn-box{display:flex;align-items:flex-start;gap:10px;background:#FEF3E8;border:1.5px solid #F5C27A;border-radius:var(--rs);padding:12px}
+.warn-text{font-size:12px;color:#92400E;line-height:1.6}
+
+/* ── LIST CARDS ── */
+.list-card{display:flex;align-items:center;gap:14px;border:1.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:8px;cursor:pointer;transition:all .18s;background:var(--surface)}
+.list-card:hover{border-color:var(--pink);box-shadow:var(--sh)}
+.avatar{width:46px;height:46px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:18px;overflow:hidden;flex-shrink:0;border:1.5px solid var(--border)}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.lc-info{flex:1;min-width:0}
+.lc-name{font-size:15px;font-weight:800;letter-spacing:-0.2px;color:var(--charcoal)}
+.lc-sub{font-size:12px;color:#666666;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.lc-badge{font-size:11px;color:var(--pink);font-weight:700;flex-shrink:0;background:var(--pink-light);padding:3px 8px;border-radius:20px}
+
+/* ── PROFILE ── */
+.profile-top{display:flex;align-items:center;gap:16px;padding:20px;border-bottom:1px solid var(--border)}
+.profile-avatar{width:68px;height:68px;border-radius:50%;background:var(--bg);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:26px;overflow:hidden;flex-shrink:0}
+.profile-avatar img{width:100%;height:100%;object-fit:cover}
+.profile-name{font-family:'Cormorant',serif;font-size:24px;font-weight:600;letter-spacing:-0.3px}
+.profile-meta{font-size:12px;color:var(--mid);margin-top:2px}
+.stats-row{display:flex;border-bottom:1px solid var(--border)}
+.stat{flex:1;padding:14px 0;text-align:center;border-right:1px solid var(--border)}
+.stat:last-child{border-right:none}
+.stat-val{font-size:18px;font-weight:800;color:var(--pink)}
+.stat-lbl{font-size:10px;color:var(--mid);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+
+/* ── SESSION CARDS ── */
+.sess-card{border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:8px;overflow:hidden}
+.sess-hdr{padding:12px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:background .15s}
+.sess-hdr:hover{background:var(--bg)}
+.sess-date{font-size:13px;font-weight:700}
+.sess-target{font-size:11px;color:var(--mid);margin-top:1px}
+.sess-body{padding:12px 14px;border-top:1px solid var(--border);display:none}
+.sess-body.open{display:block}
+.sess-detail{font-size:13px;line-height:1.9;color:var(--graphite)}
+
+/* ── BANNER ── */
+.banner{display:flex;align-items:center;gap:10px;background:var(--pink-light);border:2px solid var(--pink-mid);border-radius:var(--rs);padding:12px 16px;margin-bottom:16px;box-shadow:0 2px 8px rgba(232,24,90,0.1)}
+.banner-name{font-size:14px;font-weight:800;flex:1;color:var(--charcoal)}
+.banner-change{border:none;background:none;color:var(--pink);font-size:12px;cursor:pointer;font-weight:600}
+
+/* ── ANALYSIS ── */
+.loading-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px}
+.spinner{width:52px;height:52px;border:2.5px solid var(--border);border-top:2.5px solid var(--pink);border-radius:50%;animation:spin .9s linear infinite;margin-bottom:32px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.step-row{display:flex;align-items:center;gap:12px;width:100%;padding:12px 0;border-bottom:1px solid var(--border)}
+.step-row:last-child{border-bottom:none}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0;transition:background .4s}
+.dot.active{background:var(--pink);animation:pulse 1s ease-in-out infinite}
+.dot.done{background:var(--success)}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.6)}}
+.step-txt{font-size:13px;color:var(--mid);flex:1;transition:color .3s}
+.step-txt.active{color:var(--charcoal);font-weight:600}
+.step-txt.done{color:var(--success)}
+.step-chk{color:var(--success);font-size:13px;opacity:0;transition:opacity .3s}
+.step-chk.show{opacity:1}
+
+/* ── SLIDER ── */
+.slider-wrap{display:flex;flex-direction:column;gap:8px}
+.slider-row{display:flex;align-items:center;gap:12px}
+.slider-val{font-size:20px;font-weight:800;color:var(--pink);min-width:24px;text-align:center}
+.slider-lbls{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+
+/* ── COLOR PREVIEW ── */
+.color-bar{height:48px;border-radius:var(--rs);margin-bottom:10px;display:flex;align-items:center;padding:0 14px;transition:background .4s}
+.color-bar-lbl{font-size:13px;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.3)}
+
+/* ── PILLS (developer) ── */
+.pill-row{display:flex;gap:6px;flex-wrap:wrap}
+.pill{border:1.5px solid var(--border);border-radius:20px;padding:7px 14px;font-size:12px;font-weight:600;color:var(--mid);cursor:pointer;transition:all .18s}
+.pill.selected{border-color:var(--pink);background:var(--pink);color:#fff}
+
+/* ── BRAND CHIPS ── */
+.brand-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.brand-chip{border:1.5px solid var(--border);border-radius:var(--rs);padding:10px 6px;text-align:center;cursor:pointer;transition:all .18s;font-size:12px;font-weight:700;color:var(--graphite)}
+.brand-chip:hover,.brand-chip.selected{border-color:var(--pink);color:var(--pink);background:var(--pink-light)}
+
+/* ── MISC ── */
+.divider{height:1px;background:#D0D0DC;margin:20px 0}
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty .ico{font-size:36px;margin-bottom:10px}
+.empty p{font-size:13px;line-height:1.6}
+.fab{position:sticky;bottom:calc(20px + env(safe-area-inset-bottom));right:0;margin:0 20px calc(20px + env(safe-area-inset-bottom)) auto;width:50px;height:50px;border-radius:50%;background:var(--pink);border:none;color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(232,24,90,.4);transition:all .18s;flex-shrink:0}
+.fab:hover{background:var(--pink-dark);transform:scale(1.08)}
+
+/* ── MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:flex-end;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:430px;animation:slideUp .22s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-title{font-size:18px;font-weight:800;letter-spacing:-0.3px;margin-bottom:6px}
+.modal-body{font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:20px}
+.modal-handle{width:36px;height:3px;border-radius:2px;background:var(--border);margin:0 auto 20px}
+
+/* ══════════════════════════════════════════
+   LANDING — full-bleed hero
+══════════════════════════════════════════ */
+.landing-hero{
+  position:relative;flex:1;display:flex;flex-direction:column;justify-content:flex-end;
+  background:linear-gradient(160deg,#1A0A10 0%,#2D0F20 60%,#1A0A10 100%);
+  overflow:hidden;min-height:520px;
 }
-.hero::before{
-  content:'';position:absolute;top:-200px;right:-200px;
-  width:700px;height:700px;border-radius:50%;
-  background:radial-gradient(circle,rgba(232,24,90,0.07) 0%,transparent 70%);
-  pointer-events:none;
+.hero-img{position:absolute;inset:0;width:100%;height:100%;}
+.hero-noise{
+  position:absolute;inset:0;opacity:.04;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
 }
-.hero-content{position:relative;z-index:2}
-.hero-badge{
-  display:inline-flex;align-items:center;gap:8px;
-  background:var(--pink-light);border:1.5px solid rgba(232,24,90,0.2);
-  border-radius:20px;padding:6px 14px;margin-bottom:28px;
-}
-.hero-badge-dot{width:7px;height:7px;border-radius:50%;background:var(--pink);animation:pulse 2s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
-.hero-badge span{font-size:12px;font-weight:700;color:var(--pink);letter-spacing:.5px}
-.hero-headline{
-  font-family:'Playfair Display',serif;
-  font-size:clamp(42px,5vw,72px);
-  font-weight:700;line-height:1.1;
-  letter-spacing:-1.5px;
-  margin-bottom:20px;
-  color:var(--ink);
-}
+.hero-gradient{position:absolute;inset:0;background:linear-gradient(to top,rgba(26,10,16,0.96) 0%,rgba(26,10,16,0.5) 55%,transparent 100%)}
+.hero-content{position:relative;z-index:2;padding:0 28px 36px}
+.hero-logo{font-family:'Outfit',sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.5px;color:#fff;margin-bottom:18px}
+.hero-logo span{color:var(--pink)}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(232,24,90,0.2);border:1px solid rgba(232,24,90,0.4);border-radius:20px;padding:5px 12px;margin-bottom:20px}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--pink);animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.hero-badge span{font-size:11px;font-weight:700;color:rgba(255,255,255,.8);letter-spacing:.5px}
+.hero-headline{font-family:'Cormorant',serif;font-size:44px;font-weight:600;color:#fff;line-height:1.1;letter-spacing:-1px;margin-bottom:12px}
 .hero-headline em{font-style:italic;color:var(--pink)}
-.hero-sub{font-size:18px;color:var(--mid);line-height:1.7;margin-bottom:36px;max-width:480px;font-weight:400}
-.hero-cta-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.btn-primary{
-  background:var(--pink);color:#fff;
-  font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;
-  padding:16px 32px;border-radius:10px;border:none;cursor:pointer;
-  text-decoration:none;display:inline-flex;align-items:center;gap:8px;
-  box-shadow:0 6px 24px rgba(232,24,90,.3);transition:all .2s;
-}
-.btn-primary:hover{background:var(--pink-dark);transform:translateY(-2px);box-shadow:0 10px 32px rgba(232,24,90,.4)}
-.btn-secondary{
-  background:transparent;color:var(--ink);
-  font-family:'Outfit',sans-serif;font-size:15px;font-weight:600;
-  padding:15px 28px;border-radius:10px;
-  border:1.5px solid var(--border);cursor:pointer;
-  text-decoration:none;display:inline-flex;align-items:center;gap:8px;
-  transition:all .2s;
-}
-.btn-secondary:hover{border-color:var(--ink)}
-.hero-note{font-size:13px;color:var(--muted);margin-top:16px}
-.hero-brands{display:flex;align-items:center;gap:20px;margin-top:48px;flex-wrap:wrap}
-.hero-brands-label{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
-.brand-tag{font-size:13px;font-weight:700;color:var(--mid);background:var(--bg);border:1.5px solid var(--border);padding:5px 12px;border-radius:6px}
-
-/* Hero visual */
-.hero-visual{position:relative}
-.hero-phone{
-  width:100%;max-width:340px;margin:0 auto;
-  border-radius:32px;overflow:hidden;
-  box-shadow:0 40px 100px rgba(0,0,0,0.2),0 0 0 1px rgba(0,0,0,0.08);
-  position:relative;
-  animation:float 6s ease-in-out infinite;
-}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
-.hero-phone img{width:100%;display:block}
-.hero-phone-overlay{
-  position:absolute;inset:0;
-  background:linear-gradient(to bottom,transparent 60%,rgba(232,24,90,0.08));
-}
-.hero-stat{
-  position:absolute;
-  background:#fff;border-radius:14px;
-  padding:14px 18px;
-  box-shadow:0 8px 32px rgba(0,0,0,0.12);
-  display:flex;align-items:center;gap:12px;
-}
-.hero-stat-1{bottom:15%;left:-10%;animation:float2 5s ease-in-out infinite}
-.hero-stat-2{top:20%;right:-8%;animation:float2 7s ease-in-out infinite 1s}
-@keyframes float2{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-.hero-stat-icon{font-size:24px}
-.hero-stat-val{font-size:18px;font-weight:800;color:var(--ink)}
-.hero-stat-lbl{font-size:11px;color:var(--muted)}
-
-/* ══ LOGOS BAR ══════════════════════════════════════════ */
-.logos-bar{
-  padding:48px 5%;
-  background:var(--bg);
-  border-top:1px solid var(--border);
-  border-bottom:1px solid var(--border);
-}
-.logos-bar-inner{
-  max-width:1200px;margin:0 auto;
-  display:flex;align-items:center;justify-content:center;
-  gap:48px;flex-wrap:wrap;
-}
-.logos-bar-label{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);text-align:center;margin-bottom:20px}
-.brand-logo{font-size:14px;font-weight:800;color:var(--muted);letter-spacing:-0.3px;transition:color .2s}
-.brand-logo:hover{color:var(--ink)}
-
-/* ══ FEATURES ══════════════════════════════════════════ */
-.section{padding:100px 5%;max-width:1300px;margin:0 auto}
-.section-label{font-size:12px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--pink);margin-bottom:16px}
-.section-title{font-family:'Playfair Display',serif;font-size:clamp(32px,4vw,52px);font-weight:700;line-height:1.15;letter-spacing:-1px;margin-bottom:16px}
-.section-title em{font-style:italic;color:var(--pink)}
-.section-sub{font-size:17px;color:var(--mid);line-height:1.7;max-width:560px}
-
-.features-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);
-  gap:24px;margin-top:60px;
-}
-.feature-card{
-  border:1.5px solid var(--border);border-radius:16px;
-  padding:32px;background:var(--white);
-  transition:all .3s;position:relative;overflow:hidden;
-}
-.feature-card::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,var(--pink-light) 0%,transparent 60%);
-  opacity:0;transition:opacity .3s;
-}
-.feature-card:hover{border-color:var(--pink);box-shadow:0 16px 48px rgba(232,24,90,0.1);transform:translateY(-4px)}
-.feature-card:hover::before{opacity:1}
-.feature-icon{font-size:36px;margin-bottom:20px;position:relative;z-index:1}
-.feature-title{font-size:18px;font-weight:800;margin-bottom:10px;letter-spacing:-0.3px;position:relative;z-index:1}
-.feature-desc{font-size:14px;color:var(--mid);line-height:1.7;position:relative;z-index:1}
-
-/* ══ HOW IT WORKS ══════════════════════════════════════ */
-.how-section{background:var(--ink);color:#fff;padding:100px 5%}
-.how-inner{max-width:1200px;margin:0 auto}
-.how-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:60px}
-.how-step{position:relative;padding-left:0}
-.how-step-num{
-  font-family:'Playfair Display',serif;font-size:72px;font-weight:700;
-  color:rgba(255,255,255,0.08);line-height:1;margin-bottom:16px;
-}
-.how-step-title{font-size:20px;font-weight:800;margin-bottom:10px;letter-spacing:-0.3px}
-.how-step-desc{font-size:15px;color:rgba(255,255,255,0.55);line-height:1.7}
-.how-step-arrow{
-  position:absolute;top:36px;right:-20px;
-  font-size:24px;color:rgba(232,24,90,0.4);
-}
-
-/* ══ PRICING ═══════════════════════════════════════════ */
-.pricing-section{padding:100px 5%;background:var(--bg)}
-.pricing-inner{max-width:900px;margin:0 auto;text-align:center}
-.pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:48px;text-align:left}
-.pricing-card{
-  border:2px solid var(--border);border-radius:20px;
-  padding:36px;background:var(--white);
-  transition:all .3s;position:relative;
-}
-.pricing-card.featured{
-  border-color:var(--pink);
-  box-shadow:0 20px 60px rgba(232,24,90,0.15);
-  background:linear-gradient(145deg,#fff 0%,var(--pink-light) 100%);
-}
-.pricing-badge{
-  position:absolute;top:-14px;left:50%;transform:translateX(-50%);
-  background:var(--pink);color:#fff;
-  font-size:11px;font-weight:800;letter-spacing:1px;
-  padding:5px 16px;border-radius:20px;white-space:nowrap;
-}
-.pricing-name{font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
-.pricing-price{font-family:'Playfair Display',serif;font-size:52px;font-weight:700;letter-spacing:-2px;margin-bottom:4px}
-.pricing-price span{font-size:16px;font-weight:500;color:var(--muted);font-family:'Outfit',sans-serif}
-.pricing-desc{font-size:14px;color:var(--mid);margin-bottom:28px;line-height:1.6}
-.pricing-features{list-style:none;margin-bottom:32px}
-.pricing-features li{font-size:14px;padding:8px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.pricing-features li:last-child{border-bottom:none}
-.pricing-features .check{color:var(--pink);font-weight:700;font-size:16px}
-.pricing-features .cross{color:var(--muted)}
-.pricing-btn{
-  width:100%;padding:15px;border-radius:10px;
-  font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;
-  cursor:pointer;transition:all .2s;text-decoration:none;display:block;text-align:center;
-}
-.pricing-btn-primary{background:var(--pink);color:#fff;border:none;box-shadow:0 6px 20px rgba(232,24,90,.3)}
-.pricing-btn-primary:hover{background:var(--pink-dark);transform:translateY(-1px)}
-.pricing-btn-secondary{background:transparent;color:var(--ink);border:1.5px solid var(--border)}
-.pricing-btn-secondary:hover{border-color:var(--ink)}
-.pricing-note{font-size:13px;color:var(--muted);margin-top:24px}
-
-/* ══ TESTIMONIALS ══════════════════════════════════════ */
-.testimonials-section{padding:100px 5%}
-.testimonials-inner{max-width:1200px;margin:0 auto}
-.testimonials-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:60px}
-.testimonial-card{
-  border:1.5px solid var(--border);border-radius:16px;
-  padding:28px;background:var(--white);
-}
-.testimonial-stars{color:var(--gold);font-size:15px;margin-bottom:16px;letter-spacing:2px}
-.testimonial-text{font-size:15px;color:var(--graphite);line-height:1.7;margin-bottom:20px;font-style:italic}
-.testimonial-author{display:flex;align-items:center;gap:12px}
-.testimonial-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--pink-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;flex-shrink:0}
-.testimonial-name{font-size:14px;font-weight:700}
-.testimonial-role{font-size:12px;color:var(--muted)}
-
-/* ══ FAQ ═══════════════════════════════════════════════ */
-.faq-section{padding:100px 5%;background:var(--bg)}
-.faq-inner{max-width:800px;margin:0 auto}
-.faq-list{margin-top:48px}
-.faq-item{border-bottom:1px solid var(--border);overflow:hidden}
-.faq-question{
-  width:100%;padding:22px 0;
-  display:flex;align-items:center;justify-content:space-between;
-  background:none;border:none;cursor:pointer;
-  font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;
-  color:var(--ink);text-align:left;gap:16px;
-}
-.faq-icon{font-size:20px;color:var(--pink);flex-shrink:0;transition:transform .3s}
-.faq-item.open .faq-icon{transform:rotate(45deg)}
-.faq-answer{max-height:0;overflow:hidden;transition:max-height .4s ease}
-.faq-item.open .faq-answer{max-height:300px}
-.faq-answer-inner{padding:0 0 20px;font-size:15px;color:var(--mid);line-height:1.8}
-
-/* ══ CTA BANNER ════════════════════════════════════════ */
-.cta-banner{
-  padding:100px 5%;
-  background:var(--ink);
-  text-align:center;
-  position:relative;overflow:hidden;
-}
-.cta-banner::before{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse at center,rgba(232,24,90,0.2) 0%,transparent 70%);
-}
-.cta-banner-inner{position:relative;z-index:1;max-width:700px;margin:0 auto}
-.cta-banner h2{
-  font-family:'Playfair Display',serif;
-  font-size:clamp(36px,5vw,58px);font-weight:700;
-  color:#fff;line-height:1.15;letter-spacing:-1.5px;margin-bottom:20px;
-}
-.cta-banner h2 em{font-style:italic;color:var(--pink)}
-.cta-banner p{font-size:17px;color:rgba(255,255,255,0.55);margin-bottom:40px;line-height:1.7}
-
-/* ══ FOOTER ════════════════════════════════════════════ */
-footer{
-  padding:60px 5% 40px;
-  background:var(--graphite);
-  color:rgba(255,255,255,0.5);
-}
-.footer-inner{max-width:1200px;margin:0 auto}
-.footer-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:48px;flex-wrap:wrap;gap:40px}
-.footer-brand .nav-logo{color:#fff;font-size:22px}
-.footer-brand p{font-size:13px;margin-top:10px;line-height:1.6;max-width:280px}
-.footer-links{display:flex;gap:60px;flex-wrap:wrap}
-.footer-col h4{font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.8);margin-bottom:16px}
-.footer-col a{display:block;font-size:14px;color:rgba(255,255,255,0.45);text-decoration:none;margin-bottom:10px;transition:color .2s}
-.footer-col a:hover{color:#fff}
-.footer-bottom{border-top:1px solid rgba(255,255,255,0.08);padding-top:28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
-.footer-bottom p{font-size:13px}
+.hero-sub{font-size:14px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:0}
+.landing-bottom{padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom));background:var(--surface);display:flex;flex-direction:column;gap:8px}
+.landing-cta-row{display:grid;grid-template-columns:1fr auto;gap:8px}
+/* ── ADMIN ── */
+.admin-tag{display:inline-flex;align-items:center;gap:6px;background:var(--pink-light);border:1.5px solid var(--pink-mid);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--pink);margin-bottom:4px}
+.admin-section{background:var(--bg);border-radius:var(--r);padding:16px;margin-bottom:12px;border:1.5px solid var(--border)}
+.admin-section-title{font-size:13px;font-weight:800;letter-spacing:-0.2px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.admin-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.admin-row:last-child{border-bottom:none}
+.admin-row-name{flex:1;font-size:14px;font-weight:600}
+.admin-row-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.admin-swatch{width:28px;height:28px;border-radius:6px;flex-shrink:0;border:1px solid rgba(0,0,0,0.08)}
+.admin-del{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px;border-radius:4px;transition:color .15s}
+.admin-del:hover{color:var(--danger)}
+.admin-expand{background:none;border:none;color:var(--pink);font-size:12px;font-weight:700;cursor:pointer;padding:4px 0}
+.admin-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:16px}
+.admin-tab{flex:1;border:none;background:none;padding:10px 4px;font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.admin-tab.active{color:var(--pink);border-bottom-color:var(--pink)}
+.color-dot-inp{width:36px;height:36px;border-radius:8px;border:1.5px solid var(--border);cursor:pointer;padding:2px;flex-shrink:0}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.inp-sm{height:40px;font-size:13px}
 
 
-/* ══ SALON MAP ═══════════════════════════════════════ */
-.map-section{padding:100px 5%;background:var(--ink);color:#fff}
-.map-inner{max-width:1200px;margin:0 auto}
-.map-container{
-  margin-top:48px;border-radius:20px;overflow:hidden;
-  box-shadow:0 20px 60px rgba(0,0,0,0.4);
-  position:relative;height:480px;background:#1a1a2e;
-}
-.map-overlay-card{
-  position:absolute;top:20px;left:20px;z-index:10;
-  background:#fff;border-radius:12px;padding:16px 20px;
-  box-shadow:0 8px 32px rgba(0,0,0,0.2);
-  max-width:260px;
-}
-.map-overlay-title{font-size:14px;font-weight:800;color:var(--ink);margin-bottom:4px}
-.map-overlay-sub{font-size:12px;color:#5A5A5A;line-height:1.5}
-.map-salon-count{
-  display:inline-flex;align-items:center;gap:6px;
-  background:rgba(232,24,90,0.15);border:1px solid rgba(232,24,90,0.3);
-  border-radius:20px;padding:4px 12px;margin-bottom:16px;
-}
-.map-salon-count span{font-size:12px;font-weight:700;color:#E8185A}
-.salon-list-preview{margin-top:16px;display:flex;flex-direction:column;gap:8px}
-.salon-item{
-  display:flex;align-items:center;gap:10px;
-  background:#F8F8F8;border-radius:8px;padding:10px 12px;
-  border:1px solid #E8E8E8;cursor:pointer;transition:all .2s;
-}
-.salon-item:hover{background:#FFF0F4;border-color:rgba(232,24,90,0.3)}
-.salon-item-dot{width:8px;height:8px;border-radius:50%;background:#E8185A;flex-shrink:0}
-.salon-item-name{font-size:13px;font-weight:600;color:#fff}
-.salon-item-city{font-size:11px;color:rgba(255,255,255,0.45)}
-#salon-map{width:100%;height:100%;border:none}
+.field-error{font-size:12px;color:var(--danger);margin-bottom:6px;margin-top:-2px;min-height:16px;font-weight:600}
 
-/* ══ ANIMATIONS ════════════════════════════════════════ */
-.reveal{opacity:0;transform:translateY(32px);transition:opacity .7s ease,transform .7s ease}
-.reveal.visible{opacity:1;transform:translateY(0)}
-
-/* ══ RESPONSIVE ════════════════════════════════════════ */
-@media(max-width:1024px){
-  .features-grid{grid-template-columns:repeat(2,1fr)}
-  .how-steps{grid-template-columns:1fr;gap:48px}
-  .how-step-arrow{display:none}
-  .testimonials-grid{grid-template-columns:1fr 1fr}
-}
-@media(max-width:768px){
-  .hero{
-    grid-template-columns:1fr;
-    text-align:left;
-    padding-top:68px;
-    gap:0;
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
-    justify-content:flex-end;
-    background:
-      linear-gradient(to top, rgba(10,10,10,0.97) 0%, rgba(10,10,10,0.6) 55%, rgba(10,10,10,0.3) 100%),
-      url('https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&auto=format&fit=crop&q=80') center/cover no-repeat;
-  }
-  .hero::before{display:none}
-  .hero-visual{display:none}
-  .hero-content{
-    padding:0 24px 48px;
-    padding-bottom:calc(48px + env(safe-area-inset-bottom));
-  }
-  .hero-headline{color:#fff;font-size:38px;}
-  .hero-sub{color:rgba(255,255,255,0.65);margin:0 0 28px;max-width:100%}
-  .hero-badge{background:rgba(232,24,90,0.2);border-color:rgba(232,24,90,0.4);}
-  .hero-badge span{color:rgba(255,255,255,0.8)}
-  .hero-brands{justify-content:flex-start;}
-  .hero-brands-label{color:rgba(255,255,255,0.4)}
-  .brand-tag{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.15);color:rgba(255,255,255,0.7)}
-  .hero-note{color:rgba(255,255,255,0.4)}
-  .hero-cta-row{flex-direction:column;align-items:stretch;}
-  .hero-stat-1,.hero-stat-2{display:none}
-  .nav-links{display:none}
-  .nav-mobile-toggle{display:block}
-  .features-grid{grid-template-columns:1fr}
-  .pricing-grid{grid-template-columns:1fr}
-  .testimonials-grid{grid-template-columns:1fr}
-  .footer-top{flex-direction:column}
-  .footer-links{gap:32px}
-  .footer-bottom{flex-direction:column;text-align:center}
-  .section{padding:60px 5%}
-}
+.auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;padding:36px 28px;padding-bottom:calc(36px + env(safe-area-inset-bottom))}
+.auth-logo{font-family:'Outfit',sans-serif;font-size:30px;font-weight:900;letter-spacing:-1px;margin-bottom:8px}
+.auth-logo span{color:var(--pink)}
+.auth-sub{font-size:15px;color:var(--mid);margin-bottom:28px;line-height:1.6;font-weight:500}
+.auth-switch{text-align:center;font-size:13px;color:var(--mid);margin-top:16px}
+.auth-switch a{color:var(--pink);font-weight:700;cursor:pointer}
+.auth-error{background:#FDF2F2;border:1.5px solid #F5C4C4;color:var(--danger);font-size:13px;border-radius:var(--rs);padding:10px 14px;margin-bottom:12px;display:none}
+.plan-card{border:2px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:10px;cursor:pointer;transition:all .2s;position:relative}
+.plan-card.selected{border-color:var(--pink);background:var(--pink-light)}
+.plan-card-name{font-size:17px;font-weight:800;letter-spacing:-0.3px}
+.plan-card-price{font-size:26px;font-weight:800;color:var(--pink);margin:4px 0}
+.plan-card-price span{font-size:13px;font-weight:500;color:var(--mid)}
+.plan-card-feat{font-size:13px;color:var(--mid);line-height:1.9;margin-top:8px}
+.plan-badge{position:absolute;top:14px;right:14px;background:var(--pink);color:#fff;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;letter-spacing:.5px}
+.user-bar{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:var(--rs);padding:10px 14px;margin-bottom:16px}
+.user-bar-avatar{width:32px;height:32px;border-radius:50%;background:var(--pink);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800;flex-shrink:0}
+.user-bar-name{flex:1;font-size:13px;font-weight:700}
+.user-bar-plan{font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--pink);background:var(--pink-light);padding:2px 7px;border-radius:10px}
+.user-bar-logout{border:none;background:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif}
+.team-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.team-row:last-child{border-bottom:none}
+.team-avatar{width:36px;height:36px;border-radius:50%;background:var(--pink-light);display:flex;align-items:center;justify-content:center;color:var(--pink);font-size:14px;font-weight:800;flex-shrink:0}
 </style>
 </head>
 <body>
+<div id="app">
 
-<!-- ══ NAV ══ -->
-<nav id="navbar">
-  <a class="nav-logo" href="#">Color<span>Mix</span>AI</a>
-  <div class="nav-links">
-    <a href="#features">Features</a>
-    <a href="#how">So funktioniert's</a>
-    <a href="#pricing">Preise</a>
-    <a href="#salons">Salons</a>
-    <a href="#faq">FAQ</a>
-    <a href="index.html" class="nav-cta">App öffnen →</a>
+
+<!-- ══════════════════ LOADING ══════════════════ -->
+<section class="screen active" id="s-loading">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff">
+    <div style="font-family:Outfit,sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:20px">Color<span style="color:#E8185A">Mix</span>AI</div>
+    <div style="width:36px;height:36px;border:2.5px solid #EBEBEB;border-top:2.5px solid #E8185A;border-radius:50%;animation:spin .9s linear infinite"></div>
   </div>
-  <button class="nav-mobile-toggle" onclick="toggleMobileMenu()" aria-label="Menü">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-  </button>
-</nav>
+</section>
 
-<div class="nav-mobile-menu" id="mobile-menu">
-  <a href="#features" onclick="toggleMobileMenu()">Features</a>
-  <a href="#how" onclick="toggleMobileMenu()">So funktioniert's</a>
-  <a href="#pricing" onclick="toggleMobileMenu()">Preise</a>
-  <a href="#faq" onclick="toggleMobileMenu()">FAQ</a>
-  <a href="index.html" class="nav-cta" style="text-align:center;margin-top:8px">App öffnen →</a>
+<!-- ══════════════════ LOGIN ══════════════════ -->
+<section class="screen" id="s-login">
+  <div class="auth-wrap">
+    <div class="auth-logo">Color<span>Mix</span>AI</div>
+    <div class="auth-sub">Willkommen zurück.<br>Melde dich in deinem Salon-Account an.</div>
+    <div class="auth-error" id="login-error"></div>
+    <input class="inp" type="email" placeholder="E-Mail" id="login-email" style="margin-bottom:8px" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <input class="inp" type="password" placeholder="Passwort" id="login-pw" style="margin-bottom:14px" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="btn btn-pink btn-full" id="login-btn" onclick="doLogin()">Einloggen</button>
+    <div style="text-align:right;margin-top:10px">
+      <a style="font-size:12px;color:var(--mid);cursor:pointer" onclick="go('s-forgot')">Passwort vergessen?</a>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;margin:16px 0">
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+      <span style="font-size:11px;color:var(--muted);font-weight:600">ODER</span>
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+    </div>
+    <button class="btn btn-outline btn-full" onclick="doGoogleLogin()" style="gap:10px;margin-bottom:8px">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.706A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 7.294C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+      Mit Google anmelden
+    </button>
+    <button class="btn btn-dark btn-full" onclick="go('s-register')">✦ Kostenlos registrieren</button>
+    <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:16px">14 Tage kostenlos · Keine Kreditkarte nötig</div>
+    <div style="text-align:center;margin-top:12px">
+      <a style="font-size:11px;color:var(--muted);cursor:pointer" onclick="goAdminLogin()">Admin-Zugang</a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ REGISTRIERUNG ══════════════════ -->
+<section class="screen" id="s-register">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-login')">← Zurück</button>
+    <span class="hdr-title">Registrieren</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="body">
+    <div class="auth-error" id="reg-error"></div>
+    <div class="lbl" style="margin-top:0">Salon-Informationen</div>
+    <input class="inp" type="text" placeholder="Salon-Name *" id="reg-salon" style="margin-bottom:8px"/>
+    <div class="lbl">Deine Zugangsdaten</div>
+    <input class="inp" type="text" placeholder="Dein Name *" id="reg-name" style="margin-bottom:8px"/>
+    <input class="inp" type="email" placeholder="E-Mail *" id="reg-email" style="margin-bottom:8px"/>
+    <input class="inp" type="password" placeholder="Passwort (min. 8 Zeichen) *" id="reg-pw" style="margin-bottom:8px"/>
+    <input class="inp" type="password" placeholder="Passwort wiederholen *" id="reg-pw2" style="margin-bottom:20px"/>
+    <button class="btn btn-pink btn-full" id="reg-btn" onclick="doRegister()">Weiter → Abo wählen</button>
+    <div style="display:flex;align-items:center;gap:12px;margin:16px 0"><div style="flex:1;height:1px;background:var(--border)"></div><span style="font-size:11px;color:var(--muted);font-weight:600">ODER SCHNELLER</span><div style="flex:1;height:1px;background:var(--border)"></div></div>
+    <button class="btn btn-outline btn-full" onclick="doGoogleLogin()" style="gap:10px;margin-bottom:16px">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.706A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 7.294C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+      Mit Google registrieren
+    </button>
+    <div class="auth-switch" style="margin-top:4px">Schon registriert? <a onclick="go('s-login')">Einloggen</a></div>
+    <div style="height:24px"></div>
+  </div>
+</section>
+
+
+<!-- ══════════════════ GUTSCHEIN ══════════════════ -->
+<section class="screen" id="s-voucher">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-onboarding')">← Zurück</button>
+    <span class="hdr-title">Gutschein einlösen</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="body">
+    <div style="text-align:center;padding:20px 0 28px">
+      <div style="font-size:40px;margin-bottom:12px">🎁</div>
+      <div style="font-size:20px;font-weight:800;letter-spacing:-0.3px">Gutschein-Code</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:6px;line-height:1.6">Gib deinen Code ein um ColorMixAI<br>kostenlos zu nutzen.</div>
+    </div>
+    <div class="auth-error" id="voucher-error"></div>
+    <div id="voucher-success" style="background:#EAF4EE;border:1.5px solid #4A7C59;color:#0A7C55;font-size:13px;border-radius:var(--rs);padding:12px 14px;margin-bottom:12px;display:none;line-height:1.6"></div>
+    <input class="inp" type="text" placeholder="Code eingeben z.B. BETA2024" id="voucher-code-input" style="margin-bottom:12px;text-align:center;letter-spacing:2px;font-weight:700;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"/>
+    <button class="btn btn-pink btn-full" id="voucher-redeem-btn" onclick="redeemVoucher()">Gutschein einlösen</button>
+    <div style="height:16px"></div>
+    <button class="btn btn-ghost btn-full" onclick="go('s-onboarding')">Lieber ein Abo wählen</button>
+    <div style="height:24px"></div>
+  </div>
+</section>
+
+<!-- ══════════════════ ONBOARDING STEP 1: SALON-INFO ══════════════════ -->
+<section class="screen" id="s-onboarding-salon">
+  <div class="hdr">
+    <span style="width:60px"></span>
+    <span class="hdr-title">Dein Salon</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="prog"><div class="prog-fill" style="width:33%"></div></div>
+  <div class="body">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-size:32px;margin-bottom:8px">✂️</div>
+      <div style="font-size:18px;font-weight:800;letter-spacing:-0.3px">Erzähl uns von deinem Salon</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:6px">Schritt 1 von 3</div>
+    </div>
+
+    <div class="lbl" style="margin-top:0">Salon-Name *</div>
+    <input class="inp" type="text" placeholder="z.B. Salon Bella" id="ob-salon-name" style="margin-bottom:4px" oninput="clearFieldError('ob-salon-name')"/>
+    <div class="field-error" id="err-salon-name"></div>
+
+    <div class="lbl">Adresse *</div>
+
+    <!-- Autocomplete-Suchfeld -->
+    <div style="position:relative;margin-bottom:8px">
+      <input class="inp" type="text" placeholder="🔍 Adresse suchen…" id="ob-address-search"
+        oninput="searchAddress(this.value)"
+        autocomplete="off"
+        style="padding-right:40px"/>
+      <div id="ob-address-suggestions" style="display:none;position:absolute;top:52px;left:0;right:0;background:#fff;border:2px solid var(--pink);border-radius:var(--rs);z-index:50;box-shadow:var(--sh-md);max-height:200px;overflow-y:auto"></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-bottom:8px">
+      <input class="inp" type="text" placeholder="Straße *" id="ob-street" oninput="clearFieldError('ob-street')"/>
+      <input class="inp" type="text" placeholder="Nr. *" id="ob-housenr" oninput="clearFieldError('ob-housenr')"/>
+    </div>
+    <div class="field-error" id="err-street"></div>
+
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-bottom:8px">
+      <input class="inp" type="text" placeholder="PLZ *" id="ob-zip" oninput="validateZip(this)" maxlength="5"/>
+      <input class="inp" type="text" placeholder="Stadt *" id="ob-city" oninput="clearFieldError('ob-city')"/>
+    </div>
+    <div class="field-error" id="err-zip"></div>
+
+    <!-- Land — nur Deutschland -->
+    <select class="inp" id="ob-country" style="margin-bottom:8px">
+      <option value="DE" selected>🇩🇪 Deutschland</option>
+      <option value="AT">🇦🇹 Österreich</option>
+      <option value="CH">🇨🇭 Schweiz</option>
+    </select>
+
+    <input class="inp" type="url" placeholder="Webseite (optional)" id="ob-website" style="margin-bottom:8px"/>
+    <input class="inp" type="tel" placeholder="Telefon (optional)" id="ob-phone"/>
+
+    <!-- Directory opt-in -->
+    <div style="background:var(--pink-light);border:2px solid var(--pink-mid);border-radius:var(--rs);padding:14px;margin-top:16px">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <input type="checkbox" id="ob-directory" style="width:20px;height:20px;margin-top:2px;accent-color:var(--pink);flex-shrink:0" checked/>
+        <div>
+          <div style="font-size:13px;font-weight:800;margin-bottom:4px">📍 Salon auf ColorMixAI-Karte listen</div>
+          <div style="font-size:12px;color:var(--mid);line-height:1.6">Dein Salon wird auf unserer öffentlichen Salon-Karte angezeigt — kostenlos. Kundinnen in deiner Nähe finden dich einfacher.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <button class="btn btn-pink btn-full" onclick="onboardingStep2()">Weiter →</button>
+    <div style="height:24px"></div>
+  </div>
+</section>
+
+<!-- ══════════════════ ONBOARDING STEP 2: ABO ══════════════════ -->
+<section class="screen" id="s-onboarding">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-onboarding-salon')">← Zurück</button>
+    <span class="hdr-title">Abo wählen</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="prog"><div class="prog-fill" style="width:66%"></div></div>
+  <div class="body">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:18px;font-weight:800;letter-spacing:-0.3px">Wähle dein Abo</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:6px">Schritt 2 von 3 · 14 Tage kostenlos testen</div>
+    </div>
+    <div class="plan-card selected" id="plan-solo" onclick="selectPlan('solo')">
+      <div class="plan-card-name">Solo</div>
+      <div class="plan-card-price">29€ <span>/ Monat</span></div>
+      <div class="plan-card-feat">✅ 1 Nutzer (nur du)<br>✅ Unbegrenzte Kunden<br>✅ Alle Analysen & Farbdatenbank<br>✅ KI-Formelberechnung<br>❌ Kein Team-Zugang</div>
+    </div>
+    <div class="plan-card" id="plan-team" onclick="selectPlan('team')">
+      <div class="plan-badge">EMPFOHLEN</div>
+      <div class="plan-card-name">Team</div>
+      <div class="plan-card-price">69€ <span>/ Monat</span></div>
+      <div class="plan-card-feat">✅ Unbegrenzte Mitarbeiter<br>✅ Alle sehen Salon-Kunden<br>✅ Team-Einladungen per E-Mail<br>✅ Alle Analysen & Farbdatenbank<br>✅ KI-Formelberechnung</div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);text-align:center;margin:12px 0">Monatlich abrechenbar · Jederzeit kündbar</div>
+    <button class="btn btn-pink btn-full" onclick="completeOnboarding()">14 Tage kostenlos starten →</button>
+    <div style="display:flex;align-items:center;gap:12px;margin:14px 0"><div style="flex:1;height:1px;background:var(--border)"></div><span style="font-size:11px;color:var(--muted);font-weight:600">ODER</span><div style="flex:1;height:1px;background:var(--border)"></div></div>
+    <button class="btn btn-outline btn-full" onclick="go('s-voucher')">🎁 Gutschein-Code einlösen</button>
+    <div style="height:24px"></div>
+  </div>
+</section>
+
+<!-- ══════════════════ PASSWORT VERGESSEN ══════════════════ -->
+<section class="screen" id="s-forgot">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-login')">← Zurück</button>
+    <span class="hdr-title">Passwort zurücksetzen</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="body">
+    <p style="font-size:14px;color:var(--mid);margin-bottom:20px;line-height:1.6">Wir schicken dir einen Reset-Link per E-Mail.</p>
+    <div class="auth-error" id="forgot-error"></div>
+    <div id="forgot-success" style="background:#EAF4EE;border:1.5px solid #4A7C59;color:#0A7C55;font-size:13px;border-radius:var(--rs);padding:10px 14px;margin-bottom:12px;display:none">✓ E-Mail gesendet! Bitte prüfe dein Postfach.</div>
+    <input class="inp" type="email" placeholder="E-Mail" id="forgot-email" style="margin-bottom:14px"/>
+    <button class="btn btn-pink btn-full" onclick="doForgot()">Reset-Link senden</button>
+  </div>
+</section>
+
+<!-- ══════════════════ TEAM VERWALTEN ══════════════════ -->
+<section class="screen" id="s-team">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-landing')">← Zurück</button>
+    <span class="hdr-title">Team verwalten</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="body">
+    <div id="team-upgrade-note" style="display:none;background:var(--pink-light);border:1.5px solid var(--pink-mid);border-radius:var(--rs);padding:14px;margin-bottom:16px;font-size:13px;line-height:1.6">
+      <strong>Team-Abo erforderlich</strong><br>Mit dem Solo-Abo kannst du keine Mitarbeiter einladen. <a style="color:var(--pink);font-weight:700;cursor:pointer" onclick="go('s-onboarding')">Jetzt upgraden →</a>
+    </div>
+    <div id="team-content">
+      <div class="lbl" style="margin-top:0">Mitarbeiter einladen</div>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <input class="inp inp-sm" type="email" placeholder="E-Mail des Mitarbeiters" id="invite-email" style="flex:1"/>
+        <button class="btn btn-pink" style="height:48px;padding:0 14px;font-size:13px;flex-shrink:0" onclick="inviteMember()">Einladen</button>
+      </div>
+      <div class="lbl">Aktive Mitglieder</div>
+      <div class="admin-section" id="team-members-list"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ KONTO ══════════════════ -->
+<section class="screen" id="s-account">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-landing')">← Zurück</button>
+    <span class="hdr-title">Mein Konto</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="body">
+    <div id="account-info" style="margin-bottom:16px"></div>
+    <div class="lbl" style="margin-top:0">Abo</div>
+    <div class="admin-section" id="account-plan"></div>
+    <div class="lbl">Salon</div>
+    <div class="admin-section" id="account-salon"></div>
+    <div class="divider"></div>
+    <button class="btn btn-danger btn-full" onclick="doLogout()">Ausloggen</button>
+    <div style="height:24px"></div>
+  </div>
+</section>
+
+<!-- ══════════════════ LANDING ══════════════════ -->
+<section class="screen" id="s-landing">
+  <div class="landing-hero">
+    <img class="hero-img" src="hero.jpg" alt="Friseursalon" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(0.45) saturate(0.85);"/>
+    <div class="hero-noise"></div>
+    <div class="hero-gradient"></div>
+    <div class="hero-content">
+      <div class="hero-logo">Color<span>Mix</span>AI</div>
+      <div class="hero-badge"><div class="hero-badge-dot"></div><span>KI-GESTÜTZT · FÜR PROFIS</span></div>
+      <div class="hero-headline">Die perfekte<br><em>Farbformel</em>,<br>in Sekunden.</div>
+      <div class="hero-sub">Foto aufnehmen, Zielfarbe definieren — ColorMixAI berechnet die exakte Formel für alle großen Marken.</div>
+    </div>
+  </div>
+  <div class="landing-bottom">
+    <div id="landing-user-bar"></div>
+    <div class="landing-cta-row">
+      <button class="btn btn-pink btn-full" onclick="go('s-select-client')">Analyse starten</button>
+      <button class="btn btn-outline" style="min-width:90px" onclick="go('s-clients')">Kunden</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn btn-ghost btn-full" style="height:36px;font-size:12px" onclick="go('s-account')">👤 Konto</button>
+      <button class="btn btn-ghost btn-full" style="height:36px;font-size:12px" onclick="openTeam()">👥 Team</button>
+    </div>
+    <div class="landing-note" onclick="adminTap()" style="cursor:default;user-select:none">Wella · L'Oréal · Schwarzkopf · Redken und mehr</div>
+  </div>
+</section>
+
+<!-- ══════════════════ SELECT CLIENT ══════════════════ -->
+<section class="screen" id="s-select-client">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-landing')">← Back</button>
+    <span class="hdr-title">Kunde auswählen</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="prog"><div class="prog-fill" style="width:12%"></div></div>
+  <div class="body">
+    <div class="lbl">Schnellstart</div>
+    <button class="btn btn-pink btn-full" onclick="selectClient(null)" style="margin-bottom:8px">✦ Ohne Kunde starten</button>
+    <button class="btn btn-dark btn-full" onclick="go('s-new-client-flow')">+ Neuen Kunden anlegen</button>
+    <div class="divider"></div>
+    <div class="lbl" style="margin-top:0">Bestehende Kunden</div>
+    <input class="inp" type="search" placeholder="Nach Name suchen…" oninput="filterSelectList(this.value)" id="sc-search" style="margin-bottom:12px"/>
+    <div id="sc-list"></div>
+  </div>
+</section>
+
+<!-- ══════════════════ NEW CLIENT (flow) ══════════════════ -->
+<section class="screen" id="s-new-client-flow">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-select-client')">← Zurück</button>
+    <span class="hdr-title">Neuer Kunde</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="prog"><div class="prog-fill" style="width:12%"></div></div>
+  <div class="body">
+    <div class="lbl">Kundendaten</div>
+    <input class="inp" type="text" placeholder="Vollständiger Name *" id="fcf-name"/>
+    <div style="height:8px"></div>
+    <textarea class="inp" placeholder="Notizen (optional)" id="fcf-notes"></textarea>
+    <div style="height:8px"></div>
+    <input class="inp" type="text" placeholder="Haarhistorie (z.B. gefärbt, gebleicht)" id="fcf-history"/>
+
+    <div class="lbl">Aktueller Haarzustand</div>
+    <div class="seg" id="fcf-state">
+      <button class="seg-btn active" onclick="selectSeg(this,'fcf-state')">Natur</button>
+      <button class="seg-btn" onclick="selectSeg(this,'fcf-state')">Gefärbt</button>
+      <button class="seg-btn" onclick="selectSeg(this,'fcf-state')">Gebleicht</button>
+    </div>
+
+    <div class="lbl">Kundenfoto (optional)</div>
+    <div class="photo-area">
+      <div class="photo-preview" id="fcf-preview">
+        <div class="photo-placeholder"><div class="ico">📷</div><p>Foto hinzufügen</p></div>
+      </div>
+      <div class="photo-btns">
+        <button class="btn btn-outline btn-full" onclick="triggerCamera('fcf-file')">📷 Kamera</button>
+        <button class="btn btn-outline btn-full" onclick="triggerGallery('fcf-file')">🖼 Galerie</button>
+      </div>
+      <input type="file" id="fcf-file" accept="image/*" onchange="handlePhoto(this,'fcf-preview','fcf-data')"/>
+      <input type="hidden" id="fcf-data"/>
+    </div>
+
+    <div class="divider"></div>
+    <button class="btn btn-pink btn-full" onclick="saveNewClientFlow()">Speichern & weiter →</button>
+    <div style="height:8px"></div>
+    <button class="btn btn-ghost btn-full" onclick="go('s-select-client')">Abbrechen</button>
+    <div style="height:24px"></div>
+  </div>
+</section>
+
+<!-- ══════════════════ CURRENT HAIR ══════════════════ -->
+<section class="screen" id="s-current">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-select-client')">← Zurück</button>
+    <span class="hdr-title">Aktuelles Haar</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="prog"><div class="prog-fill" style="width:33%"></div></div>
+  <div class="body">
+    <div id="banner-current"></div>
+
+    <div class="lbl">Lichtverhältnisse</div>
+    <div class="chip-grid">
+      <div class="chip selected" onclick="selectChip(this)"><div class="chip-name">☀️ Natürliches Licht</div></div>
+      <div class="chip" onclick="selectChip(this)"><div class="chip-name">🌤 Direktes Sonnenlicht</div></div>
+      <div class="chip" onclick="selectChip(this)"><div class="chip-name">💡 Innenbeleuchtung</div></div>
+      <div class="chip" onclick="selectChip(this)"><div class="chip-name">🎬 Studiolicht</div></div>
+    </div>
+
+    <div class="lbl">Haarfoto</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Gute Beleuchtung, Haare klar sichtbar — keine Filter.</p>
+    <div class="photo-area">
+      <div class="photo-preview" id="curr-preview">
+        <div class="photo-placeholder"><div class="ico">📷</div><p>Foto aufnehmen oder hochladen</p></div>
+      </div>
+      <div class="photo-btns">
+        <button class="btn btn-dark btn-full" onclick="triggerCamera('curr-file')">📷 Kamera</button>
+        <button class="btn btn-outline btn-full" onclick="triggerGallery('curr-file')">🖼 Galerie</button>
+      </div>
+      <input type="file" id="curr-file" accept="image/*" onchange="handlePhoto(this,'curr-preview','curr-data')"/>
+      <input type="hidden" id="curr-data"/>
+    </div>
+
+    <div class="divider"></div>
+    <button class="btn btn-pink btn-full" onclick="go('s-target')">Weiter →</button>
+    <div style="height:24px"></div>
+  </div>
+</section>
+
+<!-- ══════════════════ DEFINE TARGET ══════════════════ -->
+<section class="screen" id="s-target">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-current')">← Zurück</button>
+    <span class="hdr-title">Zielfarbe definieren</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="prog"><div class="prog-fill" style="width:60%"></div></div>
+  <div class="body">
+    <div id="banner-target"></div>
+
+    <div class="lbl">Zielfarbe Vorschau</div>
+    <div class="color-bar" id="color-bar" style="background:linear-gradient(135deg,#D4B89C,#C4A07A)">
+      <span class="color-bar-lbl" id="color-bar-lbl">Kühles Blond</span>
+    </div>
+
+    <button class="btn btn-outline btn-full" onclick="triggerGallery('ref-file')" style="margin-bottom:8px">🖼 Referenzbild hochladen</button>
+    <input type="file" id="ref-file" accept="image/*" onchange="handleRefPhoto(this)"/>
+    <div id="ref-preview-wrap" style="display:none;margin-bottom:12px">
+      <img id="ref-preview" style="width:100%;border-radius:var(--rs);max-height:110px;object-fit:cover"/>
+    </div>
+
+    <div class="lbl">Farbstufe (1–10)</div>
+    <div class="slider-wrap">
+      <div class="slider-row">
+        <span class="slider-val" id="level-val">7</span>
+        <input type="range" min="1" max="10" value="7" oninput="updateSlider(this)" style="--pct:67%">
+      </div>
+      <div class="slider-lbls"><span>1 Schwarz</span><span>5 Mittel</span><span>10 Hellstes</span></div>
+    </div>
+
+    <div class="lbl">Farbpaletten</div>
+    <div class="chip-grid">
+      <div class="chip selected" onclick="selectColor(this,'Kühles Blond','linear-gradient(135deg,#D4B89C,#C4A07A)')"><span class="chip-dot" style="background:#D4B89C"></span><span class="chip-name">Kühles Blond</span></div>
+      <div class="chip" onclick="selectColor(this,'Warmes Braun','linear-gradient(135deg,#8B5E3C,#6B4226)')"><span class="chip-dot" style="background:#8B5E3C"></span><span class="chip-name">Warmes Braun</span></div>
+      <div class="chip" onclick="selectColor(this,'Intensivrot','linear-gradient(135deg,#C0392B,#922B21)')"><span class="chip-dot" style="background:#C0392B"></span><span class="chip-name">Intensivrot</span></div>
+      <div class="chip" onclick="selectColor(this,'Aschebraun','linear-gradient(135deg,#7D6B5D,#5D4E44)')"><span class="chip-dot" style="background:#7D6B5D"></span><span class="chip-name">Aschebraun</span></div>
+      <div class="chip" onclick="selectColor(this,'Pfirsich','linear-gradient(135deg,#FFBE98,#E8996B)')"><span class="chip-dot" style="background:#FFBE98"></span><span class="chip-name">Pfirsich</span></div>
+      <div class="chip" onclick="selectColor(this,'Mitternacht','linear-gradient(135deg,#1A3A5C,#0F2340)')"><span class="chip-dot" style="background:#1A3A5C"></span><span class="chip-name">Mitternacht</span></div>
+    </div>
+
+    <div class="lbl">Haarzustand</div>
+    <div class="seg" id="target-state">
+      <button class="seg-btn active" onclick="selectSeg(this,'target-state')">Natur</button>
+      <button class="seg-btn" onclick="selectSeg(this,'target-state')">Gefärbt</button>
+      <button class="seg-btn" onclick="selectSeg(this,'target-state')">Gebleicht</button>
+    </div>
+
+    <div class="lbl">Marke</div>
+    <div class="brand-grid">
+      <div class="brand-chip selected" onclick="selectBrand(this)">Wella</div>
+      <div class="brand-chip" onclick="selectBrand(this)">L'Oréal</div>
+      <div class="brand-chip" onclick="selectBrand(this)">Schwarzkopf</div>
+      <div class="brand-chip" onclick="selectBrand(this)">Redken</div>
+      <div class="brand-chip" onclick="selectBrand(this)">Olaplex</div>
+      <div class="brand-chip" onclick="selectBrand(this)">Beliebig</div>
+    </div>
+
+    <div class="lbl">Farblinie</div>
+    <select class="inp">
+      <option>Koleston Perfect ME+</option>
+      <option>Illumina Color</option>
+      <option>Color Touch</option>
+      <option>Majirel</option>
+      <option>INOA</option>
+      <option>Igora Royal</option>
+      <option>Shades EQ</option>
+    </select>
+
+    <div class="lbl">Entwickler-Stärke</div>
+    <div class="pill-row">
+      <div class="pill" onclick="selectPill(this)">6%</div>
+      <div class="pill selected" onclick="selectPill(this)">9%</div>
+      <div class="pill" onclick="selectPill(this)">12%</div>
+      <div class="pill" onclick="selectPill(this)">20%</div>
+      <div class="pill" onclick="selectPill(this)">30%</div>
+      <div class="pill" onclick="selectPill(this)">40%</div>
+    </div>
+
+    <div class="divider"></div>
+    <button class="btn btn-pink btn-full" onclick="startAnalysis()">✦ Analyse starten</button>
+    <div style="height:24px"></div>
+  </div>
+</section>
+
+<!-- ══════════════════ ANALYSIS ══════════════════ -->
+<section class="screen" id="s-analysis">
+  <div class="hdr">
+    <span style="width:60px"></span>
+    <span class="hdr-logo">Color<span>Mix</span>AI</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="loading-wrap">
+    <div class="spinner" id="spinner"></div>
+    <div style="width:100%">
+      <div class="step-row"><div class="dot" id="d1"></div><span class="step-txt" id="t1">Haarstruktur & Porosität analysieren</span><span class="step-chk" id="c1">✓</span></div>
+      <div class="step-row"><div class="dot" id="d2"></div><span class="step-txt" id="t2">Unterton & Basisstufe erkennen</span><span class="step-chk" id="c2">✓</span></div>
+      <div class="step-row"><div class="dot" id="d3"></div><span class="step-txt" id="t3">Farbdatenbank abgleichen</span><span class="step-chk" id="c3">✓</span></div>
+      <div class="step-row"><div class="dot" id="d4"></div><span class="step-txt" id="t4">Optimale Formel berechnen</span><span class="step-chk" id="c4">✓</span></div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:24px;text-align:center">Dauert normalerweise 10–20 Sekunden.</p>
+  </div>
+</section>
+
+<!-- ══════════════════ RESULT ══════════════════ -->
+<section class="screen" id="s-result">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-landing')">← Start</button>
+    <span class="hdr-title">Deine Formel</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="prog"><div class="prog-fill" style="width:100%"></div></div>
+  <div class="body">
+    <div class="card" id="result-client-card">
+      <div class="card-lbl">Kundin</div>
+      <div class="card-val" id="result-client-name">Kein Kunde ausgewählt</div>
+    </div>
+    <div class="card">
+      <div class="card-lbl">Zielfarbe</div>
+      <div class="card-val">Kühles Beige-Blond</div>
+      <div style="height:7px;border-radius:4px;background:linear-gradient(90deg,#D4B89C,#C4A07A);margin-top:10px"></div>
+    </div>
+    <div class="card">
+      <div class="card-lbl">Erkannte Basis</div>
+      <div class="card-val">Stufe 6</div>
+      <div class="card-sub">Warmer Unterton · Mittelbraun</div>
+    </div>
+    <div class="card">
+      <div class="card-lbl">Formel — Wella Koleston Perfect ME+</div>
+      <div class="formula-row"><div class="formula-swatch" style="background:#C8A870"></div><span class="formula-code">8/13</span><span class="formula-amount">60 g</span></div>
+      <div class="formula-row"><div class="formula-swatch" style="background:#D4BF99"></div><span class="formula-code">9/13</span><span class="formula-amount">20 g</span></div>
+      <div class="formula-row"><div class="formula-swatch" style="background:#E8E0D8"></div><span class="formula-code">Entwickler 9%</span><span class="formula-amount">80 ml</span></div>
+    </div>
+    <div class="card">
+      <div class="card-lbl">Anwendung</div>
+      <div style="font-size:13px;line-height:1.9">
+        <div>⏱ Einwirkzeit: <strong>30 Min.</strong></div>
+        <div>📌 Zuerst Ansatz, dann Längen auftragen</div>
+        <div>🌡 Körperwärme am Ansatz — keine Wärmequelle nötig</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-lbl">Hinweis</div>
+      <div class="warn-box"><span>⚠️</span><div class="warn-text">Vorblondierung empfohlen, um das gewünschte Farbergebnis exakt zu erzielen.</div></div>
+    </div>
+
+    <!-- After-Color Photo -->
+    <div class="lbl">Ergebnis-Foto (nach dem Färben)</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Optional: Foto nach dem Färben für die Kundenkartei</p>
+    <div class="photo-area">
+      <div class="photo-preview" id="after-preview">
+        <div class="photo-placeholder"><div class="ico">✨</div><p>Foto nach dem Färben</p></div>
+      </div>
+      <div class="photo-btns">
+        <button class="btn btn-dark btn-full" onclick="triggerCamera('after-file')">📷 Kamera</button>
+        <button class="btn btn-outline btn-full" onclick="triggerGallery('after-file')">🖼 Galerie</button>
+      </div>
+      <input type="file" id="after-file" accept="image/*" onchange="handlePhoto(this,'after-preview','after-data')"/>
+      <input type="hidden" id="after-data"/>
+    </div>
+
+    <!-- Assign to client if not already assigned -->
+    <div id="result-assign-wrap" style="display:none;margin-top:16px">
+      <div class="lbl">Kundin zuordnen</div>
+      <select class="inp" id="result-assign-select" style="margin-bottom:8px">
+        <option value="">Ohne Kundin speichern</option>
+      </select>
+    </div>
+
+    <div class="divider"></div>
+    <button class="btn btn-pink btn-full" id="result-save-btn" onclick="saveResult(event)" style="margin-bottom:8px">💾 In Kundenkartei speichern</button>
+    <div id="result-saved-actions" style="display:none;gap:8px;flex-direction:column">
+      <button class="btn btn-dark btn-full" onclick="goToClientProfile()">👤 Zur Kundenkartei →</button>
+      <button class="btn btn-outline btn-full" onclick="go('s-select-client')">+ Neue Analyse</button>
+    </div>
+    <!-- ML Feedback -->
+    <div id="ml-feedback-wrap" style="display:none;margin-top:8px">
+      <div class="lbl" style="margin-top:0">War das Ergebnis gut?</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button class="btn btn-outline btn-full" style="height:44px;border-color:#4A7C59;color:#0A7C55" onclick="submitFeedback(true)">👍 Ja, super!</button>
+        <button class="btn btn-outline btn-full" style="height:44px;border-color:var(--danger);color:var(--danger)" onclick="submitFeedback(false)">👎 Nicht ideal</button>
+      </div>
+      <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px">Dein Feedback verbessert die KI-Empfehlungen</p>
+    </div>
+    <button class="btn btn-ghost btn-full" id="result-new-btn" onclick="go('s-select-client')">+ Neue Analyse</button>
+    <div style="height:28px"></div>
+  </div>
+</section>
+
+<!-- ══════════════════ CLIENTS LIST ══════════════════ -->
+<section class="screen" id="s-clients">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-landing')">← Start</button>
+    <span class="hdr-title">Kunden</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="body" style="display:flex;flex-direction:column">
+    <input class="inp" type="search" placeholder="Kunden suchen…" oninput="renderClientsList(this.value)" id="cl-search" style="margin-bottom:12px"/>
+    <div id="cl-list" style="flex:1"></div>
+  </div>
+  <button class="fab" onclick="go('s-new-client-standalone')">+</button>
+</section>
+
+<!-- ══════════════════ CLIENT PROFILE ══════════════════ -->
+<section class="screen" id="s-profile">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-clients')">← Kunden</button>
+    <span class="hdr-title" id="profile-hdr-name"></span>
+    <button class="hdr-action" onclick="confirmDeleteClient()">Löschen</button>
+  </div>
+  <div style="overflow-y:auto;flex:1">
+    <div class="profile-top" id="profile-top"></div>
+    <div class="stats-row" id="profile-stats"></div>
+    <div style="padding:20px">
+      <div class="lbl" style="margin-top:0">Sitzungsverlauf</div>
+      <div id="profile-sessions"></div>
+      <div style="height:12px"></div>
+      <button class="btn btn-pink btn-full" onclick="startForProfile()">✦ Neue Analyse für diese Kundin</button>
+      <div style="height:24px"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ NEW CLIENT (standalone) ══════════════════ -->
+<section class="screen" id="s-new-client-standalone">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-clients')">← Zurück</button>
+    <span class="hdr-title">Neuer Kunde</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="body">
+    <div class="lbl">Kundendaten</div>
+    <input class="inp" type="text" placeholder="Vollständiger Name *" id="ncs-name"/>
+    <div style="height:8px"></div>
+    <textarea class="inp" placeholder="Notizen (optional)" id="ncs-notes"></textarea>
+    <div style="height:8px"></div>
+    <input class="inp" type="text" placeholder="Haarhistorie (z.B. gebleicht, gefärbt)" id="ncs-history"/>
+
+    <div class="lbl">Aktueller Haarzustand</div>
+    <div class="seg" id="ncs-state">
+      <button class="seg-btn active" onclick="selectSeg(this,'ncs-state')">Natur</button>
+      <button class="seg-btn" onclick="selectSeg(this,'ncs-state')">Gefärbt</button>
+      <button class="seg-btn" onclick="selectSeg(this,'ncs-state')">Gebleicht</button>
+    </div>
+
+    <div class="lbl">Kundenfoto (optional)</div>
+    <div class="photo-area">
+      <div class="photo-preview" id="ncs-preview">
+        <div class="photo-placeholder"><div class="ico">📷</div><p>Foto hinzufügen</p></div>
+      </div>
+      <div class="photo-btns">
+        <button class="btn btn-outline btn-full" onclick="triggerCamera('ncs-file')">📷 Kamera</button>
+        <button class="btn btn-outline btn-full" onclick="triggerGallery('ncs-file')">🖼 Galerie</button>
+      </div>
+      <input type="file" id="ncs-file" accept="image/*" onchange="handlePhoto(this,'ncs-preview','ncs-data')"/>
+      <input type="hidden" id="ncs-data"/>
+    </div>
+
+    <div class="divider"></div>
+    <button class="btn btn-pink btn-full" onclick="saveClientStandalone()">✓ Kunde speichern</button>
+    <div style="height:8px"></div>
+    <button class="btn btn-ghost btn-full" onclick="go('s-clients')">Abbrechen</button>
+    <div style="height:24px"></div>
+  </div>
+</section>
+
+<!-- ══════════════════ CONFIRM MODAL ══════════════════ -->
+<div class="modal-bg" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title">Are you sure?</div>
+    <div class="modal-body" id="modal-body">This cannot be undone.</div>
+    <button class="btn btn-danger btn-full" id="modal-btn" style="margin-bottom:8px">Delete</button>
+    <button class="btn btn-ghost btn-full" onclick="closeModal()">Cancel</button>
+  </div>
 </div>
 
-<!-- ══ HERO ══ -->
-<section class="hero">
-  <div class="hero-content reveal">
-    <div class="hero-badge">
-      <div class="hero-badge-dot"></div>
-      <span>KI-GESTÜTZT · FÜR PROFIS</span>
-    </div>
-    <h1 class="hero-headline">
-      Die perfekte<br>
-      <em>Farbformel</em>,<br>
-      in Sekunden.
-    </h1>
-    <p class="hero-sub">ColorMixAI analysiert das Haar deiner Kundin, vergleicht mit der Zielfarbe und berechnet die exakte Formel — für alle großen Marken.</p>
-    <div class="hero-cta-row">
-      <a href="index.html" class="btn-primary">✦ Kostenlos starten</a>
-      <a href="#how" class="btn-secondary">Wie es funktioniert →</a>
-    </div>
-    <p class="hero-note">14 Tage kostenlos · Keine Kreditkarte nötig · Jederzeit kündbar</p>
-    <div class="hero-brands">
-      <span class="hero-brands-label">Unterstützte Marken</span>
-      <span class="brand-tag">Wella</span>
-      <span class="brand-tag">L'Oréal</span>
-      <span class="brand-tag">Schwarzkopf</span>
-      <span class="brand-tag">Redken</span>
-    </div>
+<!-- ══════════════════ ADMIN LOGIN ══════════════════ -->
+<section class="screen" id="s-admin-login">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-login')">← Zurück</button>
+    <span class="hdr-title">Admin</span>
+    <span style="width:60px"></span>
   </div>
-
-  <div class="hero-visual reveal" style="animation-delay:.2s">
-    <div class="hero-phone">
-      <img src="hero.jpg" alt="ColorMixAI App Screenshot" onerror="this.src='https://images.unsplash.com/photo-1560066984-138dadb4c035?w=700&auto=format&fit=crop&q=80';this.onerror=null;"/>
-      <div class="hero-phone-overlay"></div>
-    </div>
-    <div class="hero-stat hero-stat-1">
-      <div class="hero-stat-icon">⚡</div>
-      <div>
-        <div class="hero-stat-val">< 20 Sek.</div>
-        <div class="hero-stat-lbl">Formel berechnet</div>
+  <div class="body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh">
+    <div style="width:100%;max-width:320px">
+      <div style="text-align:center;margin-bottom:28px">
+        <div style="font-size:36px;margin-bottom:12px">🔐</div>
+        <div style="font-size:20px;font-weight:800;letter-spacing:-0.3px">Admin-Bereich</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px">Nur für authorisierte Nutzer</div>
       </div>
-    </div>
-    <div class="hero-stat hero-stat-2">
-      <div class="hero-stat-icon">🎨</div>
-      <div>
-        <div class="hero-stat-val">500+</div>
-        <div class="hero-stat-lbl">Farbtöne</div>
-      </div>
+      <input class="inp" type="password" placeholder="Passwort" id="admin-pw-input" onkeydown="if(event.key==='Enter')checkAdminPw()" style="margin-bottom:10px;text-align:center;letter-spacing:3px"/>
+      <div id="admin-pw-error" style="color:var(--danger);font-size:12px;text-align:center;margin-bottom:10px;display:none">Falsches Passwort</div>
+      <button class="btn btn-pink btn-full" onclick="checkAdminPw()">Einloggen</button>
     </div>
   </div>
 </section>
 
-<!-- ══ LOGOS BAR ══ -->
-<div class="logos-bar">
-  <div class="logos-bar-label">Integrierte Marken & Systeme</div>
-  <div class="logos-bar-inner">
-    <span class="brand-logo">Wella Professionals</span>
-    <span class="brand-logo">L'Oréal Professionnel</span>
-    <span class="brand-logo">Schwarzkopf Professional</span>
-    <span class="brand-logo">Redken</span>
-    <span class="brand-logo">Olaplex</span>
+<!-- ══════════════════ ADMIN PANEL ══════════════════ -->
+<section class="screen" id="s-admin">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-landing')">← App</button>
+    <span class="hdr-title">Admin-Panel</span>
+    <span class="admin-tag">Admin</span>
   </div>
-</div>
+  <div class="body">
 
-<!-- ══ FEATURES ══ -->
-<section id="features" style="padding:100px 5%">
-  <div style="max-width:1200px;margin:0 auto">
-    <div class="reveal">
-      <div class="section-label">Funktionen</div>
-      <h2 class="section-title">Alles was du im Salon<br><em>wirklich brauchst</em></h2>
-      <p class="section-sub">Von der Fotoanalyse bis zur fertigen Formel — ColorMixAI übernimmt die Berechnung, damit du dich auf deine Kundinnen konzentrieren kannst.</p>
+    <!-- TABS -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchAdminTab('tab-brands',this)">Marken</button>
+      <button class="admin-tab" onclick="switchAdminTab('tab-lines',this)">Linien</button>
+      <button class="admin-tab" onclick="switchAdminTab('tab-shades',this)">Farbtöne</button>
+      <button class="admin-tab" onclick="switchAdminTab('tab-devs',this)">Entwickler</button>
+      <button class="admin-tab" onclick="switchAdminTab('tab-vouchers',this)">Gutscheine</button>
     </div>
-    <div class="features-grid">
-      <div class="feature-card reveal">
-        <div class="feature-icon">📸</div>
-        <div class="feature-title">Fotobasierte Analyse</div>
-        <div class="feature-desc">Fotografiere das aktuelle Haar deiner Kundin — die KI erkennt automatisch Basis-Level, Unterton und Haarstruktur.</div>
-      </div>
-      <div class="feature-card reveal" style="transition-delay:.1s">
-        <div class="feature-icon">🎨</div>
-        <div class="feature-title">Exakte Formelberechnung</div>
-        <div class="feature-desc">Wähle Zielfarbe, Marke und Entwickler — ColorMixAI berechnet Gramm-genaue Mischverhältnisse für perfekte Ergebnisse.</div>
-      </div>
-      <div class="feature-card reveal" style="transition-delay:.2s">
-        <div class="feature-icon">📋</div>
-        <div class="feature-title">Kundenkartei</div>
-        <div class="feature-desc">Alle Formeln, Fotos und Notizen pro Kundin gespeichert. Der komplette Verlauf immer griffbereit — auch für Kolleginnen im Team.</div>
-      </div>
-      <div class="feature-card reveal" style="transition-delay:.3s">
-        <div class="feature-icon">🏪</div>
-        <div class="feature-title">Eigene Farbdatenbank</div>
-        <div class="feature-desc">Pflege deine eigenen Lieblingsfarben und Produktkataloge. Alle Wella-, L'Oréal- und Schwarzkopf-Töne bereits vorinstalliert.</div>
-      </div>
-      <div class="feature-card reveal" style="transition-delay:.4s">
-        <div class="feature-icon">👥</div>
-        <div class="feature-title">Teamzugang</div>
-        <div class="feature-desc">Im Team-Abo arbeiten alle Kolleginnen mit denselben Kundendaten. Jede sieht die Formeln der anderen — für konsistente Ergebnisse.</div>
-      </div>
-      <div class="feature-card reveal" style="transition-delay:.5s">
-        <div class="feature-icon">📱</div>
-        <div class="feature-title">Mobile First</div>
-        <div class="feature-desc">Optimiert für das Smartphone — direkt am Arbeitsplatz nutzbar. Keine App-Installation nötig, läuft im Browser.</div>
-      </div>
-    </div>
-  </div>
-</section>
 
-<!-- ══ HOW IT WORKS ══ -->
-<section id="how" class="how-section">
-  <div class="how-inner">
-    <div class="reveal">
-      <div class="section-label" style="color:rgba(232,24,90,0.8)">So einfach geht's</div>
-      <h2 class="section-title" style="color:#fff">In 3 Schritten zur<br><em>perfekten Formel</em></h2>
-    </div>
-    <div class="how-steps">
-      <div class="how-step reveal">
-        <div class="how-step-num">01</div>
-        <div class="how-step-title">Foto aufnehmen</div>
-        <div class="how-step-desc">Fotografiere das aktuelle Haar deiner Kundin direkt mit der Kamera oder lade ein Bild aus der Galerie hoch. Kein Filter, natürliches Licht reicht völlig.</div>
-        <div class="how-step-arrow">→</div>
+    <!-- TAB: MARKEN -->
+    <div id="tab-brands">
+      <div class="lbl" style="margin-top:0">Marke hinzufügen</div>
+      <div class="admin-section">
+        <input class="inp inp-sm" type="text" placeholder="Markenname *" id="new-brand-name" style="margin-bottom:8px"/>
+        <input class="inp inp-sm" type="text" placeholder="Beschreibung" id="new-brand-desc" style="margin-bottom:8px"/>
+        <button class="btn btn-pink btn-full" style="height:40px;font-size:13px" onclick="addBrand()">+ Marke hinzufügen</button>
       </div>
-      <div class="how-step reveal" style="transition-delay:.15s">
-        <div class="how-step-num">02</div>
-        <div class="how-step-title">Zielfarbe definieren</div>
-        <div class="how-step-desc">Wähle aus Farbpaletten oder lade ein Referenzbild hoch. Stelle Farbstufe, Marke und Entwickler-Stärke ein — so wie du es gewohnt bist.</div>
-        <div class="how-step-arrow">→</div>
-      </div>
-      <div class="how-step reveal" style="transition-delay:.3s">
-        <div class="how-step-num">03</div>
-        <div class="how-step-title">Formel erhalten</div>
-        <div class="how-step-desc">In unter 20 Sekunden bekommst du die exakte Formel mit Gramm-Angaben, Einwirkzeit und Anwendungshinweisen — direkt in der Kundenkartei gespeichert.</div>
-      </div>
-    </div>
-  </div>
-</section>
 
-<!-- ══ PRICING ══ -->
-<section id="pricing" class="pricing-section">
-  <div class="pricing-inner">
-    <div class="reveal">
-      <div class="section-label">Preise</div>
-      <h2 class="section-title">Einfach. Transparent.<br><em>Fair.</em></h2>
-      <p class="section-sub" style="margin:0 auto">Keine versteckten Kosten. Monatlich kündbar. 14 Tage kostenlos testen — ohne Kreditkarte.</p>
+      <div class="lbl">Bestehende Marken</div>
+      <div class="admin-section" id="brands-list"></div>
     </div>
-    <div class="pricing-grid reveal">
-      <div class="pricing-card">
-        <div class="pricing-name">Solo</div>
-        <div class="pricing-price">29€ <span>/ Monat</span></div>
-        <div class="pricing-desc">Perfekt für selbstständige Friseurinnen</div>
-        <ul class="pricing-features">
-          <li><span class="check">✓</span> 1 Nutzer-Zugang</li>
-          <li><span class="check">✓</span> Unbegrenzte Kunden</li>
-          <li><span class="check">✓</span> Alle KI-Analysen</li>
-          <li><span class="check">✓</span> Komplette Farbdatenbank</li>
-          <li><span class="check">✓</span> Kundenkartei & Verlauf</li>
-          <li><span class="cross" style="color:var(--muted)">—</span> <span style="color:var(--muted)">Kein Team-Zugang</span></li>
-        </ul>
-        <a href="index.html" class="pricing-btn pricing-btn-secondary">14 Tage kostenlos testen</a>
+
+    <!-- TAB: LINIEN -->
+    <div id="tab-lines" style="display:none">
+      <div class="lbl" style="margin-top:0">Farblinie hinzufügen</div>
+      <div class="admin-section">
+        <select class="inp inp-sm" id="new-line-brand" style="margin-bottom:8px"></select>
+        <input class="inp inp-sm" type="text" placeholder="Name der Linie *" id="new-line-name" style="margin-bottom:8px"/>
+        <select class="inp inp-sm" id="new-line-type" style="margin-bottom:8px">
+          <option value="permanent">Permanent</option>
+          <option value="demi-permanent">Demi-Permanent</option>
+          <option value="treatment">Behandlung</option>
+        </select>
+        <input class="inp inp-sm" type="text" placeholder="Beschreibung" id="new-line-desc" style="margin-bottom:8px"/>
+        <button class="btn btn-pink btn-full" style="height:40px;font-size:13px" onclick="addLine()">+ Linie hinzufügen</button>
       </div>
-      <div class="pricing-card featured">
-        <div class="pricing-badge">EMPFOHLEN</div>
-        <div class="pricing-name">Team</div>
-        <div class="pricing-price">69€ <span>/ Monat</span></div>
-        <div class="pricing-desc">Für Salons mit mehreren Mitarbeiterinnen</div>
-        <ul class="pricing-features">
-          <li><span class="check">✓</span> Unbegrenzte Mitarbeiter</li>
-          <li><span class="check">✓</span> Gemeinsame Kundenkartei</li>
-          <li><span class="check">✓</span> Alle KI-Analysen</li>
-          <li><span class="check">✓</span> Komplette Farbdatenbank</li>
-          <li><span class="check">✓</span> Team-Einladungen per E-Mail</li>
-          <li><span class="check">✓</span> Eigene Farbdatenbank pflegen</li>
-        </ul>
-        <a href="index.html" class="pricing-btn pricing-btn-primary">14 Tage kostenlos testen</a>
-      </div>
+
+      <div class="lbl">Bestehende Linien</div>
+      <div class="admin-section" id="lines-list"></div>
     </div>
-    <p class="pricing-note reveal">Alle Preise zzgl. MwSt. · Monatlich abrechenbar · Jederzeit kündbar</p>
+
+    <!-- TAB: FARBTÖNE -->
+    <div id="tab-shades" style="display:none">
+      <div class="lbl" style="margin-top:0">Farbton hinzufügen</div>
+      <div class="admin-section">
+        <select class="inp inp-sm" id="new-shade-brand" style="margin-bottom:8px" onchange="populateShadeLines()"></select>
+        <select class="inp inp-sm" id="new-shade-line" style="margin-bottom:8px"></select>
+        <div class="form-row" style="margin-bottom:8px">
+          <input class="inp inp-sm" type="text" placeholder="Code *  z.B. 8/13" id="new-shade-code"/>
+          <input class="inp inp-sm" type="text" placeholder="Name *" id="new-shade-name"/>
+        </div>
+        <div class="form-row" style="margin-bottom:8px">
+          <input class="inp inp-sm" type="number" placeholder="Stufe 1-10" id="new-shade-level" min="1" max="10"/>
+          <input class="inp inp-sm" type="text" placeholder="Ton z.B. A, G, N" id="new-shade-tone"/>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <input type="color" id="new-shade-hex" value="#C8A870" class="color-dot-inp"/>
+          <span style="font-size:13px;color:var(--mid)">Farbe wählen</span>
+          <span id="hex-preview" style="font-size:12px;color:var(--muted)">#C8A870</span>
+        </div>
+        <button class="btn btn-pink btn-full" style="height:40px;font-size:13px" onclick="addShade()">+ Farbton hinzufügen</button>
+      </div>
+
+      <div class="lbl">Filter nach Marke & Linie</div>
+      <div class="admin-section" style="padding:12px">
+        <select class="inp inp-sm" id="filter-shade-brand" style="margin-bottom:8px" onchange="filterShades()"></select>
+        <select class="inp inp-sm" id="filter-shade-line" onchange="filterShades()"></select>
+      </div>
+      <div class="admin-section" id="shades-list"></div>
+    </div>
+
+
+    <!-- TAB: GUTSCHEINE -->
+    <div id="tab-vouchers" style="display:none">
+      <div class="lbl" style="margin-top:0">Neuer Gutschein</div>
+      <div class="admin-section">
+        <input class="inp inp-sm" type="text" placeholder="Code z.B. BETA2024 *" id="new-v-code" style="margin-bottom:8px;text-transform:uppercase"/>
+        <input class="inp inp-sm" type="text" placeholder="Beschreibung" id="new-v-desc" style="margin-bottom:8px"/>
+        <div class="form-row" style="margin-bottom:8px">
+          <select class="inp inp-sm" id="new-v-plan">
+            <option value="solo">Solo (29€)</option>
+            <option value="team">Team (69€)</option>
+          </select>
+          <input class="inp inp-sm" type="number" placeholder="Tage z.B. 30" id="new-v-days" value="30"/>
+        </div>
+        <input class="inp inp-sm" type="number" placeholder="Max. Einlösungen" id="new-v-max" value="1" style="margin-bottom:8px"/>
+        <button class="btn btn-pink btn-full" style="height:40px;font-size:13px" onclick="addVoucher()">+ Gutschein erstellen</button>
+      </div>
+      <div class="lbl">Bestehende Gutscheine</div>
+      <div class="admin-section" id="vouchers-list"></div>
+    </div>
+
+    <!-- TAB: ENTWICKLER -->
+    <div id="tab-devs" style="display:none">
+      <div class="lbl" style="margin-top:0">Entwickler-Stärke hinzufügen</div>
+      <div class="admin-section">
+        <div class="form-row" style="margin-bottom:8px">
+          <input class="inp inp-sm" type="text" placeholder="Stärke z.B. 20%" id="new-dev-strength"/>
+          <input class="inp inp-sm" type="text" placeholder="Vol z.B. 20 Vol" id="new-dev-vol"/>
+        </div>
+        <input class="inp inp-sm" type="text" placeholder="Zweck / Beschreibung" id="new-dev-purpose" style="margin-bottom:8px"/>
+        <button class="btn btn-pink btn-full" style="height:40px;font-size:13px" onclick="addDev()">+ Entwickler hinzufügen</button>
+      </div>
+
+      <div class="lbl">Bestehende Entwickler-Stärken</div>
+      <div class="admin-section" id="devs-list"></div>
+    </div>
+
+    <div style="height:32px"></div>
   </div>
 </section>
 
-<!-- ══ TESTIMONIALS ══ -->
-<section class="testimonials-section" style="padding:100px 5%">
-  <div class="testimonials-inner" style="max-width:1200px;margin:0 auto">
-    <div class="reveal" style="text-align:center;margin-bottom:0">
-      <div class="section-label" style="text-align:center">Bewertungen</div>
-      <h2 class="section-title" style="text-align:center">Was Friseurinnen<br><em>sagen</em></h2>
-    </div>
-    <div class="testimonials-grid">
-      <div class="testimonial-card reveal">
-        <div class="testimonial-stars">★★★★★</div>
-        <div class="testimonial-text">„Ich spare pro Kundin mindestens 5 Minuten bei der Formelberechnung. Das macht bei 8 Kunden am Tag einen riesigen Unterschied. Die App ist einfach genial."</div>
-        <div class="testimonial-author">
-          <div class="testimonial-avatar">S</div>
-          <div>
-            <div class="testimonial-name">Sandra K.</div>
-            <div class="testimonial-role">Selbstständige Friseurmeisterin, München</div>
-          </div>
-        </div>
-      </div>
-      <div class="testimonial-card reveal" style="transition-delay:.1s">
-        <div class="testimonial-stars">★★★★★</div>
-        <div class="testimonial-text">„Endlich keine Zettelwirtschaft mehr! Die Kundenkartei ist super praktisch — alle im Salon sehen die letzte Formel und können direkt weiterarbeiten."</div>
-        <div class="testimonial-author">
-          <div class="testimonial-avatar">L</div>
-          <div>
-            <div class="testimonial-name">Laura M.</div>
-            <div class="testimonial-role">Salon-Inhaberin, Hamburg</div>
-          </div>
-        </div>
-      </div>
-      <div class="testimonial-card reveal" style="transition-delay:.2s">
-        <div class="testimonial-stars">★★★★★</div>
-        <div class="testimonial-text">„Besonders die Fotoanalyse ist beeindruckend. Die KI erkennt den Unterton fast besser als ich — und ich mache das seit 15 Jahren."</div>
-        <div class="testimonial-author">
-          <div class="testimonial-avatar">J</div>
-          <div>
-            <div class="testimonial-name">Julia R.</div>
-            <div class="testimonial-role">Senior Colorist, Wien</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══ FAQ ══ -->
-<section id="faq" class="faq-section">
-  <div class="faq-inner">
-    <div class="reveal" style="text-align:center">
-      <div class="section-label" style="text-align:center">FAQ</div>
-      <h2 class="section-title" style="text-align:center">Häufige <em>Fragen</em></h2>
-    </div>
-    <div class="faq-list reveal">
-      <div class="faq-item">
-        <button class="faq-question" onclick="toggleFaq(this)">
-          Muss ich eine App installieren?
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <div class="faq-answer-inner">Nein — ColorMixAI läuft vollständig im Browser deines Smartphones. Kein App Store, keine Installation. Einfach den Link öffnen und loslegen. Du kannst die App aber trotzdem zum Home-Bildschirm hinzufügen für schnellen Zugriff.</div>
-        </div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-question" onclick="toggleFaq(this)">
-          Welche Marken und Farblinien sind enthalten?
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <div class="faq-answer-inner">Vorinstalliert sind Wella Professionals (Koleston Perfect ME+, Illumina Color, Color Touch), L'Oréal Professionnel (Majirel, INOA, Dia Richesse), Schwarzkopf Professional (Igora Royal, Igora Vibrance), Redken (Shades EQ, Chromatics) und Olaplex. Du kannst außerdem eigene Marken und Farbtöne hinzufügen.</div>
-        </div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-question" onclick="toggleFaq(this)">
-          Was passiert nach den 14 Tagen?
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <div class="faq-answer-inner">Nach der Testphase wählst du dein Abo (Solo 29€/Monat oder Team 69€/Monat). Wir erinnern dich rechtzeitig per E-Mail. Wenn du nicht weiter machen möchtest, kannst du jederzeit kündigen — ohne Haken.</div>
-        </div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-question" onclick="toggleFaq(this)">
-          Sind meine Kundendaten sicher?
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <div class="faq-answer-inner">Ja. Alle Daten werden verschlüsselt auf Servern in der EU (Frankfurt) gespeichert — vollständig DSGVO-konform. Jeder Salon sieht ausschließlich seine eigenen Daten. Keine Daten werden an Dritte weitergegeben.</div>
-        </div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-question" onclick="toggleFaq(this)">
-          Kann ich zwischen Solo und Team wechseln?
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <div class="faq-answer-inner">Ja, jederzeit. Du kannst dein Abo in den Konto-Einstellungen upgraden oder downgraden. Bei einem Upgrade auf Team werden alle bestehenden Kundendaten automatisch für das Team freigegeben.</div>
-        </div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-question" onclick="toggleFaq(this)">
-          Funktioniert ColorMixAI auch offline?
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <div class="faq-answer-inner">Für die KI-Analyse und das Speichern von Kundendaten wird eine Internetverbindung benötigt. Die Farbdatenbank und gespeicherte Formeln können auch offline eingesehen werden.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ══ SALON KARTE ══ -->
-<section id="salons" class="map-section">
-  <div class="map-inner">
-    <div class="reveal" style="text-align:center">
-      <div class="section-label" style="color:rgba(232,24,90,0.8);text-align:center">Salon-Verzeichnis</div>
-      <h2 class="section-title" style="color:#fff;text-align:center">Finde einen <em>ColorMixAI-Salon</em><br>in deiner Nähe</h2>
-      <p class="section-sub" style="color:rgba(255,255,255,0.5);margin:0 auto;text-align:center">Alle Salons die ColorMixAI nutzen und sich listen lassen — finde professionelle Coloristinnen in deiner Stadt.</p>
-    </div>
-
-    <div class="map-container reveal" style="margin-top:48px">
-      <!-- Google Maps Embed (kostenfrei bis 25.000 Aufrufe/Monat) -->
-      <iframe
-        id="salon-map"
-        src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d10609937.45!2d10.4515!3d51.1657!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sde!2sde!4v1710000000000!5m2!1sde!2sde"
-        allowfullscreen=""
-        loading="lazy"
-        referrerpolicy="no-referrer-when-downgrade"
-        style="width:100%;height:100%;border:none;border-radius:20px">
-      </iframe>
-
-      <!-- Overlay Info Card -->
-      <div class="map-overlay-card">
-        <div class="map-salon-count">
-          <div style="width:7px;height:7px;border-radius:50%;background:#E8185A;animation:pulse 2s infinite"></div>
-          <span id="salon-count">Wird geladen…</span>
-        </div>
-        <div class="map-overlay-title">ColorMixAI-Salons</div>
-        <!-- Standort-Suche -->
-        <button id="location-btn" onclick="findNearMe()" style="width:100%;margin:8px 0;padding:8px 12px;background:#E8185A;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
-          📍 Salons in meiner Nähe
-        </button>
-        <div id="location-status" style="font-size:11px;color:#9A9A9A;text-align:center;margin-bottom:6px;min-height:14px"></div>
-        <div class="salon-list-preview" id="salon-list-preview">
-          <div style="font-size:12px;color:#9A9A9A;padding:8px 0;text-align:center">Wird geladen…</div>
-        </div>
-        <div style="margin-top:10px;font-size:11px;color:#9A9A9A">
-          Salon-Inhaberin? <a href="index.html" style="color:#E8185A;font-weight:700">Jetzt listen lassen →</a>
-        </div>
-      </div>
-    </div>
-
-    <!-- CTA für Salon-Betreiber -->
-    <div class="reveal" style="text-align:center;margin-top:40px">
-      <p style="color:rgba(255,255,255,0.5);font-size:15px;margin-bottom:20px">Du betreibst einen Salon? Werde Teil des Verzeichnisses — kostenlos.</p>
-      <a href="index.html" class="btn-primary" style="display:inline-flex">✦ Salon listen lassen</a>
-    </div>
-  </div>
-</section>
-
-<!-- ══ CTA BANNER ══ -->
-<section class="cta-banner">
-  <div class="cta-banner-inner reveal">
-    <h2>Bereit für die perfekte<br><em>Farbformel</em>?</h2>
-    <p>Starte kostenlos — keine Kreditkarte, kein Risiko. Tausende Friseurinnen vertrauen bereits auf ColorMixAI.</p>
-    <a href="index.html" class="btn-primary" style="display:inline-flex;font-size:17px;padding:18px 40px">✦ Jetzt kostenlos starten</a>
-  </div>
-</section>
-
-<!-- ══ FOOTER ══ -->
-<footer>
-  <div class="footer-inner">
-    <div class="footer-top">
-      <div class="footer-brand">
-        <a class="nav-logo" href="#">Color<span>Mix</span>AI</a>
-        <p>KI-gestützte Haarfarb-Formelberechnung für professionelle Friseurinnen im DACH-Raum.</p>
-      </div>
-      <div class="footer-links">
-        <div class="footer-col">
-          <h4>Produkt</h4>
-          <a href="#features">Features</a>
-          <a href="#pricing">Preise</a>
-          <a href="index.html">App öffnen</a>
-        </div>
-        <div class="footer-col">
-          <h4>Support</h4>
-          <a href="#faq">FAQ</a>
-          <a href="mailto:info@colormixai.com">Kontakt</a>
-        </div>
-        <div class="footer-col">
-          <h4>Rechtliches</h4>
-          <a href="#">Datenschutz</a>
-          <a href="#">Impressum</a>
-          <a href="#">AGB</a>
-        </div>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>© 2025 ColorMixAI. Alle Rechte vorbehalten.</p>
-      <p>Made with ♥ für Friseurinnen im DACH-Raum</p>
-    </div>
-  </div>
-</footer>
-
+</div><!-- #app -->
 <script>
-/* NAV scroll effect */
-window.addEventListener('scroll', () => {
-  const nav = document.getElementById('navbar');
-  nav.style.boxShadow = window.scrollY > 20 ? '0 2px 20px rgba(0,0,0,0.08)' : 'none';
-});
+/* ═══════════════════ STATE ═══════════════════ */
+let activeClient = null;
+let viewingClient = null;
+let nextId = 20;
 
-/* Mobile menu */
-function toggleMobileMenu() {
-  document.getElementById('mobile-menu').classList.toggle('open');
+let clients = [
+  { id:1, name:'Sophie Müller',  notes:'Prefers cool tones',    hairHistory:'Colored 3× this year', hairState:'Colored',  photo:'' },
+  { id:2, name:'Lena Fischer',   notes:'Sensitive scalp',        hairHistory:'Bleached ends',         hairState:'Bleached', photo:'' },
+  { id:3, name:'Marie Weber',    notes:'',                       hairHistory:'Natural, first color',  hairState:'Natural',  photo:'' },
+  { id:4, name:'Jana Becker',    notes:'Loves Wella products',   hairHistory:'Colored',               hairState:'Colored',  photo:'' },
+];
+
+let sessions = [
+  { id:1, clientId:1, date:'2024-11-14', target:'Cool Beige Blonde', formula:'8/13 – 60g, 9/13 – 20g', dev:'9%',  brand:'Wella',        notes:'Perfect result',     hairPhoto:'' },
+  { id:2, clientId:2, date:'2024-10-20', target:'Warm Copper',       formula:'7.4 – 50g, 6.43 – 30g',  dev:'20%', brand:'L\'Oréal',      notes:'',                   hairPhoto:'' },
+  { id:3, clientId:3, date:'2024-10-15', target:'Ash Brown',         formula:'5-1 – 70g, 4-0 – 10g',   dev:'10%', brand:'Schwarzkopf',   notes:'',                   hairPhoto:'' },
+  { id:4, clientId:4, date:'2024-10-10', target:'Platinum Blonde',   formula:'10/0 – 80g, 0/1 – 5g',   dev:'30%', brand:'Wella',         notes:'Pre-lightened first', hairPhoto:'' },
+  { id:5, clientId:1, date:'2024-08-04', target:'Warm Blonde',       formula:'8/3 – 80g',               dev:'9%',  brand:'Wella',         notes:'',                   hairPhoto:'' },
+];
+
+/* ═══════════════════ NAVIGATION ═══════════════════ */
+function go(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+  if (id==='s-select-client')  { renderSelectList(''); document.getElementById('sc-search').value=''; }
+  if (id==='s-clients')        { renderClientsList(''); document.getElementById('cl-search').value=''; }
+  if (id==='s-current')        { renderBanner('banner-current'); }
+  if (id==='s-target')         { renderBanner('banner-target'); }
+  if (id==='s-result')         { renderResultClient(); }
+  if (id==='s-profile' && viewingClient) renderProfile();
 }
 
-/* FAQ */
-function toggleFaq(btn) {
-  const item = btn.closest('.faq-item');
-  const isOpen = item.classList.contains('open');
-  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
-  if (!isOpen) item.classList.add('open');
+/* ═══════════════════ BANNERS ═══════════════════ */
+function renderBanner(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = activeClient
+    ? `<div class="banner">
+        <span>👤</span>
+        <span class="banner-name">${activeClient.name}</span>
+        <button class="banner-change" onclick="go('s-select-client')">Ändern</button>
+       </div>`
+    : '';
 }
 
-
-const SUPA_URL = 'https://kncltnmzocufnhdrzswt.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtuY2x0bm16b2N1Zm5oZHJ6c3d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0MDA0MDMsImV4cCI6MjA4OTk3NjQwM30.HTzpw0qgORUhQHd1fcx1x6y2hVmn78udPz6WrsWlljU';
-let allSalons = [];
-
-function dist(lat1, lng1, lat2, lng2) {
-  const R = 6371;
-  const dLat = (lat2-lat1)*Math.PI/180;
-  const dLng = (lng2-lng1)*Math.PI/180;
-  const a = Math.sin(dLat/2)*Math.sin(dLat/2) +
-    Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-}
-
-function renderSalonList(salons, userLat, userLng) {
-  const listEl = document.getElementById('salon-list-preview');
-  const countEl = document.getElementById('salon-count');
-  if (!listEl) return;
-  if (!salons.length) {
-    listEl.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,0.5);padding:8px 0;text-align:center">Noch keine Salons in dieser Region</div>';
-    if (countEl) countEl.textContent = 'Keine Salons gefunden';
-    return;
+function renderResultClient() {
+  const card = document.getElementById('result-client-card');
+  const el = document.getElementById('result-client-name');
+  if (activeClient) {
+    el.textContent = activeClient.name;
+    card.style.borderColor = 'var(--pink)';
+    card.style.background = 'var(--pink-light)';
+  } else {
+    el.textContent = 'No client selected';
+    card.style.borderColor = '';
+    card.style.background = '';
   }
-  if (countEl) countEl.textContent = salons.length + ' Salon' + (salons.length !== 1 ? 's' : '') + ' gefunden';
-  listEl.innerHTML = salons.slice(0, 5).map(s => {
-    const d = (userLat && s.lat) ? dist(userLat, userLng, s.lat, s.lng) : null;
-    const distStr = d ? (d < 1 ? Math.round(d*1000)+'m' : d.toFixed(1)+'km') : '';
-    return '<div class="salon-item" onclick="focusSalonOnMap(' + (s.lat||0) + ',' + (s.lng||0) + ')">' +
-      '<div class="salon-item-dot"></div>' +
-      '<div style="flex:1">' +
-        '<div style="font-size:13px;font-weight:700;color:#0A0A0A">' + s.name + '</div>' +
-        '<div style="font-size:11px;color:#666;margin-top:2px">' + (s.city||'') + (distStr ? ' · '+distStr : '') + '</div>' +
-      '</div>' +
-      '</div>';
+}
+
+/* ═══════════════════ SELECT CLIENT SCREEN ═══════════════════ */
+function filterSelectList(v) { renderSelectList(v); }
+
+function renderSelectList(filter) {
+  const cont = document.getElementById('sc-list');
+  const f = (filter||'').toLowerCase();
+  const list = clients.filter(c => c.name.toLowerCase().includes(f));
+  if (!list.length) { cont.innerHTML='<div class="empty"><p>Kein Kunde gefunden.</p></div>'; return; }
+  cont.innerHTML = list.map(c => {
+    const count = sessions.filter(s=>s.clientId===c.id).length;
+    return `<div class="list-card" onclick="selectClient(clients.find(x=>x.id===${c.id}))">
+      <div class="avatar">${c.photo?`<img src="${c.photo}"/>`:'👤'}</div>
+      <div class="lc-info">
+        <div class="lc-name">${c.name}</div>
+        <div class="lc-sub">${c.hairState} · ${c.hairHistory||'Keine Haarhistorie'}</div>
+      </div>
+      <div class="lc-badge">${count} Sitzung${count!==1?'en':''}</div>
+    </div>`;
   }).join('');
 }
 
-function updateMapForLocation(lat, lng, zoom) {
-  const iframe = document.getElementById('salon-map');
-  if (!iframe) return;
-  iframe.src = 'https://www.google.com/maps/embed/v1/search?key=AIzaSyD-placeholder&q=Friseursalon&center=' + lat + ',' + lng + '&zoom=' + (zoom||12);
-  // Fallback without API key - use standard embed centered on location
-  iframe.src = 'https://maps.google.com/maps?q=' + lat + ',' + lng + '&z=' + (zoom||12) + '&output=embed';
-}
+function selectClient(c) { activeClient = c; go('s-current'); }
 
-function focusSalonOnMap(lat, lng) {
-  if (!lat || !lng) return;
-  const iframe = document.getElementById('salon-map');
-  if (iframe) iframe.src = 'https://maps.google.com/maps?q=' + lat + ',' + lng + '&z=15&output=embed';
-}
-
-async function loadListedSalons() {
-  try {
-    const res = await fetch(SUPA_URL + '/rest/v1/salons?listed_in_directory=eq.true&select=name,city,street,lat,lng', {
-      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
-    });
-    allSalons = await res.json();
-    if (!Array.isArray(allSalons)) allSalons = [];
-
-    // If we have salons with coordinates, center map on first one
-    const withCoords = allSalons.filter(s => s.lat && s.lng);
-    if (withCoords.length > 0) {
-      // Center on Germany by default
-      const iframe = document.getElementById('salon-map');
-      if (iframe) {
-        // Build search query from first salon
-        const first = withCoords[0];
-        iframe.src = 'https://maps.google.com/maps?q=' + first.lat + ',' + first.lng + '&z=6&output=embed';
-      }
-    }
-    renderSalonList(allSalons, null, null);
-  } catch(e) {
-    const countEl = document.getElementById('salon-count');
-    if (countEl) countEl.textContent = 'Salons in DACH';
-  }
-}
-
-function findNearMe() {
-  const btn = document.getElementById('location-btn');
-  const status = document.getElementById('location-status');
-  if (!navigator.geolocation) {
-    if (status) status.textContent = 'Standort nicht verfügbar';
+/* ═══════════════════ CLIENTS LIST SCREEN ═══════════════════ */
+function renderClientsList(filter) {
+  const cont = document.getElementById('cl-list');
+  const f = (filter||'').toLowerCase();
+  const list = clients.filter(c => c.name.toLowerCase().includes(f));
+  if (!list.length) {
+    cont.innerHTML='<div class="empty"><div class="ico">👤</div><p>Noch keine Kunden.<br>Tippe + um den ersten anzulegen.</p></div>';
     return;
   }
-  if (btn) { btn.textContent = '⏳ Standort wird ermittelt…'; btn.disabled = true; }
-  if (status) status.textContent = '';
+  cont.innerHTML = list.map(c => {
+    const count = sessions.filter(s=>s.clientId===c.id).length;
+    const last = sessions.filter(s=>s.clientId===c.id).sort((a,b)=>b.date.localeCompare(a.date))[0];
+    return `<div class="list-card" onclick="openProfile(${c.id})">
+      <div class="avatar">${c.photo?`<img src="${c.photo}"/>`:'👤'}</div>
+      <div class="lc-info">
+        <div class="lc-name">${c.name}</div>
+        <div class="lc-sub">${last?'Letzte: '+last.date+' · '+last.target:c.hairState}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div class="lc-badge">${count}</div>
+        <span style="color:var(--muted);font-size:16px">›</span>
+      </div>
+    </div>`;
+  }).join('');
+}
 
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-      if (btn) { btn.textContent = '✅ Standort gefunden'; btn.disabled = false; }
-      // Sort by distance
-      const sorted = allSalons
-        .filter(s => s.lat && s.lng)
-        .sort((a,b) => dist(lat,lng,a.lat,a.lng) - dist(lat,lng,b.lat,b.lng));
-      const nearby = sorted.filter(s => dist(lat,lng,s.lat,s.lng) < 50);
-      renderSalonList(nearby.length ? nearby : allSalons, lat, lng);
-      if (status) status.textContent = nearby.length ? nearby.length + ' Salons in 50km Umkreis' : 'Alle Salons angezeigt';
-      // Center map on user
-      updateMapForLocation(lat, lng, 11);
-      setTimeout(() => { if (btn) btn.textContent = '📍 Salons in meiner Nähe'; }, 3000);
-    },
-    (err) => {
-      if (btn) { btn.textContent = '📍 Salons in meiner Nähe'; btn.disabled = false; }
-      if (status) {
-        status.textContent = err.code === 1 ? 'Standort-Zugriff verweigert' : 'Standort nicht verfügbar';
-      }
-    },
-    { timeout: 8000, maximumAge: 300000 }
+/* ═══════════════════ CLIENT PROFILE ═══════════════════ */
+function openProfile(id) {
+  viewingClient = clients.find(c=>c.id===id);
+  if (!viewingClient) return;
+  go('s-profile');
+}
+
+function renderProfile() {
+  const c = viewingClient;
+  document.getElementById('profile-hdr-name').textContent = c.name;
+  const clientSessions = sessions.filter(s=>s.clientId===c.id).sort((a,b)=>b.date.localeCompare(a.date));
+
+  document.getElementById('profile-top').innerHTML = `
+    <div class="profile-avatar">${c.photo?`<img src="${c.photo}"/>`:'👤'}</div>
+    <div>
+      <div class="profile-name">${c.name}</div>
+      <div class="profile-meta">${c.hairState} · ${c.hairHistory||'Keine Haarhistorie'}</div>
+      ${c.notes?`<div class="profile-meta" style="margin-top:2px;font-style:italic">📝 ${c.notes}</div>`:''}
+    </div>`;
+
+  const last = clientSessions[0]?.date||'—';
+  const brands = [...new Set(clientSessions.map(s=>s.brand).filter(Boolean))].join(', ')||'—';
+  document.getElementById('profile-stats').innerHTML = `
+    <div class="stat"><div class="stat-val">${clientSessions.length}</div><div class="stat-lbl">Sitzungen</div></div>
+    <div class="stat"><div class="stat-val" style="font-size:13px;padding-top:2px">${last}</div><div class="stat-lbl">Letzter Besuch</div></div>
+    <div class="stat"><div class="stat-val" style="font-size:11px;padding-top:4px">${brands}</div><div class="stat-lbl">Marken</div></div>`;
+
+  const sessCont = document.getElementById('profile-sessions');
+  if (!clientSessions.length) {
+    sessCont.innerHTML='<div class="empty" style="padding:20px 0"><p>Noch keine Sitzungen vorhanden.</p></div>';
+    return;
+  }
+  sessCont.innerHTML = clientSessions.map(s=>`
+    <div class="sess-card">
+      <div class="sess-hdr" onclick="toggleSess('sb-${s.id}','arr-${s.id}')">
+        <div>
+          <div class="sess-date">${s.date}</div>
+          <div class="sess-target">${s.target}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;color:var(--muted)">${s.brand}</span>
+          ${s.afterPhoto ? '<span style="font-size:14px" title="Ergebnis-Foto vorhanden">✨</span>' : ''}
+          <span style="color:var(--muted);font-size:16px" id="arr-${s.id}">›</span>
+        </div>
+      </div>
+      <div class="sess-body" id="sb-${s.id}">
+        <div class="sess-detail">
+          <div><strong>Formel:</strong> ${s.formula}</div>
+          <div><strong>Entwickler:</strong> ${s.dev}</div>
+          <div><strong>Marke:</strong> ${s.brand}</div>
+          ${s.notes?`<div><strong>Notizen:</strong> ${s.notes}</div>`:''}
+        </div>
+
+        <!-- Fotos nebeneinander wenn vorhanden -->
+        <div style="display:grid;grid-template-columns:${s.hairPhoto && s.afterPhoto ? '1fr 1fr' : '1fr'};gap:8px;margin-top:10px">
+          ${s.hairPhoto ? `
+            <div>
+              <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Vorher</div>
+              <img src="${s.hairPhoto}" style="width:100%;border-radius:8px;aspect-ratio:3/4;object-fit:cover"/>
+            </div>` : ''}
+          ${s.afterPhoto ? `
+            <div>
+              <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Nachher ✨</div>
+              <img src="${s.afterPhoto}" style="width:100%;border-radius:8px;aspect-ratio:3/4;object-fit:cover"/>
+            </div>` : ''}
+        </div>
+
+        <!-- Nachher-Foto hinzufügen wenn noch keines vorhanden -->
+        ${!s.afterPhoto ? `
+        <div style="margin-top:10px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Ergebnis-Foto noch nicht vorhanden:</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <button class="btn btn-outline btn-full" style="height:38px;font-size:12px" onclick="triggerAfterCamera('after-sess-${s.id}')">📷 Kamera</button>
+            <button class="btn btn-outline btn-full" style="height:38px;font-size:12px" onclick="triggerAfterGallery('after-sess-${s.id}')">🖼 Galerie</button>
+          </div>
+          <input type="file" id="after-sess-${s.id}" accept="image/*" onchange="saveAfterPhotoToSession(this,'${s.id}')"/>
+        </div>` : `
+        <div style="margin-top:8px">
+          <button class="btn btn-ghost btn-full" style="height:34px;font-size:11px" onclick="triggerAfterGallery('after-sess-upd-${s.id}')">🔄 Ergebnis-Foto ersetzen</button>
+          <input type="file" id="after-sess-upd-${s.id}" accept="image/*" onchange="saveAfterPhotoToSession(this,'${s.id}')"/>
+        </div>`}
+
+        <!-- ML Feedback wenn noch nicht gegeben -->
+        ${s.resultGood === null || s.resultGood === undefined ? `
+        <div style="margin-top:10px;padding:10px;background:var(--bg);border-radius:var(--rs)">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-align:center">War das Farbergebnis gut?</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <button class="btn btn-outline btn-full" style="height:36px;font-size:12px;border-color:#4A7C59;color:#0A7C55" onclick="saveSessionFeedback('${s.id}',true)">👍 Ja</button>
+            <button class="btn btn-outline btn-full" style="height:36px;font-size:12px;border-color:var(--danger);color:var(--danger)" onclick="saveSessionFeedback('${s.id}',false)">👎 Nein</button>
+          </div>
+        </div>` : `<div style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center">${s.resultGood ? '👍 Als gut bewertet' : '👎 Als verbesserungswürdig markiert'}</div>`}
+
+        <button class="btn btn-danger btn-full" style="margin-top:10px" onclick="confirmDeleteSess('${s.id}')">🗑 Sitzung löschen</button>
+      </div>
+    </div>`).join('');
+}
+
+function triggerAfterCamera(inputId) {
+  const inp = document.getElementById(inputId);
+  if (!inp) return;
+  inp.setAttribute('capture','environment');
+  inp.click();
+}
+function triggerAfterGallery(inputId) {
+  const inp = document.getElementById(inputId);
+  if (!inp) return;
+  inp.removeAttribute('capture');
+  inp.click();
+}
+
+async function saveAfterPhotoToSession(input, sessionId) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const dataUrl = e.target.result;
+    const sess = sessions.find(s => String(s.id) === String(sessionId));
+    if (sess) sess.afterPhoto = dataUrl;
+    if (currentSalon?.id) {
+      await sb.from('sessions').update({ after_photo_url: dataUrl }).eq('id', sessionId).catch(console.error);
+    }
+    renderProfile();
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveSessionFeedback(sessionId, good) {
+  const sess = sessions.find(s => String(s.id) === String(sessionId));
+  if (sess) sess.resultGood = good;
+  if (currentSalon?.id) {
+    await sb.from('sessions').update({ result_good: good }).eq('id', sessionId).catch(console.error);
+  }
+  renderProfile();
+}
+
+function toggleSess(bodyId, arrId) {
+  const body = document.getElementById(bodyId);
+  const arr = document.getElementById(arrId);
+  const open = body.classList.toggle('open');
+  arr.textContent = open ? '∨' : '›';
+}
+
+function startForProfile() { activeClient = viewingClient; go('s-current'); }
+
+/* ═══════════════════ PHOTO UPLOAD ═══════════════════ */
+/* Camera — sets capture attribute so device opens camera directly */
+function triggerCamera(inputId) {
+  const inp = document.getElementById(inputId);
+  inp.setAttribute('capture','environment');
+  inp.click();
+}
+/* Gallery — removes capture so device opens file browser / photo library */
+function triggerGallery(inputId) {
+  const inp = document.getElementById(inputId);
+  inp.removeAttribute('capture');
+  inp.click();
+}
+
+function handlePhoto(input, previewId, dataId) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const url = e.target.result;
+    const prev = document.getElementById(previewId);
+    prev.classList.add('has-photo');
+    prev.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover"/>`;
+    if (dataId) document.getElementById(dataId).value = url;
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleRefPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('ref-preview').src = e.target.result;
+    document.getElementById('ref-preview-wrap').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ═══════════════════ UI HELPERS ═══════════════════ */
+function selectChip(el) {
+  el.closest('.chip-grid').querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function selectColor(el, name, grad) {
+  el.closest('.chip-grid').querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('color-bar').style.background = grad;
+  document.getElementById('color-bar-lbl').textContent = name;
+}
+function selectSeg(btn, groupId) {
+  document.getElementById(groupId).querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function selectBrand(el) {
+  el.closest('.brand-grid').querySelectorAll('.brand-chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function selectPill(el) {
+  el.closest('.pill-row').querySelectorAll('.pill').forEach(p=>p.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function updateSlider(inp) {
+  const v = inp.value;
+  inp.style.setProperty('--pct',((v-1)/9*100).toFixed(0)+'%');
+  document.getElementById('level-val').textContent = v;
+}
+
+/* ═══════════════════ SAVE NEW CLIENT ═══════════════════ */
+async function saveNewClientFlow() {
+  const name = document.getElementById('fcf-name').value.trim();
+  if (!name) { alert('Bitte einen Kundennamen eingeben.'); return; }
+  const btn = document.querySelector('#s-new-client-flow .btn-pink');
+  btn.textContent = 'Speichern…'; btn.disabled = true;
+  const clientData = {
+    salon_id: currentSalon?.id || null,
+    name,
+    notes: document.getElementById('fcf-notes').value.trim(),
+    hair_history: document.getElementById('fcf-history').value.trim(),
+    hair_state: document.querySelector('#fcf-state .seg-btn.active')?.textContent||'Natur',
+    created_by: currentUser?.id || null,
+  };
+  let savedClient;
+  if (currentSalon?.id) {
+    const { data, error } = await sb.from('clients').insert(clientData).select().single();
+    if (error) { console.error(error); }
+    if (data) {
+      savedClient = { id: data.id, name: data.name, notes: data.notes, hairHistory: data.hair_history, hairState: data.hair_state, photo: '' };
+      clients.unshift(savedClient);
+    }
+  }
+  if (!savedClient) {
+    savedClient = { id: nextId++, name, notes: clientData.notes, hairHistory: clientData.hair_history, hairState: clientData.hair_state, photo: '' };
+    clients.unshift(savedClient);
+  }
+  activeClient = savedClient;
+  btn.textContent = 'Speichern & weiter →'; btn.disabled = false;
+  ['fcf-name','fcf-notes','fcf-history'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fcf-data').value='';
+  resetPhotoPreview('fcf-preview');
+  go('s-current');
+}
+
+async function saveClientStandalone() {
+  const name = document.getElementById('ncs-name').value.trim();
+  if (!name) { alert('Bitte einen Kundennamen eingeben.'); return; }
+  const btn = document.querySelector('#s-new-client-standalone .btn-pink');
+  btn.textContent = 'Speichern…'; btn.disabled = true;
+  const clientData = {
+    salon_id: currentSalon?.id || null,
+    name,
+    notes: document.getElementById('ncs-notes').value.trim(),
+    hair_history: document.getElementById('ncs-history').value.trim(),
+    hair_state: document.querySelector('#ncs-state .seg-btn.active')?.textContent||'Natur',
+    created_by: currentUser?.id || null,
+  };
+  if (currentSalon?.id) {
+    const { data } = await sb.from('clients').insert(clientData).select().single();
+    if (data) clients.unshift({ id: data.id, name: data.name, notes: data.notes, hairHistory: data.hair_history, hairState: data.hair_state, photo: '' });
+  } else {
+    clients.unshift({ id: nextId++, name, notes: clientData.notes, hairHistory: clientData.hair_history, hairState: clientData.hair_state, photo: '' });
+  }
+  btn.textContent = '✓ Kunde speichern'; btn.disabled = false;
+  ['ncs-name','ncs-notes','ncs-history'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ncs-data').value='';
+  resetPhotoPreview('ncs-preview');
+  go('s-clients');
+}
+
+function resetPhotoPreview(id) {
+  const el = document.getElementById(id);
+  el.classList.remove('has-photo');
+  el.innerHTML='<div class="photo-placeholder"><div class="ico">📷</div><p>Foto hinzufügen</p></div>';
+}
+
+/* ═══════════════════ ANALYSIS ═══════════════════ */
+async function startAnalysis() {
+  go('s-analysis');
+  const steps=[{d:'d1',t:'t1',c:'c1'},{d:'d2',t:'t2',c:'c2'},{d:'d3',t:'t3',c:'c3'},{d:'d4',t:'t4',c:'c4'}];
+  steps.forEach(s=>{document.getElementById(s.d).className='dot';document.getElementById(s.t).className='step-txt';document.getElementById(s.c).className='step-chk';});
+  document.getElementById('spinner').style.opacity='1';
+
+  // Schritt 1: IST-Bild analysieren
+  const istImageData = document.getElementById('curr-data')?.value;
+  document.getElementById(steps[0].d).className='dot active';
+  document.getElementById(steps[0].t).className='step-txt active';
+  
+  let istResult = null;
+  if (istImageData) {
+    try {
+      istResult = await analyzeHairWithAI(istImageData, 'ist');
+      lastAnalysis.ist = istResult;
+    } catch(e) { console.error('IST-Analyse Fehler:', e); }
+  }
+  document.getElementById(steps[0].d).className='dot done';
+  document.getElementById(steps[0].t).className='step-txt done';
+  document.getElementById(steps[0].c).className='step-chk show';
+
+  // Schritt 2: Unterton erkennen
+  document.getElementById(steps[1].d).className='dot active';
+  document.getElementById(steps[1].t).className='step-txt active';
+  await new Promise(r => setTimeout(r, 700));
+  document.getElementById(steps[1].d).className='dot done';
+  document.getElementById(steps[1].t).className='step-txt done';
+  document.getElementById(steps[1].c).className='step-chk show';
+
+  // Schritt 3: Farbdatenbank abgleichen
+  document.getElementById(steps[2].d).className='dot active';
+  document.getElementById(steps[2].t).className='step-txt active';
+  const colorBarLbl = document.getElementById('color-bar-lbl')?.textContent || 'Kühles Blond';
+  const levelVal = document.getElementById('level-val')?.textContent || '7';
+  lastAnalysis.soll = { color_name: colorBarLbl, level: parseFloat(levelVal) };
+  await new Promise(r => setTimeout(r, 800));
+  document.getElementById(steps[2].d).className='dot done';
+  document.getElementById(steps[2].t).className='step-txt done';
+  document.getElementById(steps[2].c).className='step-chk show';
+
+  // Schritt 4: Formel berechnen
+  document.getElementById(steps[3].d).className='dot active';
+  document.getElementById(steps[3].t).className='step-txt active';
+  const brand = document.querySelector('.brand-chip.selected')?.textContent || 'Wella';
+  lastAnalysis.formula = await getFormulaFromML(lastAnalysis.ist, lastAnalysis.soll, { brand });
+  await new Promise(r => setTimeout(r, 900));
+  document.getElementById(steps[3].d).className='dot done';
+  document.getElementById(steps[3].t).className='step-txt done';
+  document.getElementById(steps[3].c).className='step-chk show';
+
+  document.getElementById('spinner').style.opacity='0';
+
+  // Ergebnis-Screen updaten mit AI-Erkenntnissen
+  updateResultWithAI();
+  setTimeout(() => go('s-result'), 500);
+}
+
+function updateResultWithAI() {
+  if (!lastAnalysis.ist) return;
+  const ist = lastAnalysis.ist;
+  
+  // Erkannte Basis updaten
+  const baseEl = document.querySelector('#s-result .card:nth-child(3) .card-val');
+  const baseSubEl = document.querySelector('#s-result .card:nth-child(3) .card-sub');
+  if (baseEl) baseEl.textContent = 'Stufe ' + ist.level?.toFixed(1);
+  if (baseSubEl) {
+    const undertoneDE = ist.undertone === 'warm' ? 'Warmer Unterton' : ist.undertone === 'cool' ? 'Kühler Unterton' : 'Neutraler Unterton';
+    baseSubEl.textContent = undertoneDE + ' · ' + (ist.base_color || 'Mittelbraun');
+  }
+  
+  // Konfidenz anzeigen wenn niedrig
+  if (ist.confidence < 0.7) {
+    const warnCard = document.querySelector('#s-result .warn-box .warn-text');
+    if (warnCard) warnCard.textContent = `KI-Konfidenz: ${Math.round(ist.confidence * 100)}% — Bitte Ergebnis manuell prüfen. ` + warnCard.textContent;
+  }
+}
+
+/* ═══════════════════ SAVE RESULT ═══════════════════ */
+async function saveResult(e) {
+  const btn = e.target;
+  btn.textContent = 'Speichern…'; btn.disabled = true;
+
+  // Check if we should assign to a client from dropdown
+  const assignSel = document.getElementById('result-assign-select');
+  const assignId = assignSel?.value;
+  if (assignId && !activeClient) {
+    activeClient = clients.find(c => String(c.id) === String(assignId)) || null;
+  }
+
+  const afterPhoto = document.getElementById('after-data')?.value || '';
+  const sessionData = {
+    id: nextId++,
+    clientId: activeClient ? activeClient.id : null,
+    date: new Date().toISOString().slice(0,10),
+    target: 'Kühles Beige-Blond',
+    formula: '8/13 – 60g, 9/13 – 20g',
+    dev: '9%',
+    brand: 'Wella',
+    notes: '',
+    hairPhoto: document.getElementById('curr-data')?.value || '',
+    afterPhoto,
+  };
+  sessions.unshift(sessionData);
+
+  // Save to Supabase if logged in
+  if (currentSalon?.id && activeClient?.id) {
+    await sb.from('sessions').insert({
+      salon_id: currentSalon.id,
+      client_id: activeClient.id,
+      target_color: sessionData.target,
+      formula: sessionData.formula,
+      developer: sessionData.dev,
+      brand: sessionData.brand,
+      notes: sessionData.notes,
+      created_by: currentUser?.id,
+    }).catch(err => console.error('Session save error:', err));
+  }
+
+  const lbl = activeClient ? 'Gespeichert für ' + activeClient.name + '!' : 'Gespeichert!';
+  btn.textContent = '✓ ' + lbl;
+  btn.style.cssText = 'background:#EAF4EE;border:1.5px solid #4A7C59;color:#0A7C55;height:52px;';
+  btn.disabled = false;
+
+  // Show profile navigation buttons
+  const savedActions = document.getElementById('result-saved-actions');
+  const newBtn = document.getElementById('result-new-btn');
+  if (savedActions) savedActions.style.display = 'flex';
+  const fbWrap = document.getElementById('ml-feedback-wrap');
+  if (fbWrap) fbWrap.style.display = 'block';
+  if (newBtn) newBtn.style.display = 'none';
+  setTimeout(() => { btn.textContent = '💾 In Kundenkartei speichern'; btn.style.cssText = ''; }, 3000);
+}
+
+/* ═══════════════════ DELETE ═══════════════════ */
+let pendingDelete=null;
+
+function openModal(title,body,label,action){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').textContent=body;
+  document.getElementById('modal-btn').textContent=label;
+  pendingDelete=action;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(e){
+  if(e&&e.target!==document.getElementById('modal'))return;
+  document.getElementById('modal').classList.remove('open');
+  pendingDelete=null;
+}
+document.getElementById('modal-btn').onclick=()=>{
+  if(pendingDelete)pendingDelete();
+  document.getElementById('modal').classList.remove('open');
+  pendingDelete=null;
+};
+
+function confirmDeleteClient(){
+  if(!viewingClient)return;
+  const n=sessions.filter(s=>s.clientId===viewingClient.id).length;
+  openModal(
+    viewingClient.name+' löschen?',
+    `Löscht diese Kundin und alle ${n} Sitzung${n!==1?'en':''} unwiderruflich.`,
+    '🗑 Kundin & alle Sitzungen löschen',
+    ()=>{
+      sessions=sessions.filter(s=>s.clientId!==viewingClient.id);
+      clients=clients.filter(c=>c.id!==viewingClient.id);
+      if(activeClient?.id===viewingClient.id)activeClient=null;
+      viewingClient=null;
+      go('s-clients');
+    }
   );
 }
 
-loadListedSalons();
+function confirmDeleteSess(sessId){
+  const s=sessions.find(x=>x.id===sessId);
+  if(!s)return;
+  openModal(
+    'Sitzung löschen?',
+    `Sitzung vom ${s.date} (${s.target}) wird unwiderruflich gelöscht.`,
+    '🗑 Sitzung löschen',
+    ()=>{ sessions=sessions.filter(x=>x.id!==sessId); renderProfile(); }
+  );
+}
 
-/* Scroll reveal */
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) e.target.cla
+/* ═══════════════════ ADMIN ═══════════════════ */
+const ADMIN_PASSWORD = 'colormix2024';
+let adminTapCount = 0;
+let adminTapTimer = null;
+
+function adminTap() {
+  adminTapCount++;
+  clearTimeout(adminTapTimer);
+  adminTapTimer = setTimeout(() => { adminTapCount = 0; }, 2000);
+  if (adminTapCount >= 5) {
+    adminTapCount = 0;
+    document.getElementById('admin-pw-input').value = '';
+    document.getElementById('admin-pw-error').style.display = 'none';
+    go('s-admin-login');
+  }
+}
+
+function goAdminLogin() {
+  document.getElementById('admin-pw-input').value = '';
+  document.getElementById('admin-pw-error').style.display = 'none';
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-admin-login').classList.add('active');
+}
+
+function checkAdminPw() {
+  const pw = document.getElementById('admin-pw-input').value;
+  if (pw === ADMIN_PASSWORD) {
+    document.getElementById('admin-pw-error').style.display = 'none';
+    go('s-admin');
+    renderAdminAll();
+  } else {
+    document.getElementById('admin-pw-error').style.display = 'block';
+    document.getElementById('admin-pw-input').value = '';
+  }
+}
+
+let colorDB = {
+  brands: [
+    { id:'wella',       name:'Wella Professionals',      desc:'Koleston, Illumina, Color Touch' },
+    { id:'loreal',      name:"L'Oréal Professionnel",    desc:'Majirel, INOA, Dia Richesse' },
+    { id:'schwarzkopf', name:'Schwarzkopf Professional', desc:'Igora Royal, Igora Vibrance' },
+    { id:'redken',      name:'Redken',                   desc:'Shades EQ, Chromatics' },
+    { id:'olaplex',     name:'Olaplex',                  desc:'Bond Building Treatments' },
+  ],
+  lines: [
+    { id:'koleston',     brandId:'wella',        name:'Koleston Perfect ME+', type:'permanent',      desc:'Pure Balance Technology' },
+    { id:'colortouch',   brandId:'wella',        name:'Color Touch',          type:'demi-permanent', desc:'Ammonia-free, shiny finish' },
+    { id:'illumina',     brandId:'wella',        name:'Illumina Color',       type:'permanent',      desc:'Luminous color technology' },
+    { id:'majirel',      brandId:'loreal',       name:'Majirel',              type:'permanent',      desc:'Classic permanent color' },
+    { id:'inoa',         brandId:'loreal',       name:'INOA',                 type:'permanent',      desc:'Oil-based, ammonia-free' },
+    { id:'diarichesse',  brandId:'loreal',       name:'Dia Richesse',         type:'demi-permanent', desc:'Acid demi-permanent' },
+    { id:'igoraroyal',   brandId:'schwarzkopf',  name:'Igora Royal',          type:'permanent',      desc:'Precision color' },
+    { id:'igoravibrance',brandId:'schwarzkopf',  name:'Igora Vibrance',       type:'demi-permanent', desc:'Oil-in-cream, ammonia-free' },
+    { id:'shadeseq',     brandId:'redken',       name:'Shades EQ',            type:'demi-permanent', desc:'Acidic demi-permanent gloss' },
+    { id:'chromatics',   brandId:'redken',       name:'Chromatics',           type:'permanent',      desc:'Oil-enriched, ammonia-free' },
+  ],
+  shades: [
+    { id:'s1', lineId:'koleston',  code:'8/13', name:'Hellblond Beige',    level:8,  tone:'BA', hex:'#C8A870' },
+    { id:'s2', lineId:'koleston',  code:'9/13', name:'Sehr hell Beige',    level:9,  tone:'BA', hex:'#D4BF99' },
+    { id:'s3', lineId:'koleston',  code:'7/3',  name:'Mittelblond Golden', level:7,  tone:'G',  hex:'#B8883A' },
+    { id:'s4', lineId:'koleston',  code:'8/1',  name:'Hellblond Asche',    level:8,  tone:'A',  hex:'#BCA888' },
+    { id:'s5', lineId:'koleston',  code:'10/0', name:'Hellstes Blond',     level:10, tone:'N',  hex:'#ECD8A0' },
+    { id:'s6', lineId:'majirel',   code:'7.3',  name:'Goldblond',          level:7,  tone:'G',  hex:'#B8904A' },
+    { id:'s7', lineId:'majirel',   code:'8.1',  name:'Hell Ascheblond',    level:8,  tone:'A',  hex:'#B8A890' },
+    { id:'s8', lineId:'igoraroyal',code:'7-1',  name:'Mittelblond Cendré', level:7,  tone:'C',  hex:'#888070' },
+    { id:'s9', lineId:'shadeseq',  code:'09B',  name:'Champagne',          level:9,  tone:'B',  hex:'#D8C898' },
+  ],
+  developers: [
+    { strength:'6%',  vol:'2 Vol',  purpose:'Tönungen, kein Aufhellen' },
+    { strength:'9%',  vol:'3 Vol',  purpose:'Leichte Tönung, minimaler Lift' },
+    { strength:'12%', vol:'4 Vol',  purpose:'Grauhaarabdeckung, minimaler Lift' },
+    { strength:'20%', vol:'20 Vol', purpose:'Standard Färbung, 1-2 Stufen Lift' },
+    { strength:'30%', vol:'30 Vol', purpose:'3 Stufen Aufhellung' },
+    { strength:'40%', vol:'40 Vol', purpose:'Maximale Aufhellung, 4+ Stufen' },
+  ]
+};
+let dbNextId = 100;
+
+function renderAdminAll() {
+  renderBrandsList(); renderLinesList(); renderShadesFilter(); renderDevsList();
+  populateBrandSelects(); loadVouchers();
+}
+
+function switchAdminTab(tabId, btn) {
+  ['tab-brands','tab-lines','tab-shades','tab-devs','tab-vouchers'].forEach(id=>{
+    document.getElementById(id).style.display = id===tabId?'block':'none';
+  });
+  document.querySelectorAll('.admin-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function populateBrandSelects() {
+  ['new-line-brand','new-shade-brand','filter-shade-brand'].forEach(id=>{
+    const sel=document.getElementById(id); if(!sel)return;
+    sel.innerHTML=colorDB.brands.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+  });
+  populateShadeLines(); filterShadeLines();
+}
+
+function populateShadeLines() {
+  const brandId=document.getElementById('new-shade-brand')?.value;
+  const sel=document.getElementById('new-shade-line'); if(!sel)return;
+  sel.innerHTML=colorDB.lines.filter(l=>l.brandId===brandId).map(l=>`<option value="${l.id}">${l.name}</option>`).join('');
+}
+
+function filterShadeLines() {
+  const brandId=document.getElementById('filter-shade-brand')?.value;
+  const sel=document.getElementById('filter-shade-line'); if(!sel)return;
+  sel.innerHTML=`<option value="">Alle Linien</option>`+colorDB.lines.filter(l=>l.brandId===brandId).map(l=>`<option value="${l.id}">${l.name}</option>`).join('');
+  filterShades();
+}
+
+/* BRANDS */
+function renderBrandsList(){
+  document.getElementById('brands-list').innerHTML=colorDB.brands.map(b=>`
+    <div class="admin-row">
+      <div style="flex:1"><div class="admin-row-name">${b.name}</div><div class="admin-row-sub">${b.desc}</div></div>
+      <button class="admin-del" onclick="deleteBrand('${b.id}')">🗑</button>
+    </div>`).join('')||'<p style="font-size:13px;color:var(--muted)">Noch keine Marken.</p>';
+}
+function addBrand(){
+  const name=document.getElementById('new-brand-name').value.trim();
+  if(!name){alert('Markenname fehlt.');return;}
+  colorDB.brands.push({id:'brand_'+dbNextId++,name,desc:document.getElementById('new-brand-desc').value.trim()});
+  document.getElementById('new-brand-name').value='';
+  document.getElementById('new-brand-desc').value='';
+  renderBrandsList(); populateBrandSelects();
+}
+function deleteBrand(id){
+  if(!confirm('Marke und alle zugehörigen Daten löschen?'))return;
+  const lineIds=colorDB.lines.filter(l=>l.brandId===id).map(l=>l.id);
+  colorDB.shades=colorDB.shades.filter(s=>!lineIds.includes(s.lineId));
+  colorDB.lines=colorDB.lines.filter(l=>l.brandId!==id);
+  colorDB.brands=colorDB.brands.filter(b=>b.id!==id);
+  renderAdminAll();
+}
+
+/* LINES */
+function renderLinesList(){
+  document.getElementById('lines-list').innerHTML=colorDB.lines.map(l=>{
+    const brand=colorDB.brands.find(b=>b.id===l.brandId);
+    const count=colorDB.shades.filter(s=>s.lineId===l.id).length;
+    return `<div class="admin-row">
+      <div style="flex:1"><div class="admin-row-name">${l.name}</div><div class="admin-row-sub">${brand?.name||''} · ${l.type} · ${count} Farbtöne</div></div>
+      <button class="admin-del" onclick="deleteLine('${l.id}')">🗑</button>
+    </div>`;
+  }).join('')||'<p style="font-size:13px;color:var(--muted)">Noch keine Linien.</p>';
+  const sel=document.getElementById('new-line-brand');
+  if(sel) sel.innerHTML=colorDB.brands.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+}
+function addLine(){
+  const name=document.getElementById('new-line-name').value.trim();
+  if(!name){alert('Name fehlt.');return;}
+  colorDB.lines.push({id:'line_'+dbNextId++,brandId:document.getElementById('new-line-brand').value,name,type:document.getElementById('new-line-type').value,desc:document.getElementById('new-line-desc').value.trim()});
+  document.getElementById('new-line-name').value='';
+  document.getElementById('new-line-desc').value='';
+  renderLinesList(); populateBrandSelects();
+}
+function deleteLine(id){
+  if(!confirm('Linie und alle Farbtöne löschen?'))return;
+  colorDB.shades=colorDB.shades.filter(s=>s.lineId!==id);
+  colorDB.lines=colorDB.lines.filter(l=>l.id!==id);
+  renderLinesList(); filterShades();
+}
+
+/* SHADES */
+function renderShadesFilter(){
+  const sel=document.getElementById('filter-shade-brand');
+  if(sel) sel.innerHTML=colorDB.brands.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+  filterShadeLines();
+}
+function filterShades(){
+  const brandId=document.getElementById('filter-shade-brand')?.value;
+  const lineId=document.getElementById('filter-shade-line')?.value;
+  const lineIds=lineId?[lineId]:colorDB.lines.filter(l=>l.brandId===brandId).map(l=>l.id);
+  const el=document.getElementById('shades-list'); if(!el)return;
+  const shades=colorDB.shades.filter(s=>lineIds.includes(s.lineId));
+  el.innerHTML=shades.map(s=>{
+    const line=colorDB.lines.find(l=>l.id===s.lineId);
+    return `<div class="admin-row">
+      <div class="admin-swatch" style="background:${s.hex}"></div>
+      <div style="flex:1"><div class="admin-row-name">${s.code} — ${s.name}</div><div class="admin-row-sub">${line?.name||''} · Stufe ${s.level||'—'} · ${s.tone||'—'}</div></div>
+      <button class="admin-del" onclick="deleteShade('${s.id}')">🗑</button>
+    </div>`;
+  }).join('')||'<p style="font-size:13px;color:var(--muted)">Keine Farbtöne gefunden.</p>';
+}
+function addShade(){
+  const code=document.getElementById('new-shade-code').value.trim();
+  const name=document.getElementById('new-shade-name').value.trim();
+  if(!code||!name){alert('Code und Name sind Pflichtfelder.');return;}
+  colorDB.shades.push({id:'shade_'+dbNextId++,lineId:document.getElementById('new-shade-line').value,code,name,level:parseInt(document.getElementById('new-shade-level').value)||null,tone:document.getElementById('new-shade-tone').value.trim(),hex:document.getElementById('new-shade-hex').value});
+  ['new-shade-code','new-shade-name','new-shade-level','new-shade-tone'].forEach(id=>document.getElementById(id).value='');
+  filterShades();
+}
+function deleteShade(id){
+  colorDB.shades=colorDB.shades.filter(s=>s.id!==id);
+  filterShades();
+}
+
+/* DEVELOPERS */
+function renderDevsList(){
+  document.getElementById('devs-list').innerHTML=colorDB.developers.map((d,i)=>`
+    <div class="admin-row">
+      <div style="flex:1"><div class="admin-row-name">${d.strength} — ${d.vol}</div><div class="admin-row-sub">${d.purpose}</div></div>
+      <button class="admin-del" onclick="deleteDev(${i})">🗑</button>
+    </div>`).join('')||'<p style="font-size:13px;color:var(--muted)">Keine Entwickler.</p>';
+}
+function addDev(){
+  const strength=document.getElementById('new-dev-strength').value.trim();
+  if(!strength){alert('Stärke fehlt.');return;}
+  colorDB.developers.push({strength,vol:document.getElementById('new-dev-vol').value.trim(),purpose:document.getElementById('new-dev-purpose').value.trim()});
+  ['new-dev-strength','new-dev-vol','new-dev-purpose'].forEach(id=>document.getElementById(id).value='');
+  renderDevsList();
+}
+function deleteDev(i){
+  colorDB.developers.splice(i,1); renderDevsList();
+}
+
+document.getElementById('new-shade-hex').addEventListener('input',e=>{
+  document.getElementById('hex-preview').textContent=e.target.value;
+});
+document.getElementById('filter-shade-brand').addEventListener('change',filterShadeLines);
+
+/* ═══════════════════ SUPABASE AUTH ═══════════════════ */
+const SUPABASE_URL = 'https://kncltnmzocufnhdrzswt.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtuY2x0bm16b2N1Zm5oZHJ6c3d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0MDA0MDMsImV4cCI6MjA4OTk3NjQwM30.HTzpw0qgORUhQHd1fcx1x6y2hVmn78udPz6WrsWlljU';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* ═══════════════════ ML / AI CONFIG ═══════════════════ */
+// Wenn Melissas Modell fertig ist, diese URL ändern:
+const ML_API_URL = null; // z.B. 'https://colormixai-ml.huggingface.co'
+const ANTHROPIC_API_KEY = null; // API Key für Claude Vision Bridge
+
+// Analyseergebnis wird hier gespeichert
+let lastAnalysis = {
+  ist: null,   // { level, undertone, base_color, confidence }
+  soll: null,  // { level, color_name, undertone }
+  formula: null,
+  sessionId: null,
+};
+
+/* ── Claude Vision Bridge (Placeholder bis ML-Modell fertig) ── */
+async function analyzeHairWithAI(imageBase64, type = 'ist') {
+  // Wenn eigenes ML-Modell vorhanden → nutze das
+  if (ML_API_URL) {
+    return await callMLAPI(imageBase64, type);
+  }
+  
+  // Placeholder: simulierte Analyse (wird durch echtes Modell ersetzt)
+  // In Produktion: Anthropic API Key hier einsetzen
+  await new Promise(r => setTimeout(r, 800)); // kurze Verzögerung simulieren
+  
+  // Simuliertes Ergebnis basierend auf häufigen Haarfarben
+  const mockResults = [
+    { level: 5.5, undertone: 'warm', base_color: 'Medium Brown', confidence: 0.82 },
+    { level: 7.0, undertone: 'neutral', base_color: 'Blonde', confidence: 0.78 },
+    { level: 3.5, undertone: 'cool', base_color: 'Dark Brown', confidence: 0.85 },
+    { level: 8.5, undertone: 'warm', base_color: 'Light Blonde', confidence: 0.75 },
+    { level: 6.0, undertone: 'warm', base_color: 'Dark Blonde', confidence: 0.80 },
+  ];
+  const result = mockResults[Math.floor(Math.random() * mockResults.length)];
+  return result;
+}
+
+async function callMLAPI(imageBase64, type) {
+  const { data: { session } } = await sb.auth.getSession();
+  const response = await fetch(`${ML_API_URL}/api/v1/analyze`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session?.access_token}`
+    },
+    body: JSON.stringify({
+      image_base64: imageBase64,
+      salon_id: currentSalon?.id,
+      type // 'ist' oder 'soll'
+    })
+  });
+  return response.json();
+}
+
+async function getFormulaFromML(istData, sollData, preferences) {
+  if (ML_API_URL) {
+    const { data: { session } } = await sb.auth.getSession();
+    const response = await fetch(`${ML_API_URL}/api/v1/formula`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`
+      },
+      body: JSON.stringify({ ist: istData, soll: sollData, preferences, salon_id: currentSalon?.id })
+    });
+    return response.json();
+  }
+  // Placeholder
+  return null;
+}
+
+/* ── Feedback an ML senden (für Lernschleife) ── */
+async function sendMLFeedback(sessionId, resultGood, afterPhotoBase64) {
+  // In Supabase speichern (immer)
+  if (sessionId && currentSalon?.id) {
+    await sb.from('sessions').update({
+      result_good: resultGood,
+    }).eq('id', sessionId).catch(e => console.error(e));
+  }
+  
+  // An ML API senden (wenn vorhanden)
+  if (ML_API_URL && sessionId) {
+    const { data: { session } } = await sb.auth.getSession();
+    await fetch(`${ML_API_URL}/api/v1/feedback`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`
+      },
+      body: JSON.stringify({
+        session_id: sessionId,
+        result_good: resultGood,
+        after_image_base64: afterPhotoBase64
+      })
+    }).catch(e => console.error(e));
+  }
+}
+
+
+let currentUser = null;
+let currentSalon = null;
+let selectedPlan = 'solo';
+
+/* ── App initialisieren ── */
+async function initApp() {
+  try {
+    const { data: { session }, error: sessErr } = await sb.auth.getSession();
+    if (sessErr) throw sessErr;
+    if (session) {
+      currentUser = session.user;
+      await loadSalon();
+      if (currentSalon) {
+        await loadClientsFromDB();
+        await enforceSessionLimit(session);
+        renderLandingUserBar();
+        go('s-landing');
+      } else {
+        // Eingeloggt aber kein Salon → Onboarding
+        go('s-onboarding-salon');
+      }
+    } else {
+      go('s-login');
+    }
+  } catch(e) {
+    console.error('initApp error:', e);
+    go('s-login');
+  }
+}
+
+/* ── Salon laden ── */
+async function loadSalon(retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const { data, error } = await sb.from('salon_members')
+        .select('salon_id, role, salons(id, name, plan, plan_status, trial_ends_at, street, zip, city)')
+        .eq('user_id', currentUser.id)
+        .eq('status', 'active')
+        .maybeSingle(); // maybeSingle statt single — kein Fehler wenn leer
+      if (data?.salons) {
+        currentSalon = data.salons;
+        currentSalon.role = data.role;
+        return;
+      }
+    } catch(e) {
+      console.warn('loadSalon attempt', i+1, 'failed:', e);
+    }
+    if (i < retries - 1) await new Promise(r => setTimeout(r, 800));
+  }
+}
+
+
+/* ── Kunden aus Supabase laden ── */
+async function loadClientsFromDB() {
+  if (!currentSalon?.id) return;
+  const { data } = await sb.from('clients')
+    .select('*')
+    .eq('salon_id', currentSalon.id)
+    .order('created_at', { ascending: false });
+  if (data) {
+    clients = data.map(c => ({
+      id: c.id,
+      name: c.name,
+      notes: c.notes || '',
+      hairHistory: c.hair_history || '',
+      hairState: c.hair_state || 'Natur',
+      photo: c.photo_url || ''
+    }));
+  }
+}
+
+/* ── Session-Limit für Solo (1 Gerät) ── */
+async function enforceSessionLimit(session) {
+  if (!currentSalon || currentSalon.plan !== 'solo') return;
+  const token = session.access_token.slice(-32);
+  const deviceInfo = navigator.userAgent.slice(0, 80);
+  // Upsert aktive Session — überschreibt vorherigen Token
+  await sb.from('active_sessions').upsert({
+    user_id: currentUser.id,
+    session_token: token,
+    device_info: deviceInfo,
+    last_seen: new Date().toISOString()
+  }, { onConflict: 'user_id' });
+}
+
+/* ── User-Bar auf Startseite ── */
+function renderLandingUserBar() {
+  const el = document.getElementById('landing-user-bar');
+  if (!currentUser || !el) return;
+  const initial = (currentUser.email || 'U')[0].toUpperCase();
+  const plan = currentSalon?.plan || 'solo';
+  const planLabel = plan === 'team' ? 'Team' : 'Solo';
+  const isTrial = currentSalon?.plan_status === 'trial';
+  el.innerHTML = `<div class="user-bar">
+    <div class="user-bar-avatar">${initial}</div>
+    <div class="user-bar-name">${currentSalon?.name || currentUser.email}</div>
+    <span class="user-bar-plan">${planLabel}${isTrial?' · Trial':''}</span>
+  </div>`;
+}
+
+/* ── LOGIN ── */
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pw = document.getElementById('login-pw').value;
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('login-btn');
+  if (!email || !pw) { showAuthError('login-error', 'Bitte E-Mail und Passwort eingeben.'); return; }
+  btn.textContent = 'Einloggen…'; btn.disabled = true;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
+  btn.textContent = 'Einloggen'; btn.disabled = false;
+  if (error) { showAuthError('login-error', 'Falsche E-Mail oder Passwort.'); return; }
+  currentUser = data.user;
+  await loadSalon();
+  if (!currentSalon) { go('s-onboarding-salon'); return; }
+  await enforceSessionLimit(data.session);
+  renderLandingUserBar();
+  go('s-landing');
+}
+
+/* ── REGISTRIERUNG ── */
+async function doRegister() {
+  const salon = document.getElementById('reg-salon').value.trim();
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pw = document.getElementById('reg-pw').value;
+  const pw2 = document.getElementById('reg-pw2').value;
+  if (!salon || !name || !email || !pw) { showAuthError('reg-error', 'Bitte alle Felder ausfüllen.'); return; }
+  if (pw.length < 8) { showAuthError('reg-error', 'Passwort muss mindestens 8 Zeichen haben.'); return; }
+  if (pw !== pw2) { showAuthError('reg-error', 'Passwörter stimmen nicht überein.'); return; }
+  const btn = document.getElementById('reg-btn');
+  btn.textContent = 'Bitte warten…'; btn.disabled = true;
+  const { data, error } = await sb.auth.signUp({ email, password: pw, options: { data: { full_name: name, salon_name: salon } } });
+  btn.textContent = 'Weiter → Abo wählen'; btn.disabled = false;
+  if (error) { showAuthError('reg-error', error.message); return; }
+  currentUser = data.user;
+  window._pendingSalonName = salon;
+  // Pre-fill salon name field
+  go('s-onboarding-salon');
+  setTimeout(() => {
+    const nameField = document.getElementById('ob-salon-name');
+    if (nameField && salon) nameField.value = salon;
+  }, 100);
+}
+
+/* ── ABO WÄHLEN ── */
+function selectPlan(plan) {
+  selectedPlan = plan;
+  document.getElementById('plan-solo').classList.toggle('selected', plan === 'solo');
+  document.getElementById('plan-team').classList.toggle('selected', plan === 'team');
+}
+
+async function completeOnboarding() {
+  const btn = document.querySelector('#s-onboarding .btn-pink');
+  btn.textContent = 'Wird eingerichtet…'; btn.disabled = true;
+  const ob = window._pendingOnboarding || {};
+  const salonName = ob.name || window._pendingSalonName || currentUser?.user_metadata?.salon_name || 'Mein Salon';
+
+  // Geocode if no GPS coords yet
+  let lat = ob.lat || null, lng = ob.lng || null;
+  if (!lat && ob.street && ob.city) {
+    try {
+      const q = encodeURIComponent(`${ob.street}, ${ob.zip||''} ${ob.city}, ${ob.country||'DE'}`);
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`);
+      const data = await res.json();
+      if (data[0]) { lat = parseFloat(data[0].lat); lng = parseFloat(data[0].lon); }
+    } catch(e) {}
+  }
+
+  const { data: salon, error } = await sb.from('salons').insert({
+    name: salonName,
+    owner_id: currentUser.id,
+    plan: selectedPlan,
+    plan_status: 'trial',
+    street: ob.street || null,
+    zip: ob.zip || null,
+    city: ob.city || null,
+    website: ob.website || null,
+    phone: ob.phone || null,
+    listed_in_directory: ob.listed || false,
+    lat, lng,
+  }).select().single();
+  btn.textContent = '14 Tage kostenlos starten →'; btn.disabled = false;
+  if (error) { alert('Fehler: ' + error.message); return; }
+  currentSalon = salon;
+  currentSalon.role = 'owner';
+  window._pendingSalonName = null;
+  window._pendingOnboarding = null;
+  await new Promise(r => setTimeout(r, 1200));
+  await loadSalon();
+  await loadClientsFromDB();
+  renderLandingUserBar();
+  go('s-landing');
+}
+
+
+/* ── PASSWORT VERGESSEN ── */
+async function doForgot() {
+  const email = document.getElementById('forgot-email').value.trim();
+  if (!email) { showAuthError('forgot-error', 'Bitte E-Mail eingeben.'); return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.href
+  });
+  if (error) { showAuthError('forgot-error', error.message); return; }
+  document.getElementById('forgot-success').style.display = 'block';
+  document.getElementById('forgot-email').value = '';
+}
+
+/* ── LOGOUT ── */
+async function doLogout() {
+  try {
+    if (currentUser) {
+      await sb.from('active_sessions').delete().eq('user_id', currentUser.id).catch(()=>{});
+    }
+    await sb.auth.signOut();
+  } catch(e) { console.warn('Logout error:', e); }
+  currentUser = null;
+  currentSalon = null;
+  // Use original go to bypass auth guard
+  _goOrigAuth('s-login');
+}
+
+/* ── TEAM ── */
+async function openTeam() {
+  go('s-team');
+  if (!currentSalon || currentSalon.plan !== 'team') {
+    document.getElementById('team-upgrade-note').style.display = 'block';
+    document.getElementById('team-content').style.display = 'none';
+    return;
+  }
+  document.getElementById('team-upgrade-note').style.display = 'none';
+  document.getElementById('team-content').style.display = 'block';
+  await loadTeamMembers();
+}
+
+async function loadTeamMembers() {
+  const { data } = await sb.from('salon_members')
+    .select('user_id, role, status, invited_email, joined_at')
+    .eq('salon_id', currentSalon.id);
+  const el = document.getElementById('team-members-list');
+  if (!data?.length) { el.innerHTML = '<p style="font-size:13px;color:var(--muted)">Noch keine Mitglieder.</p>'; return; }
+  el.innerHTML = data.map(m => `
+    <div class="team-row">
+      <div class="team-avatar">${(m.invited_email||'?')[0].toUpperCase()}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700">${m.invited_email||'Unbekannt'}</div>
+        <div style="font-size:11px;color:var(--muted)">${m.role === 'owner' ? 'Inhaber' : 'Mitarbeiter'} · ${m.status === 'active' ? 'Aktiv' : 'Einladung ausstehend'}</div>
+      </div>
+      ${m.role !== 'owner' && currentSalon.role === 'owner' ? `<button class="admin-del" onclick="removeMember('${m.user_id}')">🗑</button>` : ''}
+    </div>`).join('');
+}
+
+async function inviteMember() {
+  const email = document.getElementById('invite-email').value.trim();
+  if (!email) return;
+  const { error } = await sb.from('salon_members').insert({
+    salon_id: currentSalon.id,
+    invited_email: email,
+    role: 'member',
+    status: 'pending'
+  });
+  if (error) { alert('Fehler: ' + error.message); return; }
+  document.getElementById('invite-email').value = '';
+  await loadTeamMembers();
+  // TODO: E-Mail-Einladung über Supabase Edge Function senden
+}
+
+async function removeMember(userId) {
+  if (!confirm('Mitarbeiter entfernen?')) return;
+  await sb.from('salon_members').delete().eq('salon_id', currentSalon.id).eq('user_id', userId);
+  await loadTeamMembers();
+}
+
+/* ── KONTO-SCREEN ── */
+function renderAccountScreen() {
+  if (!currentUser || !currentSalon) return;
+  const plan = currentSalon.plan === 'team' ? 'Team' : 'Solo';
+  const status = currentSalon.plan_status === 'trial' ? '🟡 Testphase' : currentSalon.plan_status === 'active' ? '🟢 Aktiv' : '🔴 Inaktiv';
+  const trialEnd = currentSalon.trial_ends_at ? new Date(currentSalon.trial_ends_at).toLocaleDateString('de-DE') : '—';
+  document.getElementById('account-info').innerHTML = `<div class="user-bar">
+    <div class="user-bar-avatar">${(currentUser.email||'U')[0].toUpperCase()}</div>
+    <div style="flex:1"><div style="font-size:14px;font-weight:700">${currentUser.email}</div></div>
+  </div>`;
+  document.getElementById('account-plan').innerHTML = `
+    <div style="font-size:14px;font-weight:700;margin-bottom:4px">${plan}-Abo · ${plan === 'Solo' ? '29€' : '69€'}/Monat</div>
+    <div style="font-size:12px;color:var(--mid)">${status}</div>
+    ${currentSalon.plan_status === 'trial' ? `<div style="font-size:12px;color:var(--mid);margin-top:2px">Testphase bis: ${trialEnd}</div>` : ''}`;
+  document.getElementById('account-salon').innerHTML = `
+    <div style="font-size:14px;font-weight:700">${currentSalon.name}</div>
+    <div style="font-size:12px;color:var(--mid);margin-top:2px">Rolle: ${currentSalon.role === 'owner' ? 'Inhaber' : 'Mitarbeiter'}</div>`;
+}
+
+/* ── HILFSFUNKTIONEN ── */
+function showAuthError(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+/* ── go() erweitern für Auth-Screens ── */
+const _goOrigAuth = go;
+go = function(screenId) {
+  const publicScreens = ['s-login','s-register','s-onboarding','s-onboarding-salon','s-onboarding-confirm','s-voucher','s-forgot','s-loading'];
+  if (!currentUser && !publicScreens.includes(screenId)) {
+    _goOrigAuth('s-login'); return;
+  }
+  _goOrigAuth(screenId);
+  if (screenId === 's-account') renderAccountScreen();
+  if (screenId === 's-result') renderResultScreen();
+};
+
+/* ── App starten ── */
+/* Script is at end of body — DOM already ready, call directly */
+(async () => {
+  if (typeof supabase === 'undefined') {
+    console.error('Supabase nicht geladen');
+    go('s-landing');
+    return;
+  }
+  try {
+    await initApp();
+  } catch(e) {
+    console.error('initApp Fehler:', e);
+    go('s-login');
+  }
+})();
+
+
+
+/* ── Onboarding Step 1 → 2 ── */
+
+/* ── Adresse Autocomplete (OpenStreetMap Nominatim) ── */
+let _addrTimer = null;
+function searchAddress(query) {
+  clearTimeout(_addrTimer);
+  const sug = document.getElementById('ob-address-suggestions');
+  if (!query || query.length < 4) { if(sug) sug.style.display='none'; return; }
+  _addrTimer = setTimeout(async () => {
+    try {
+      const country = document.getElementById('ob-country')?.value || 'DE';
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&countrycodes=${country.toLowerCase()}&format=json&addressdetails=1&limit=5`;
+      const res = await fetch(url, {headers:{'Accept-Language':'de'}});
+      const data = await res.json();
+      if (!sug) return;
+      if (!data.length) { sug.style.display='none'; return; }
+      // Store results globally for selection
+      window._addrResults = data;
+      sug.innerHTML = data.map((item, idx) => {
+        const parts = [item.address?.road, item.address?.house_number, item.address?.postcode, 
+          item.address?.city||item.address?.town||item.address?.village].filter(Boolean).join(', ');
+        return '<div onclick="selectAddressByIdx(' + idx + ')" ' +
+          'style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #E0E0E8;font-size:13px" ' +
+          'onmouseover="this.style.background='#FFF0F4'" ' +
+          'onmouseout="this.style.background=''">' +
+          '📍 ' + parts + '</div>';
+      }).join('');
+      sug.style.display = 'block';
+    } catch(e) {}
+  }, 400);
+}
+
+function selectAddressByIdx(idx) {
+  const item = window._addrResults && window._addrResults[idx];
+  if (!item) return;
+  document.getElementById('ob-street').value = item.address?.road || '';
+  document.getElementById('ob-housenr').value = item.address?.house_number || '';
+  document.getElementById('ob-zip').value = item.address?.postcode || '';
+  document.getElementById('ob-city').value = item.address?.city || item.address?.town || item.address?.village || '';
+  document.getElementById('ob-address-search').value = '';
+  window._pendingLat = parseFloat(item.lat);
+  window._pendingLng = parseFloat(item.lon);
+  const sug = document.getElementById('ob-address-suggestions');
+  if (sug) sug.style.display = 'none';
+  ['ob-street','ob-housenr','ob-zip','ob-city'].forEach(clearFieldError);
+}
+
+function selectAddress(el) { selectAddressByIdx(0); } // fallback
+
+function validateZip(input) {
+  input.value = input.value.replace(/\D/g,'');
+  const country = document.getElementById('ob-country')?.value || 'DE';
+  const el = document.getElementById('err-zip');
+  const len = (country==='DE') ? 5 : 4;
+  if (el) el.textContent = (input.value.length > 0 && input.value.length !== len) ? `⚠️ PLZ muss ${len} Ziffern haben` : '';
+}
+
+function clearFieldError(id) {
+  const map = {'ob-salon-name':'err-salon-name','ob-street':'err-street','ob-housenr':'err-street','ob-zip':'err-zip','ob-city':'err-zip'};
+  const el = document.getElementById(map[id]||'');
+  if (el) el.textContent = '';
+}
+
+function showFieldError(errId, msg) {
+  const el = document.getElementById(errId);
+  if (el) { el.textContent = msg; el.scrollIntoView({behavior:'smooth',block:'center'}); }
+}
+
+function onboardingStep2() {
+  const name = document.getElementById('ob-salon-name').value.trim();
+  const street = document.getElementById('ob-street').value.trim();
+  const housenr = document.getElementById('ob-housenr')?.value.trim() || '';
+  const zip = document.getElementById('ob-zip').value.trim();
+  const city = document.getElementById('ob-city').value.trim();
+  const country = document.getElementById('ob-country')?.value || 'DE';
+
+  let valid = true;
+  if (!name) { showFieldError('err-salon-name','⚠️ Salon-Name ist Pflicht'); valid=false; }
+  if (!street || !housenr) { showFieldError('err-street','⚠️ Straße und Hausnummer sind Pflicht'); valid=false; }
+  if (!zip) { showFieldError('err-zip','⚠️ PLZ ist Pflicht'); valid=false; }
+  else if (country==='DE' && zip.length!==5) { showFieldError('err-zip','⚠️ Deutsche PLZ muss 5 Ziffern haben'); valid=false; }
+  else if ((country==='AT'||country==='CH') && zip.length!==4) { showFieldError('err-zip','⚠️ PLZ muss 4 Ziffern haben'); valid=false; }
+  if (!city) { showFieldError('err-zip','⚠️ Stadt ist Pflicht'); valid=false; }
+  if (!valid) return;
+
+  window._pendingOnboarding = {
+    name,
+    street: street + (housenr ? ' ' + housenr : ''),
+    zip, city, country,
+    website: document.getElementById('ob-website').value.trim(),
+    phone: document.getElementById('ob-phone').value.trim(),
+    listed: document.getElementById('ob-directory').checked,
+    lat: window._pendingLat || null,
+    lng: window._pendingLng || null,
+  };
+  window._pendingSalonName = name;
+  go('s-onboarding');
+}
+
+
+/* ── Go to client profile after saving result ── */
+function goToClientProfile() {
+  if (activeClient) {
+    viewingClient = clients.find(c => c.id === activeClient.id) || activeClient;
+    go('s-profile');
+  } else {
+    go('s-clients');
+  }
+}
+
+/* ── Populate assign-client dropdown on result screen ── */
+function renderResultScreen() {
+  const wrap = document.getElementById('result-assign-wrap');
+  const sel = document.getElementById('result-assign-select');
+  const savedActions = document.getElementById('result-saved-actions');
+  const saveBtn = document.getElementById('result-save-btn');
+  const newBtn = document.getElementById('result-new-btn');
+  if (savedActions) savedActions.style.display = 'none';
+  if (saveBtn) saveBtn.style.display = 'flex';
+  if (newBtn) newBtn.style.display = 'flex';
+  // Reset after-photo
+  resetPhotoPreview('after-preview');
+  document.getElementById('after-data').value = '';
+
+  if (!activeClient && clients.length > 0 && wrap && sel) {
+    wrap.style.display = 'block';
+    sel.innerHTML = '<option value="">Ohne Kundin speichern</option>' +
+      clients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  } else if (wrap) {
+    wrap.style.display = 'none';
+  }
+}
+
+
+async function submitFeedback(good) {
+  const afterPhoto = document.getElementById('after-data')?.value || '';
+  await sendMLFeedback(lastAnalysis.sessionId, good, afterPhoto);
+  
+  const wrap = document.getElementById('ml-feedback-wrap');
+  if (wrap) {
+    wrap.innerHTML = `<div style="text-align:center;padding:10px;font-size:13px;color:var(--success)">
+      ✓ Danke! Dein Feedback hilft der KI zu lernen.
+    </div>`;
+  }
+}
+
+/* ═══════════════════ GOOGLE LOGIN ═══════════════════ */
+async function doGoogleLogin() {
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.href }
+  });
+  if (error) alert('Google Login Fehler: ' + error.message);
+}
+
+/* ═══════════════════ GUTSCHEIN ═══════════════════ */
+async function redeemVoucher() {
+  const code = document.getElementById('voucher-code-input').value.trim().toUpperCase();
+  if (!code) { showAuthError('voucher-error', 'Bitte einen Code eingeben.'); return; }
+
+  const btn = document.getElementById('voucher-redeem-btn');
+  if (btn) { btn.textContent = 'Wird eingelöst…'; btn.disabled = true; }
+
+  // Prüfen ob Nutzer bereits einen Salon hat
+  await loadSalon();
+  if (currentSalon?.id) {
+    // Salon existiert bereits — einfach Plan updaten
+    const { data: voucher } = await sb.from('vouchers')
+      .select('*').eq('code', code).eq('is_active', true).single();
+    if (!voucher) { showAuthError('voucher-error', 'Ungültiger Code.'); if(btn){btn.textContent='Gutschein einlösen';btn.disabled=false;} return; }
+    // Plan updaten
+    await sb.from('salons').update({ plan: voucher.plan, plan_status: 'active' }).eq('id', currentSalon.id);
+    currentSalon.plan = voucher.plan;
+    currentSalon.plan_status = 'active';
+    document.getElementById('voucher-error').style.display = 'none';
+    const successEl = document.getElementById('voucher-success');
+    successEl.innerHTML = `✅ ${voucher.plan === 'team' ? 'Team' : 'Solo'}-Abo für ${voucher.duration_days} Tage aktiviert!`;
+    successEl.style.display = 'block';
+    setTimeout(() => { renderLandingUserBar(); go('s-landing'); }, 1500);
+    return;
+  }
+
+  // Gutschein prüfen
+  const { data: voucher, error: vErr } = await sb.from('vouchers')
+    .select('*').eq('code', code).eq('is_active', true).single();
+
+  if (vErr || !voucher) { showAuthError('voucher-error', 'Ungültiger oder abgelaufener Code.'); if(btn){btn.textContent='Gutschein einlösen';btn.disabled=false;} return; }
+  if (voucher.expires_at && new Date(voucher.expires_at) < new Date()) { showAuthError('voucher-error', 'Dieser Code ist abgelaufen.'); if(btn){btn.textContent='Gutschein einlösen';btn.disabled=false;} return; }
+  if (voucher.used_count >= voucher.max_uses) { showAuthError('voucher-error', 'Dieser Code wurde bereits zu oft verwendet.'); if(btn){btn.textContent='Gutschein einlösen';btn.disabled=false;} return; }
+
+  // Salon anlegen
+  const salonName = window._pendingSalonName || currentUser?.user_metadata?.salon_name || 'Mein Salon';
+  const trialEnd = new Date();
+  trialEnd.setDate(trialEnd.getDate() + voucher.duration_days);
+
+  const { data: salon, error: salonError } = await sb.from('salons').insert({
+    name: salonName,
+    owner_id: currentUser.id,
+    plan: voucher.plan,
+    plan_status: 'active',
+    trial_ends_at: trialEnd.toISOString()
+  }).select().single();
+
+  if (salonError) {
+    // Salon vielleicht schon angelegt — nochmal laden
+    await new Promise(r => setTimeout(r, 1000));
+    await loadSalon();
+    if (currentSalon?.id) {
+      // Salon wurde doch angelegt — Plan updaten und weitermachen
+      await sb.from('salons').update({ plan: voucher.plan, plan_status: 'active' }).eq('id', currentSalon.id).catch(()=>{});
+      currentSalon.plan = voucher.plan;
+      currentSalon.plan_status = 'active';
+      // Kein return — weiter unten weitermachen
+    } else {
+      showAuthError('voucher-error', 'Fehler: ' + salonError.message + ' — Bitte nochmal versuchen.');
+      if(btn){btn.textContent='Gutschein einlösen';btn.disabled=false;}
+      return;
+    }
+  } else {
+    currentSalon = salon;
+    currentSalon.role = 'owner';
+  }
+
+  window._pendingSalonName = null;
+
+  // Einlösung + Zähler
+  if (salon?.id) {
+    await sb.from('voucher_redemptions').insert({ voucher_id: voucher.id, user_id: currentUser.id, salon_id: salon.id }).catch(()=>{});
+    await sb.from('vouchers').update({ used_count: voucher.used_count + 1 }).eq('id', voucher.id).catch(()=>{});
+  }
+
+  // Salon neu laden bis er verfügbar ist (max 5 Versuche)
+  for (let i = 0; i < 5; i++) {
+    await new Promise(r => setTimeout(r, 600));
+    await loadSalon();
+    if (currentSalon?.id) break;
+  }
+
+  if (!currentSalon?.id) {
+    showAuthError('voucher-error', 'Fehler beim Laden des Salons. Bitte Seite neu laden.');
+    if(btn){btn.textContent='Gutschein einlösen';btn.disabled=false;}
+    return;
+  }
+
+  document.getElementById('voucher-error').style.display = 'none';
+  const successEl = document.getElementById('voucher-success');
+  const planLabel = currentSalon?.plan === 'team' ? 'Team' : 'Solo';
+  successEl.innerHTML = `✅ ${planLabel}-Abo aktiviert! Weiterleitung…`;
+  successEl.style.display = 'block';
+
+  if(btn){btn.textContent='Gutschein einlösen';btn.disabled=false;}
+  await loadClientsFromDB();
+  renderLandingUserBar();
+  await new Promise(r => setTimeout(r, 1000));
+  go('s-landing');
+}
+
+/* ═══════════════════ GUTSCHEIN ADMIN ═══════════════════ */
+async function loadVouchers() {
+  const { data } = await sb.from('vouchers').select('*').order('created_at', { ascending: false });
+  const el = document.getElementById('vouchers-list');
+  if (!el) return;
+  if (!data?.length) { el.innerHTML = '<p style="font-size:13px;color:var(--muted)">Noch keine Gutscheine.</p>'; return; }
+  el.innerHTML = data.map(v => `
+    <div class="admin-row">
+      <div style="flex:1">
+        <div class="admin-row-name" style="font-family:monospace;letter-spacing:1px">${v.code}</div>
+        <div class="admin-row-sub">${v.plan === 'team' ? 'Team' : 'Solo'} · ${v.duration_days} Tage · ${v.used_count}/${v.max_uses} genutzt · ${v.is_active ? '🟢 Aktiv' : '🔴 Inaktiv'}</div>
+        ${v.description ? `<div class="admin-row-sub">${v.description}</div>` : ''}
+      </div>
+      <button class="admin-del" onclick="toggleVoucher('${v.id}', ${v.is_active})">${v.is_active ? '⏸' : '▶'}</button>
+    </div>`).join('');
+}
+
+async function addVoucher() {
+  const code = document.getElementById('new-v-code').value.trim().toUpperCase();
+  if (!code) { alert('Code fehlt.'); return; }
+  const { error } = await sb.from('vouchers').insert({
+    code,
+    description: document.getElementById('new-v-desc').value.trim(),
+    plan: document.getElementById('new-v-plan').value,
+    duration_days: parseInt(document.getElementById('new-v-days').value) || 30,
+    max_uses: parseInt(document.getElementById('new-v-max').value) || 1,
+  });
+  if (error) { alert('Fehler: ' + error.message); return; }
+  ['new-v-code','new-v-desc','new-v-days'].forEach(id => document.getElementById(id).value = '');
+  await loadVouchers();
+}
+
+async function toggleVoucher(id, currentState) {
+  await sb.from('vouchers').update({ is_active: !currentState }).eq('id', id);
+  await loadVouchers();
+}
+
+</script>
+</body>
+</html>
