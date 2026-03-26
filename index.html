@@ -1198,8 +1198,8 @@ function renderSelectList(filter) {
   if (!list.length) { cont.innerHTML='<div class="empty"><p>Kein Kunde gefunden.</p></div>'; return; }
   cont.innerHTML = list.map(c => {
     const count = sessions.filter(s=>s.clientId===c.id).length;
-    return `<div class="list-card" onclick="selectClient(clients.find(x=>x.id===${c.id}))">
-      <div class="avatar">${c.photo?`<img src="${c.photo}"/>`:'👤'}</div>
+    return `<div class="list-card" onclick="selectClientById('${c.id}')">
+      <div class="avatar" style="background:linear-gradient(135deg,var(--pink),var(--pink-dark));color:#fff;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center">${c.photo?`<img src="${c.photo}" style="width:100%;height:100%;object-fit:cover"/>`:'<span>'+c.name[0].toUpperCase()+'</span>'}</div>
       <div class="lc-info">
         <div class="lc-name">${c.name}</div>
         <div class="lc-sub">${c.hairState} · ${c.hairHistory||'Keine Haarhistorie'}</div>
@@ -1210,6 +1210,10 @@ function renderSelectList(filter) {
 }
 
 function selectClient(c) { activeClient = c; go('s-current'); }
+function selectClientById(id) {
+  const c = clients.find(x => String(x.id) === String(id));
+  if (c) { activeClient = c; go('s-current'); }
+}
 
 /* ═══════════════════ CLIENTS LIST SCREEN ═══════════════════ */
 function renderClientsList(filter) {
@@ -1224,7 +1228,7 @@ function renderClientsList(filter) {
     const count = sessions.filter(s=>s.clientId===c.id).length;
     const last = sessions.filter(s=>s.clientId===c.id).sort((a,b)=>b.date.localeCompare(a.date))[0];
     return `<div class="list-card" onclick="openProfile(${c.id})">
-      <div class="avatar">${c.photo?`<img src="${c.photo}"/>`:'👤'}</div>
+      <div class="avatar" style="background:linear-gradient(135deg,var(--pink),var(--pink-dark));color:#fff;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center">${c.photo?`<img src="${c.photo}" style="width:100%;height:100%;object-fit:cover"/>`:'<span>'+c.name[0].toUpperCase()+'</span>'}</div>
       <div class="lc-info">
         <div class="lc-name">${c.name}</div>
         <div class="lc-sub">${last?'Letzte: '+last.date+' · '+last.target:c.hairState}</div>
@@ -2095,14 +2099,18 @@ async function loadClientsFromDB() {
     .eq('salon_id', currentSalon.id)
     .order('created_at', { ascending: false });
   if (data) {
-    clients = data.map(c => ({
-      id: c.id,
-      name: c.name,
-      notes: c.notes || '',
-      hairHistory: c.hair_history || '',
-      hairState: c.hair_state || 'Natur',
-      photo: c.photo_url || ''
-    }));
+    // Deduplicate by id to avoid showing same client twice
+    const seen = new Set();
+    clients = data
+      .filter(c => { if (seen.has(c.id)) return false; seen.add(c.id); return true; })
+      .map(c => ({
+        id: c.id,
+        name: c.name,
+        notes: c.notes || '',
+        hairHistory: c.hair_history || '',
+        hairState: c.hair_state || 'Natur',
+        photo: c.photo_url || ''
+      }));
   }
 }
 
