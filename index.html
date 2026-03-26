@@ -260,10 +260,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 
 /* ── IST-Block Styling ── */
 .ist-block{border:2px solid var(--border);border-radius:var(--r);margin-bottom:14px;background:var(--surface);overflow:hidden;box-shadow:var(--sh)}
-.ist-block-header{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--ink);color:#fff}
-.ist-block-icon{font-size:18px}
-.ist-block-label{font-size:14px;font-weight:800;flex:1;letter-spacing:-0.2px}
-.ist-block-code{font-size:13px;font-weight:700;background:var(--pink);color:#fff;padding:3px 10px;border-radius:20px}
+.ist-block-header{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:var(--graphite);color:#fff;border-bottom:2px solid var(--pink)}
+.ist-block-label{font-size:15px;font-weight:900;letter-spacing:-0.3px;color:#fff}
+.ist-block-code{font-size:13px;font-weight:800;background:var(--pink);color:#fff;padding:4px 12px;border-radius:20px;letter-spacing:0.5px}
 .ist-block-body{padding:4px 16px 16px}
 
 .auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;padding:36px 28px;padding-bottom:calc(36px + env(safe-area-inset-bottom))}
@@ -676,18 +675,18 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   </div>
 </section>
 
-<!-- ══════════════════ CURRENT HAIR ══════════════════ -->
+<!-- ══════════════════ CURRENT HAIR (Screen 1: Foto) ══════════════════ -->
 <section class="screen" id="s-current">
   <div class="hdr">
     <button class="hdr-back" onclick="go('s-select-client')">← Zurück</button>
     <span class="hdr-title">Ist-Aufnahme</span>
     <span style="width:60px"></span>
   </div>
-  <div class="prog"><div class="prog-fill" style="width:33%"></div></div>
+  <div class="prog"><div class="prog-fill" style="width:25%"></div></div>
   <div class="body">
     <div id="banner-current"></div>
 
-    <!-- 1. HERSTELLER -->
+    <!-- Hersteller -->
     <div class="lbl" style="margin-top:0">Farbsystem / Hersteller</div>
     <select class="inp" id="ist-hersteller" onchange="onHerstellerChange()" style="margin-bottom:4px">
       <option value="">— Bitte wählen —</option>
@@ -697,9 +696,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
       <option value="redken">Redken</option>
       <option value="gold">GOLD</option>
     </select>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Aus Salon-Profil vorausgewählt wenn hinterlegt</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:16px">Aus Salon-Profil vorausgewählt wenn hinterlegt</div>
 
-    <!-- 2. FOTO + LICHT -->
+    <!-- Lichtverhältnisse -->
     <div class="lbl">Lichtverhältnisse</div>
     <div class="chip-grid" id="ist-licht-grid">
       <div class="chip selected" onclick="selectChipIn(this,'ist-licht-grid')"><div class="chip-name">☀️ Tageslicht</div></div>
@@ -707,28 +706,48 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
       <div class="chip" onclick="selectChipIn(this,'ist-licht-grid')"><div class="chip-name">💡 Innenlicht</div></div>
     </div>
 
+    <!-- Foto Buttons ÜBER dem Bild -->
     <div class="lbl">Haarfoto</div>
     <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Gute Beleuchtung, Haare klar sichtbar — keine Filter.</p>
-    <div class="photo-area">
-      <div class="photo-preview" id="curr-preview">
-        <div class="photo-placeholder"><div class="ico">📷</div><p>Foto aufnehmen oder hochladen</p></div>
-      </div>
-      <div class="photo-btns">
-        <button class="btn btn-dark btn-full" onclick="triggerCamera('curr-file')">📷 Kamera</button>
-        <button class="btn btn-outline btn-full" onclick="triggerGallery('curr-file')">🖼 Galerie</button>
-      </div>
-      <input type="file" id="curr-file" accept="image/*" onchange="handleCurrPhoto(this)"/>
-      <input type="hidden" id="curr-data"/>
+    <div class="photo-btns" style="margin-bottom:10px">
+      <button class="btn btn-dark btn-full" onclick="triggerCamera('curr-file')">📷 Kamera</button>
+      <button class="btn btn-outline btn-full" onclick="triggerGallery('curr-file')">🖼 Galerie</button>
+    </div>
+    <input type="file" id="curr-file" accept="image/*" onchange="handleCurrPhoto(this)"/>
+    <input type="hidden" id="curr-data"/>
+
+    <!-- Foto Vorschau -->
+    <div class="photo-preview" id="curr-preview" style="margin-bottom:16px">
+      <div class="photo-placeholder"><div class="ico">📷</div><p>Foto wird hier angezeigt</p></div>
     </div>
 
-    <!-- AI Status -->
-    <div id="ist-ai-status" style="display:none;background:var(--pink-light);border:1.5px solid var(--pink-mid);border-radius:var(--rs);padding:10px 14px;margin-top:12px;font-size:13px;color:var(--pink);font-weight:600">
-      🤖 KI analysiert Haarfarbe…
+    <div class="divider"></div>
+
+    <!-- Aktions-Buttons -->
+    <button class="btn btn-pink btn-full" id="ist-analyse-btn" onclick="startIstAnalysis()" style="margin-bottom:8px">🤖 Analysieren</button>
+    <button class="btn btn-ghost btn-full" onclick="skipIstAnalysis()">Überspringen — manuell ausfüllen</button>
+    <div style="height:24px"></div>
+  </div>
+</section>
+
+<!-- ══════════════════ IST-DETAIL (Screen 2: Farbstruktur) ══════════════════ -->
+<section class="screen" id="s-ist-detail">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-current')">← Zurück</button>
+    <span class="hdr-title">Farbstruktur</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="prog"><div class="prog-fill" style="width:45%"></div></div>
+  <div class="body">
+
+    <!-- AI Ergebnis Badge -->
+    <div id="ist-ai-status" style="display:none;background:var(--pink-light);border:1.5px solid var(--pink-mid);border-radius:var(--rs);padding:10px 14px;margin-bottom:16px;font-size:13px;color:var(--pink);font-weight:600">
+      🤖 KI analysiert…
     </div>
 
-    <!-- 3. STRUKTURTYP -->
-    <div class="lbl">Farbstruktur</div>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Wird von KI erkannt — kann manuell geändert werden</div>
+    <!-- Strukturtyp -->
+    <div class="lbl" style="margin-top:0">Farbstruktur</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Von KI erkannt — kann manuell geändert werden</div>
     <div class="seg" id="ist-struktur-seg">
       <button class="seg-btn active" onclick="selectStruktur(this,'global')">Global</button>
       <button class="seg-btn" onclick="selectStruktur(this,'highlights')">Highlights</button>
@@ -736,13 +755,19 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
       <button class="seg-btn" onclick="selectStruktur(this,'verlauf')">Verlauf</button>
     </div>
 
-    <!-- 4. DYNAMISCHE FARBBLÖCKE -->
+    <!-- Dynamische Farbblöcke -->
     <div id="ist-farbbloecke" style="margin-top:20px"></div>
+
+    <!-- Problemfälle — simple Chip-Auswahl -->
+    <div class="lbl" style="margin-top:20px">Problemfälle</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Von KI erkannt oder manuell auswählen</div>
+    <div id="problem-chips" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+    <input type="hidden" id="curr-problem-json"/>
 
     <input type="hidden" id="curr-ist-json"/>
 
     <div class="divider"></div>
-    <button class="btn btn-pink btn-full" onclick="proceedToTarget()">Weiter →</button>
+    <button class="btn btn-pink btn-full" onclick="proceedToTarget()">Weiter zur Zielfarbe →</button>
     <div style="height:24px"></div>
   </div>
 </section>
@@ -2642,9 +2667,16 @@ go = function(screenId) {
   _goOrigAuth(screenId);
   if (screenId === 's-account') renderAccountScreen();
   if (screenId === 's-result') renderResultScreen();
+  if (screenId === 's-ist-detail') {
+    renderIstBloecke(istCurrentStruktur);
+    selectedProblems = new Set();
+    renderProblemChips();
+  }
   if (screenId === 's-current') {
     istManualOverride = false;
     istBlocks = {};
+    const btn = document.getElementById('ist-analyse-btn');
+    if (btn) { btn.textContent = '🤖 Analysieren'; btn.style.boxShadow = ''; btn.disabled = false; }
     preSelectHersteller();
   }
 };
@@ -2856,11 +2888,20 @@ const NUANCEN_DB = {
 };
 
 // Struktur-Konfiguration
+const LEVEL_NAMES = {
+  1: 'Schwarz', 2: 'Dunkelbraun', 3: 'Mittelbraun', 4: 'Hellbraun',
+  5: 'Dunkelblond', 6: 'Blond', 7: 'Mittelblond', 8: 'Hellblond',
+  9: 'Sehr hellblond', 10: 'Hellstblond'
+};
 const STRUKTUR_CONFIG = {
-  global:     [{ id: 'block0', label: 'Aktuelle Farbe', icon: '🎨' }],
-  highlights: [{ id: 'block0', label: 'Basisfarbe', icon: '🎨' }, { id: 'block1', label: 'Highlights', icon: '✨' }],
-  balayage:   [{ id: 'block0', label: 'Basisfarbe', icon: '🎨' }, { id: 'block1', label: 'Balayage-Partien', icon: '🌅' }],
-  verlauf:    [{ id: 'block0', label: 'Ansatz', icon: '🔝' }, { id: 'block1', label: 'Mittelstück', icon: '↕️' }, { id: 'block2', label: 'Spitzen', icon: '🔻' }]
+  global:     [{ id: 'block0', label: 'Aktuelle Farbe',    icon: '' }],
+  highlights: [{ id: 'block0', label: 'Basisfarbe',        icon: '' },
+               { id: 'block1', label: 'Highlights',        icon: '' }],
+  balayage:   [{ id: 'block0', label: 'Basisfarbe',        icon: '' },
+               { id: 'block1', label: 'Balayage-Partien',  icon: '' }],
+  verlauf:    [{ id: 'block0', label: 'Ansatz',            icon: '' },
+               { id: 'block1', label: 'Mittelstück',       icon: '' },
+               { id: 'block2', label: 'Spitzen',           icon: '' }]
 };
 
 let istCurrentStruktur = 'global';
@@ -2902,7 +2943,6 @@ function renderIstBloecke(typ) {
 
     return '<div class="ist-block" id="' + block.id + '-wrap">' +
       '<div class="ist-block-header">' +
-        '<span class="ist-block-icon">' + block.icon + '</span>' +
         '<span class="ist-block-label">' + block.label + '</span>' +
         '<span class="ist-block-code" id="' + block.id + '-code">' + code + '</span>' +
       '</div>' +
@@ -2912,6 +2952,7 @@ function renderIstBloecke(typ) {
         '<div class="slider-wrap">' +
           '<div class="slider-row">' +
             '<span class="slider-val" id="' + block.id + '-level-val">' + saved.level + '</span>' +
+            '<span id="' + block.id + '-level-name" style="font-size:13px;font-weight:600;color:var(--mid);flex:1;margin-left:8px">' + (LEVEL_NAMES[saved.level]||'') + '</span>' +
             '<input type="range" min="1" max="10" value="' + saved.level + '" style="--pct:' + pct + '%" ' +
               'oninput="onIstLevelChange(this,\'' + block.id + '\')">' +
           '</div>' +
@@ -2941,6 +2982,8 @@ function onIstLevelChange(input, blockId) {
   const pct = Math.round((val - 1) / 9 * 100);
   input.style.setProperty('--pct', pct + '%');
   document.getElementById(blockId + '-level-val').textContent = val;
+  const nameEl = document.getElementById(blockId + '-level-name');
+  if (nameEl) nameEl.textContent = LEVEL_NAMES[val] || '';
   updateIstCode(blockId);
 }
 
@@ -2988,41 +3031,63 @@ async function handleCurrPhoto(input) {
   prev.classList.add('has-photo');
   prev.innerHTML = '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover"/>';
   document.getElementById('curr-data').value = url;
-
-  // Trigger AI analysis if hersteller selected
-  if (!istManualOverride) {
-    triggerIstAIAnalysis(url);
+  // Analyse-Button hervorheben wenn Foto vorhanden
+  const analyseBtn = document.getElementById('ist-analyse-btn');
+  if (analyseBtn) {
+    analyseBtn.textContent = '🤖 Jetzt analysieren';
+    analyseBtn.style.boxShadow = '0 8px 24px rgba(232,24,90,0.4)';
   }
 }
 
-async function triggerIstAIAnalysis(imageData) {
+async function startIstAnalysis() {
+  const imageData = document.getElementById('curr-data')?.value;
+  const btn = document.getElementById('ist-analyse-btn');
   const statusEl = document.getElementById('ist-ai-status');
+
+  if (btn) { btn.textContent = '🤖 Analysiere…'; btn.disabled = true; }
+
+  // Navigate to detail screen first
+  go('s-ist-detail');
   if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = '🤖 KI analysiert Haarfarbe…'; }
+  renderIstBloecke(istCurrentStruktur);
 
   try {
-    const result = await analyzeHairWithAI(imageData, 'ist');
-    if (!result || istManualOverride) return;
-
-    // Map AI result to structure
-    const suggestedStruktur = result.strukturtyp || 'global';
-
-    // Update struktur button
-    document.querySelectorAll('#ist-struktur-seg .seg-btn').forEach(b => {
-      b.classList.remove('active');
-      if (b.textContent.toLowerCase().includes(suggestedStruktur.substring(0,4))) b.classList.add('active');
-    });
-    istCurrentStruktur = suggestedStruktur;
-
-    // Set block values from AI
-    if (result.level) {
-      istBlocks['block0'] = { level: Math.round(result.level), nuance: 0 };
+    if (imageData) {
+      const result = await analyzeHairWithAI(imageData, 'ist');
+      if (result && !istManualOverride) {
+        const suggestedStruktur = result.strukturtyp || 'global';
+        document.querySelectorAll('#ist-struktur-seg .seg-btn').forEach(b => {
+          b.classList.remove('active');
+          const txt = b.textContent.toLowerCase();
+          if ((suggestedStruktur === 'global' && txt === 'global') ||
+              (suggestedStruktur === 'highlights' && txt === 'highlights') ||
+              (suggestedStruktur === 'balayage' && txt === 'balayage') ||
+              (suggestedStruktur === 'verlauf' && txt === 'verlauf')) {
+            b.classList.add('active');
+          }
+        });
+        istCurrentStruktur = suggestedStruktur;
+        if (result.level) {
+          istBlocks['block0'] = { level: Math.round(result.level), nuance: 0 };
+        }
+        renderIstBloecke(istCurrentStruktur);
+        const undertoneDE = result.undertone === 'warm' ? 'Warmer Unterton' : result.undertone === 'cool' ? 'Kühler Unterton' : 'Neutraler Unterton';
+        if (statusEl) statusEl.innerHTML = '✅ KI-Ergebnis: <strong>' + (result.base_color || 'Erkannt') + '</strong> · Level ~' + Math.round(result.level || 6) + ' · ' + undertoneDE;
+      }
+    } else {
+      if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = '📝 Kein Foto — bitte manuell ausfüllen'; }
     }
-
-    renderIstBloecke(istCurrentStruktur);
-    if (statusEl) statusEl.innerHTML = '🤖 KI-Ergebnis: <strong>' + suggestedStruktur + '</strong> · Level ~' + Math.round(result.level || 6) + ' · ' + (result.undertone === 'warm' ? 'Warmer Unterton' : result.undertone === 'cool' ? 'Kühler Unterton' : 'Neutraler Unterton');
   } catch(e) {
-    if (statusEl) statusEl.style.display = 'none';
+    if (statusEl) statusEl.textContent = '⚠️ Analyse fehlgeschlagen — bitte manuell ausfüllen';
   }
+  if (btn) { btn.textContent = '🤖 Analysieren'; btn.disabled = false; }
+}
+
+function skipIstAnalysis() {
+  const statusEl = document.getElementById('ist-ai-status');
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = '📝 Manuell ausfüllen'; }
+  go('s-ist-detail');
+  renderIstBloecke(istCurrentStruktur);
 }
 
 function proceedToTarget() {
@@ -3046,7 +3111,51 @@ function preSelectHersteller() {
   renderIstBloecke(istCurrentStruktur);
 }
 
-/* ═══════════════════ END IST-AUFNAHME LOGIC ═══════════════════ */
+/* ═══════════════════ PROBLEMFÄLLE / KORREKTUREN ═══════════════════ */
+
+/* ═══════════════════ PROBLEMFÄLLE ═══════════════════ */
+
+const PROBLEMFAELLE = [
+  { id: 'gruen',   label: '🟢 Grünstich',   nuance: 4  },
+  { id: 'orange',  label: '🟠 Orangestich',  nuance: 1  },
+  { id: 'gelb',    label: '🟡 Gelbstich',    nuance: 2  },
+  { id: 'rot',     label: '🔴 Rotstich',     nuance: 3  },
+  { id: 'grau',    label: '⬜ Zu aschig',    nuance: 34 },
+  { id: 'blau',    label: '🔵 Blaustich',    nuance: 43 }
+];
+
+let selectedProblems = new Set();
+
+function renderProblemChips() {
+  const container = document.getElementById('problem-chips');
+  if (!container) return;
+  container.innerHTML = PROBLEMFAELLE.map(p => {
+    const sel = selectedProblems.has(p.id);
+    return '<button onclick="toggleProblem(\'' + p.id + '\')" style="' +
+      'padding:8px 14px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;' +
+      'border:2px solid ' + (sel ? 'var(--pink)' : 'var(--border)') + ';' +
+      'background:' + (sel ? 'var(--pink-light)' : 'var(--surface)') + ';' +
+      'color:' + (sel ? 'var(--pink)' : 'var(--mid)') + '">' +
+      p.label + '</button>';
+  }).join('');
+}
+
+function toggleProblem(id) {
+  if (selectedProblems.has(id)) selectedProblems.delete(id);
+  else selectedProblems.add(id);
+  renderProblemChips();
+  const selected = PROBLEMFAELLE.filter(p => selectedProblems.has(p.id));
+  const el = document.getElementById('curr-problem-json');
+  if (el) el.value = JSON.stringify(selected);
+}
+
+/* ═══════════════════ END PROBLEMFÄLLE ═══════════════════ */
+
+
+
+/* ═══════════════════ END PROBLEMFÄLLE ═══════════════════ */
+
+
 
 
 async function doGoogleLogin() {
