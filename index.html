@@ -597,17 +597,32 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
       <button class="btn btn-outline btn-full" onclick="go('s-onboarding-salon')">✂️ Profil anlegen</button>
     </div>
 
-    <!-- Zielbild-Bibliothek Verwaltung -->
+    <!-- Bild-Galerie im Konto -->
     <div id="account-zielbild-section" style="display:none">
-      <div class="lbl">Zielbild-Bibliothek</div>
-      <p style="font-size:12px;color:var(--mid);margin-bottom:10px;line-height:1.6">
-        Eigene hochgeladene Zielbilder. Ergebnis-Fotos aus der Kundenkartei können direkt dort gepinnt werden (📌 Pinnen).
-      </p>
-      <div id="acc-zielbilder-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:12px"></div>
-      <button class="btn btn-outline btn-full" style="height:40px;font-size:13px" onclick="document.getElementById('acc-ziel-upload').click()">
-        📤 Eigenes Zielbild hinzufügen
-      </button>
-      <input type="file" id="acc-ziel-upload" accept="image/*" style="display:none" onchange="addZielbildFromAccount(this)"/>
+      <div class="lbl">Bild-Galerie</div>
+
+      <!-- Tabs: Zielbilder / Ergebnis-Fotos -->
+      <div class="seg" id="acc-gallery-seg" style="margin-bottom:12px">
+        <button class="seg-btn active" onclick="accGalleryTab(this,'upload')">Zielbilder</button>
+        <button class="seg-btn" onclick="accGalleryTab(this,'ergebnis')">Ergebnis-Fotos</button>
+      </div>
+
+      <!-- Zielbilder Tab -->
+      <div id="acc-tab-upload">
+        <p style="font-size:11px;color:var(--muted);margin-bottom:8px">Eigene hochgeladene Zielbilder — erscheinen im Zielbild-Tab der Analyse</p>
+        <div id="acc-zielbilder-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:10px"></div>
+        <button class="btn btn-outline btn-full" style="height:40px;font-size:13px" onclick="document.getElementById('acc-ziel-upload').click()">
+          📤 Eigenes Zielbild hinzufügen
+        </button>
+        <input type="file" id="acc-ziel-upload" accept="image/*" style="display:none" onchange="addZielbildFromAccount(this)"/>
+      </div>
+
+      <!-- Ergebnis-Fotos Tab -->
+      <div id="acc-tab-ergebnis" style="display:none">
+        <p style="font-size:11px;color:var(--muted);margin-bottom:8px">Gepinnte Ergebnis-Fotos (📌) aus der Kundenkartei — auch nach Kunden-Löschung verfügbar</p>
+        <div id="acc-ergebnis-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:10px"></div>
+        <div id="acc-ergebnis-empty" style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Noch keine Ergebnis-Fotos gepinnt</div>
+      </div>
     </div>
 
     <div class="divider"></div>
@@ -620,8 +635,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 <!-- ══════════════════ LANDING ══════════════════ -->
 <section class="screen" id="s-landing">
   <!-- Hero — großes Bild oben, Content darunter -->
-  <div class="landing-hero" style="position:relative;height:56vh;min-height:280px;max-height:400px;overflow:hidden;flex-shrink:0">
-    <img class="hero-img" src="hero.jpg" alt="Friseursalon" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;filter:brightness(0.5) saturate(0.8);"/>
+  <div class="landing-hero" style="position:relative;height:62vh;min-height:300px;max-height:440px;overflow:hidden;flex-shrink:0">
+    <img class="hero-img" src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=800&auto=format&fit=crop&q=80" alt="Friseursalon" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;filter:brightness(0.45) saturate(0.85);"/>
     <div class="hero-noise"></div>
     <div class="hero-gradient"></div>
     <!-- Logo oben links -->
@@ -2297,29 +2312,46 @@ document.getElementById('modal-btn').onclick=()=>{
 
 function confirmDeleteClient(){
   if(!viewingClient)return;
-  const n=sessions.filter(s=>s.clientId===viewingClient.id).length;
+  const n=sessions.filter(s=>String(s.clientId)===String(viewingClient.id)).length;
+  const clientId = viewingClient.id;
+  const clientName = viewingClient.name;
   openModal(
-    viewingClient.name+' löschen?',
-    `Löscht diese Kundin und alle ${n} Sitzung${n!==1?'en':''} unwiderruflich.`,
-    '🗑 Kundin & alle Sitzungen löschen',
-    ()=>{
-      sessions=sessions.filter(s=>s.clientId!==viewingClient.id);
-      clients=clients.filter(c=>c.id!==viewingClient.id);
-      if(activeClient?.id===viewingClient.id)activeClient=null;
+    clientName+' löschen?',
+    'Löscht diesen Kunden und alle '+n+' Sitzung'+(n!==1?'en':'')+' unwiderruflich.',
+    '🗑 Kunde & alle Sitzungen löschen',
+    async function() {
+      // Delete from Supabase
+      if (currentSalon?.id) {
+        try {
+          await sb.from('sessions').delete().eq('client_id', clientId);
+          await sb.from('clients').delete().eq('id', clientId);
+        } catch(e) { console.error('Delete client error:', e); }
+      }
+      // Remove from local arrays
+      sessions = sessions.filter(s => String(s.clientId) !== String(clientId));
+      clients = clients.filter(c => String(c.id) !== String(clientId));
+      if(activeClient?.id===clientId) activeClient=null;
       viewingClient=null;
+      renderClientsList('');
       go('s-clients');
     }
   );
 }
 
 function confirmDeleteSess(sessId){
-  const s=sessions.find(x=>x.id===sessId);
+  const s=sessions.find(x=>String(x.id)===String(sessId));
   if(!s)return;
   openModal(
     'Sitzung löschen?',
-    `Sitzung vom ${s.date} (${s.target}) wird unwiderruflich gelöscht.`,
+    'Sitzung vom '+(s.date||'')+'  ('+s.target+') wird unwiderruflich gelöscht.',
     '🗑 Sitzung löschen',
-    ()=>{ sessions=sessions.filter(x=>x.id!==sessId); renderProfile(); }
+    async function() {
+      if (currentSalon?.id) {
+        try { await sb.from('sessions').delete().eq('id', sessId); } catch(e) {}
+      }
+      sessions=sessions.filter(x=>String(x.id)!==String(sessId));
+      renderProfile();
+    }
   );
 }
 
@@ -2709,7 +2741,6 @@ async function loadClientsFromDB() {
     .eq('salon_id', currentSalon.id)
     .order('created_at', { ascending: false });
   if (data) {
-    // Deduplicate by id to avoid showing same client twice
     const seen = new Set();
     clients = data
       .filter(c => { if (seen.has(c.id)) return false; seen.add(c.id); return true; })
@@ -2722,6 +2753,34 @@ async function loadClientsFromDB() {
         photo: c.photo_url || ''
       }));
   }
+  // Also load all sessions for this salon so client list shows session counts
+  await loadAllSalonSessions();
+}
+
+async function loadAllSalonSessions() {
+  if (!currentSalon?.id) return;
+  try {
+    const { data } = await sb.from('sessions')
+      .select('id, client_id, created_at, target_color, formula, developer, brand, notes, before_photo_url, after_photo_url, result_good, pinned_as_ziel')
+      .eq('salon_id', currentSalon.id)
+      .order('created_at', { ascending: false });
+    if (data) {
+      sessions = data.map(s => ({
+        id: s.id,
+        clientId: s.client_id,
+        date: (s.created_at || '').slice(0, 10),
+        target: s.target_color || '—',
+        formula: s.formula || '—',
+        dev: s.developer || '—',
+        brand: s.brand || '—',
+        notes: s.notes || '',
+        hairPhoto: s.before_photo_url || '',
+        afterPhoto: s.after_photo_url || '',
+        resultGood: s.result_good,
+        pinnedAsZiel: s.pinned_as_ziel || false,
+      }));
+    }
+  } catch(e) { console.error('loadAllSalonSessions error:', e); }
 }
 
 /* ── Session-Limit für Solo (1 Gerät) ── */
@@ -3008,7 +3067,11 @@ function renderAccountScreen() {
           }
           // Show Zielbild section
           const zielSection = document.getElementById('account-zielbild-section');
-          if (zielSection) { zielSection.style.display = 'block'; renderAccZielbilder(); }
+          if (zielSection) {
+            zielSection.style.display = 'block';
+            renderAccZielbilder();
+            loadAllSalonSessions().then(function() { renderAccErgebnisGrid(); });
+          }
           // KI Training nur für Admins
           const mlBtn = document.getElementById('acc-ml-training-btn');
           if (mlBtn) mlBtn.style.display = adminMode ? 'block' : 'none';
@@ -3975,22 +4038,52 @@ async function analyzeZielbild(imageData) {
 async function loadPinnedSessionsForZiel() {
   if (!currentSalon?.id) return;
   try {
+    // Load all pinned sessions - they are already in sessions[] from loadAllSalonSessions
+    // Just make sure the data is fresh
     const { data } = await sb.from('sessions')
-      .select('id, client_id, after_photo_url, target_color, pinned_as_ziel')
+      .select('id, client_id, after_photo_url, before_photo_url, target_color, pinned_as_ziel')
       .eq('salon_id', currentSalon.id)
       .eq('pinned_as_ziel', true);
     if (data) {
       data.forEach(function(s) {
         const exists = sessions.find(function(x) { return String(x.id) === String(s.id); });
         if (!exists) {
-          sessions.push({ id: s.id, clientId: s.client_id, afterPhoto: s.after_photo_url || '', target: s.target_color || '', pinnedAsZiel: true });
+          sessions.push({
+            id: s.id, clientId: s.client_id,
+            hairPhoto: s.before_photo_url || '',
+            afterPhoto: s.after_photo_url || '',
+            target: s.target_color || '', pinnedAsZiel: true
+          });
         } else {
           exists.pinnedAsZiel = true;
           exists.afterPhoto = exists.afterPhoto || s.after_photo_url || '';
+          exists.hairPhoto = exists.hairPhoto || s.before_photo_url || '';
         }
       });
     }
   } catch(e) { console.error('loadPinnedSessions error:', e); }
+}
+
+/* ── Alle Salon-Zielbilder aus Supabase laden (uploads) ── */
+async function loadSalonZielbilderFromDB() {
+  if (!currentSalon?.id) return;
+  try {
+    const { data } = await sb.from('salon_zielbilder')
+      .select('*')
+      .eq('salon_id', currentSalon.id)
+      .order('created_at', { ascending: false });
+    if (data) {
+      zielbilder = data.map(z => ({
+        id: z.id,
+        src: z.image_base64 || z.image_url || '',
+        type: 'upload',
+        clientName: 'Zielbild'
+      }));
+    }
+  } catch(e) {
+    // Table might not exist yet — use local array
+    console.log('salon_zielbilder table not found, using local');
+  }
 }
 
 function filterZielbilder(btn, typ) {
@@ -4022,9 +4115,12 @@ function renderZielGrid(filter) {
   let uploadImgs = zielbilder.filter(function(z) { return z.type === 'upload'; });
   let ergebnisImgs = [];
   sessions.forEach(function(s) {
-    if (s.afterPhoto && s.pinnedAsZiel) {
+    if (s.pinnedAsZiel) {
       const client = clients.find(function(c) { return String(c.id)===String(s.clientId); });
-      ergebnisImgs.push({id:'sess_'+s.id, src:s.afterPhoto, type:'ergebnis', clientName: client ? client.name : ''});
+      const cname = client ? client.name : '';
+      if (s.afterPhoto) {
+        ergebnisImgs.push({id:'sess_'+s.id, src:s.afterPhoto, type:'ergebnis', clientName: cname});
+      }
     }
   });
   let imgs;
@@ -4145,10 +4241,18 @@ function selectTrend(id) {
   renderTrendsGrid();
 }
 
+function accGalleryTab(btn, tab) {
+  document.querySelectorAll('#acc-gallery-seg .seg-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('acc-tab-upload').style.display = tab === 'upload' ? 'block' : 'none';
+  document.getElementById('acc-tab-ergebnis').style.display = tab === 'ergebnis' ? 'block' : 'none';
+  if (tab === 'ergebnis') renderAccErgebnisGrid();
+}
+
 function renderAccZielbilder() {
   const grid = document.getElementById('acc-zielbilder-grid');
   if (!grid) return;
-  const uploads = zielbilder.filter(function(z) { return z.type==='upload'; });
+  const uploads = zielbilder.filter(function(z) { return z.type === 'upload'; });
   if (!uploads.length) {
     grid.innerHTML = '<div style="grid-column:1/-1;font-size:12px;color:var(--muted);text-align:center;padding:16px">Noch keine eigenen Zielbilder</div>';
     return;
@@ -4169,6 +4273,56 @@ function renderAccZielbilder() {
     grid.appendChild(div);
   });
 }
+
+function renderAccErgebnisGrid() {
+  const grid = document.getElementById('acc-ergebnis-grid');
+  const empty = document.getElementById('acc-ergebnis-empty');
+  if (!grid) return;
+  // All pinned sessions with after-photo
+  const pinned = sessions.filter(function(s) { return s.pinnedAsZiel && s.afterPhoto; });
+  if (!pinned.length) {
+    grid.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  grid.innerHTML = '';
+  pinned.forEach(function(s) {
+    const client = clients.find(function(c) { return String(c.id) === String(s.clientId); });
+    const div = document.createElement('div');
+    div.style.cssText = 'position:relative;aspect-ratio:1';
+    const img = document.createElement('img');
+    img.src = s.afterPhoto;
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:4px';
+    div.appendChild(img);
+    // Client name badge
+    const badge = document.createElement('div');
+    badge.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);color:#fff;font-size:9px;font-weight:700;padding:3px 4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;border-radius:0 0 4px 4px';
+    badge.textContent = client ? client.name : '📌 Ergebnis';
+    div.appendChild(badge);
+    // Delete/unpin button
+    const btn = document.createElement('button');
+    btn.style.cssText = 'position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:11px;line-height:1';
+    btn.textContent = '✕';
+    btn.title = 'Entpinnen (bleibt in Kundenkartei)';
+    btn.onclick = (function(sessId) {
+      return async function() {
+        const sess = sessions.find(function(x) { return String(x.id) === String(sessId); });
+        if (sess) {
+          sess.pinnedAsZiel = false;
+          if (currentSalon?.id) {
+            await sb.from('sessions').update({ pinned_as_ziel: false }).eq('id', sessId).catch(console.error);
+          }
+        }
+        renderAccErgebnisGrid();
+      };
+    })(s.id);
+    div.appendChild(btn);
+    grid.appendChild(div);
+  });
+}
+
+
 function removeZielbild(id) {
   zielbilder = zielbilder.filter(z => z.id !== id);
   renderAccZielbilder();
