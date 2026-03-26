@@ -2360,7 +2360,7 @@ function validateZip(input) {
   const country = document.getElementById('ob-country')?.value || 'DE';
   const el = document.getElementById('err-zip');
   const len = (country==='DE') ? 5 : 4;
-  if (el) el.textContent = (input.value.length > 0 && input.value.length !== len) ? `⚠️ ${country==='DE'?'Deutsche':'':''} PLZ muss ${len} Ziffern haben` : '';
+  if (el) el.textContent = (input.value.length > 0 && input.value.length !== len) ? `⚠️ PLZ muss ${len} Ziffern haben` : '';
 }
 
 function clearFieldError(id) {
