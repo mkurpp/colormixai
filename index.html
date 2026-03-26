@@ -539,7 +539,16 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
       <div class="lbl">Telefon</div>
       <input class="inp" type="tel" id="acc-salon-phone" placeholder="Telefon (optional)" style="margin-bottom:8px"/>
       <div class="lbl">Webseite</div>
-      <input class="inp" type="url" id="acc-salon-website" placeholder="https://..." style="margin-bottom:12px"/>
+      <input class="inp" type="url" id="acc-salon-website" placeholder="https://..." style="margin-bottom:8px"/>
+      <div class="lbl">Bevorzugter Hersteller</div>
+      <select class="inp" id="acc-hersteller" style="margin-bottom:12px">
+        <option value="">— Kein Hersteller hinterlegt —</option>
+        <option value="wella">Wella Professionals</option>
+        <option value="loreal">L'Oréal Professionnel</option>
+        <option value="schwarzkopf">Schwarzkopf Professional</option>
+        <option value="redken">Redken</option>
+        <option value="gold">GOLD</option>
+      </select>
       <!-- Karte listing toggle -->
       <div style="background:var(--pink-light);border:2px solid var(--pink-mid);border-radius:var(--rs);padding:14px;margin-bottom:12px">
         <div style="display:flex;align-items:flex-start;gap:12px">
@@ -577,6 +586,19 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
     <div id="account-no-salon" style="display:none;margin-top:8px">
       <p style="font-size:13px;color:var(--mid);margin-bottom:12px;line-height:1.6">Du hast noch kein Profil angelegt. Das kannst du jederzeit nachholen.</p>
       <button class="btn btn-outline btn-full" onclick="go('s-onboarding-salon')">✂️ Profil anlegen</button>
+    </div>
+
+    <!-- Zielbild-Bibliothek Verwaltung -->
+    <div id="account-zielbild-section" style="display:none">
+      <div class="lbl">Zielbild-Bibliothek</div>
+      <p style="font-size:12px;color:var(--mid);margin-bottom:10px;line-height:1.6">
+        Eigene hochgeladene Zielbilder. Ergebnis-Fotos aus der Kundenkartei können direkt dort gepinnt werden (📌 Pinnen).
+      </p>
+      <div id="acc-zielbilder-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:12px"></div>
+      <button class="btn btn-outline btn-full" style="height:40px;font-size:13px" onclick="document.getElementById('acc-ziel-upload').click()">
+        📤 Eigenes Zielbild hinzufügen
+      </button>
+      <input type="file" id="acc-ziel-upload" accept="image/*" style="display:none" onchange="addZielbildFromAccount(this)"/>
     </div>
 
     <div class="divider"></div>
@@ -772,84 +794,115 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   </div>
 </section>
 
-<!-- ══════════════════ DEFINE TARGET ══════════════════ -->
+<!-- ══════════════════ ZIELFARBE SCREEN 1: ZIELBILD ══════════════════ -->
 <section class="screen" id="s-target">
   <div class="hdr">
-    <button class="hdr-back" onclick="go('s-current')">← Zurück</button>
-    <span class="hdr-title">Zielfarbe definieren</span>
+    <button class="hdr-back" onclick="go('s-ist-detail')">← Zurück</button>
+    <span class="hdr-title">Zielbild wählen</span>
     <span style="width:60px"></span>
   </div>
-  <div class="prog"><div class="prog-fill" style="width:60%"></div></div>
+  <div class="prog"><div class="prog-fill" style="width:55%"></div></div>
   <div class="body">
     <div id="banner-target"></div>
 
-    <div class="lbl">Zielfarbe Vorschau</div>
-    <div class="color-bar" id="color-bar" style="background:linear-gradient(135deg,#D4B89C,#C4A07A)">
-      <span class="color-bar-lbl" id="color-bar-lbl">Kühles Blond</span>
+    <!-- Filter Tabs -->
+    <div class="seg" id="ziel-filter-seg" style="margin-bottom:16px">
+      <button class="seg-btn active" onclick="filterZielbilder(this,'alle')">Alle</button>
+      <button class="seg-btn" onclick="filterZielbilder(this,'ziel')">Zielbilder</button>
+      <button class="seg-btn" onclick="filterZielbilder(this,'ergebnis')">Ergebnis</button>
     </div>
 
-    <button class="btn btn-outline btn-full" onclick="triggerGallery('ref-file')" style="margin-bottom:8px">🖼 Referenzbild hochladen</button>
-    <input type="file" id="ref-file" accept="image/*" onchange="handleRefPhoto(this)"/>
-    <div id="ref-preview-wrap" style="display:none;margin-bottom:12px">
-      <img id="ref-preview" style="width:100%;border-radius:var(--rs);aspect-ratio:3/4;object-fit:cover"/>
+    <!-- Eigenes Bild hochladen -->
+    <div style="margin-bottom:12px">
+      <input type="file" id="ref-file" accept="image/*" onchange="handleZielbildUpload(this)" style="display:none"/>
+      <button class="btn btn-outline btn-full" style="height:44px" onclick="document.getElementById('ref-file').click()">
+        📤 Eigenes Bild hochladen
+      </button>
     </div>
 
-    <div class="lbl">Farbstufe (1–10)</div>
-    <div class="slider-wrap">
-      <div class="slider-row">
-        <span class="slider-val" id="level-val">7</span>
-        <input type="range" min="1" max="10" value="7" oninput="updateSlider(this)" style="--pct:67%">
+    <!-- Bild-Grid -->
+    <div id="ziel-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:12px">
+      <!-- Wird per JS gefüllt -->
+      <div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--muted);font-size:13px" id="ziel-empty">
+        Noch keine Bilder — lade eigene hoch oder füge Erfolgsfotos aus der Kundenkartei hinzu.
       </div>
-      <div class="slider-lbls"><span>1 Schwarz</span><span>5 Mittel</span><span>10 Hellstes</span></div>
     </div>
 
-    <div class="lbl">Farbpaletten</div>
-    <div class="chip-grid">
-      <div class="chip selected" onclick="selectColor(this,'Kühles Blond','linear-gradient(135deg,#D4B89C,#C4A07A)')"><span class="chip-dot" style="background:#D4B89C"></span><span class="chip-name">Kühles Blond</span></div>
-      <div class="chip" onclick="selectColor(this,'Warmes Braun','linear-gradient(135deg,#8B5E3C,#6B4226)')"><span class="chip-dot" style="background:#8B5E3C"></span><span class="chip-name">Warmes Braun</span></div>
-      <div class="chip" onclick="selectColor(this,'Intensivrot','linear-gradient(135deg,#C0392B,#922B21)')"><span class="chip-dot" style="background:#C0392B"></span><span class="chip-name">Intensivrot</span></div>
-      <div class="chip" onclick="selectColor(this,'Aschebraun','linear-gradient(135deg,#7D6B5D,#5D4E44)')"><span class="chip-dot" style="background:#7D6B5D"></span><span class="chip-name">Aschebraun</span></div>
-      <div class="chip" onclick="selectColor(this,'Pfirsich','linear-gradient(135deg,#FFBE98,#E8996B)')"><span class="chip-dot" style="background:#FFBE98"></span><span class="chip-name">Pfirsich</span></div>
-      <div class="chip" onclick="selectColor(this,'Mitternacht','linear-gradient(135deg,#1A3A5C,#0F2340)')"><span class="chip-dot" style="background:#1A3A5C"></span><span class="chip-name">Mitternacht</span></div>
+    <!-- Ausgewähltes Bild Vorschau -->
+    <div id="ziel-selected-wrap" style="display:none;margin-bottom:12px">
+      <div class="lbl" style="margin-top:0">Ausgewähltes Zielbild</div>
+      <div style="position:relative;display:inline-block;width:100%">
+        <img id="ziel-selected-img" style="width:100%;border-radius:var(--r);aspect-ratio:3/4;object-fit:cover;border:3px solid var(--pink)"/>
+        <button onclick="clearZielbild()" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:14px">✕</button>
+      </div>
     </div>
 
-    <div class="lbl">Haarzustand</div>
-    <div class="seg" id="target-state">
-      <button class="seg-btn active" onclick="selectSeg(this,'target-state')">Natur</button>
-      <button class="seg-btn" onclick="selectSeg(this,'target-state')">Gefärbt</button>
-      <button class="seg-btn" onclick="selectSeg(this,'target-state')">Gebleicht</button>
+    <input type="hidden" id="ref-data"/>
+    <div class="divider"></div>
+    <button class="btn btn-pink btn-full" onclick="proceedToZielDetail()">Weiter → Farbstruktur</button>
+    <button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="proceedToZielDetail()">Überspringen</button>
+    <div style="height:24px"></div>
+  </div>
+</section>
+
+<!-- ══════════════════ ZIELFARBE SCREEN 2: FARBSTRUKTUR ══════════════════ -->
+<section class="screen" id="s-target-detail">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('s-target')">← Zurück</button>
+    <span class="hdr-title">Zielfarbe definieren</span>
+    <span style="width:60px"></span>
+  </div>
+  <div class="prog"><div class="prog-fill" style="width:70%"></div></div>
+  <div class="body">
+
+    <!-- Zielbild Minivorschau -->
+    <div id="ziel-mini-wrap" style="display:none;margin-bottom:16px;display:flex;align-items:center;gap:12px">
+      <img id="ziel-mini-img" style="width:56px;height:56px;border-radius:8px;object-fit:cover;border:2px solid var(--pink)"/>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--mid)">Zielbild</div>
+        <button onclick="go('s-target')" style="font-size:11px;color:var(--pink);font-weight:700;background:none;border:none;cursor:pointer;padding:0">Ändern</button>
+      </div>
     </div>
 
-    <div class="lbl">Marke</div>
-    <div class="brand-grid">
-      <div class="brand-chip selected" onclick="selectBrand(this)">Wella</div>
-      <div class="brand-chip" onclick="selectBrand(this)">L'Oréal</div>
-      <div class="brand-chip" onclick="selectBrand(this)">Schwarzkopf</div>
-      <div class="brand-chip" onclick="selectBrand(this)">Redken</div>
-      <div class="brand-chip" onclick="selectBrand(this)">Olaplex</div>
-      <div class="brand-chip" onclick="selectBrand(this)">Beliebig</div>
+    <!-- Hersteller (aus Salon-Profil, read-only mit Ändern-Option) -->
+    <div class="lbl" style="margin-top:0">Hersteller</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <div class="inp" id="ziel-hersteller-display" style="flex:1;display:flex;align-items:center;height:50px;color:var(--mid);font-weight:500">Aus Salon-Profil</div>
+      <button onclick="toggleHerstellerOverride()" style="font-size:12px;font-weight:700;color:var(--pink);background:none;border:none;cursor:pointer;white-space:nowrap">Ändern</button>
     </div>
-
-    <div class="lbl">Farblinie</div>
-    <select class="inp">
-      <option>Koleston Perfect ME+</option>
-      <option>Illumina Color</option>
-      <option>Color Touch</option>
-      <option>Majirel</option>
-      <option>INOA</option>
-      <option>Igora Royal</option>
-      <option>Shades EQ</option>
+    <select class="inp" id="ziel-hersteller-override" style="display:none;margin-bottom:8px" onchange="onZielHerstellerChange()">
+      <option value="wella">Wella Professionals</option>
+      <option value="loreal">L'Oréal Professionnel</option>
+      <option value="schwarzkopf">Schwarzkopf Professional</option>
+      <option value="redken">Redken</option>
+      <option value="gold">GOLD</option>
     </select>
 
-    <div class="lbl">Entwickler-Stärke</div>
-    <div class="pill-row">
-      <div class="pill" onclick="selectPill(this)">6%</div>
-      <div class="pill selected" onclick="selectPill(this)">9%</div>
-      <div class="pill" onclick="selectPill(this)">12%</div>
-      <div class="pill" onclick="selectPill(this)">20%</div>
-      <div class="pill" onclick="selectPill(this)">30%</div>
-      <div class="pill" onclick="selectPill(this)">40%</div>
+    <!-- Farblinie -->
+    <div class="lbl">Farblinie</div>
+    <select class="inp" id="ziel-farblinie" style="margin-bottom:4px">
+      <option value="">— Bitte wählen —</option>
+    </select>
+
+    <!-- AI Status -->
+    <div id="ziel-ai-status" style="display:none;background:var(--pink-light);border:1.5px solid var(--pink-mid);border-radius:var(--rs);padding:10px 14px;margin:12px 0;font-size:13px;color:var(--pink);font-weight:600">
+      🤖 KI analysiert Zielbild…
     </div>
+
+    <!-- Farbstruktur -->
+    <div class="lbl">Farbstruktur Ziel</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Von KI aus Zielbild erkannt — kann geändert werden</div>
+    <div class="seg" id="ziel-struktur-seg">
+      <button class="seg-btn active" onclick="selectZielStruktur(this,'global')">Global</button>
+      <button class="seg-btn" onclick="selectZielStruktur(this,'highlights')">Highlights</button>
+      <button class="seg-btn" onclick="selectZielStruktur(this,'balayage')">Balayage</button>
+      <button class="seg-btn" onclick="selectZielStruktur(this,'verlauf')">Verlauf</button>
+    </div>
+
+    <!-- Dynamische Ziel-Farbblöcke -->
+    <div id="ziel-farbbloecke" style="margin-top:20px"></div>
+
+    <input type="hidden" id="ziel-json"/>
 
     <div class="divider"></div>
     <button class="btn btn-pink btn-full" onclick="startAnalysis()">✦ Analyse starten</button>
@@ -1340,6 +1393,7 @@ async function loadSessionsForClient(clientId) {
         hairPhoto: s.before_photo_url || '',
         afterPhoto: s.after_photo_url || '',
         resultGood: s.result_good,
+        pinnedAsZiel: s.pinned_as_ziel || false,
       }));
     }
   } catch(e) { console.error('loadSessionsForClient error:', e); }
@@ -1416,7 +1470,7 @@ function renderProfile() {
           <input type="file" id="after-sess-${s.id}" accept="image/*" onchange="saveAfterPhotoToSession(this,'${s.id}')"/>
         </div>` : `
         <div style="margin-top:8px">
-          <button class="btn btn-ghost btn-full" style="height:34px;font-size:11px" onclick="triggerAfterGallery('after-sess-upd-${s.id}')">🔄 Ergebnis-Foto ersetzen</button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px"><button class="btn btn-ghost btn-full" style="height:34px;font-size:11px" onclick="triggerAfterGallery('after-sess-upd-${s.id}')">🔄 Ersetzen</button><button class="btn btn-outline btn-full" style="height:34px;font-size:11px;${s.pinnedAsZiel?'border-color:var(--pink);color:var(--pink)':''}" onclick="togglePinZielbild('${s.id}')">📌 ${s.pinnedAsZiel?'Gepinnt':'Pinnen'}</button></div>
           <input type="file" id="after-sess-upd-${s.id}" accept="image/*" onchange="saveAfterPhotoToSession(this,'${s.id}')"/>
         </div>`}
 
@@ -2526,11 +2580,15 @@ function renderAccountScreen() {
           f('acc-zip', data.zip);
           const countryEl = document.getElementById('acc-country');
           if (countryEl && data.country) countryEl.value = data.country;
+          const hEl = document.getElementById('acc-hersteller'); if (hEl && data.preferred_brand) hEl.value = data.preferred_brand;
           const listedCb = document.getElementById('acc-salon-listed');
           if (listedCb) {
             listedCb.checked = data.listed_in_directory || false;
             toggleAccountAddressFields(listedCb.checked);
           }
+          // Show Zielbild section
+          const zielSection = document.getElementById('account-zielbild-section');
+          if (zielSection) { zielSection.style.display = 'block'; renderAccZielbilder(); }
         });
     }
   } else {
@@ -2629,6 +2687,7 @@ async function saveSalonSettings() {
     name: document.getElementById('acc-salon-name')?.value.trim() || currentSalon.name,
     phone: document.getElementById('acc-salon-phone')?.value.trim() || null,
     website: document.getElementById('acc-salon-website')?.value.trim() || null,
+    preferred_brand: document.getElementById('acc-hersteller')?.value || null,
     listed_in_directory: listed,
     street: street + (housenr ? ' ' + housenr : '') || null,
     zip: zip || null,
@@ -2667,6 +2726,8 @@ go = function(screenId) {
   _goOrigAuth(screenId);
   if (screenId === 's-account') renderAccountScreen();
   if (screenId === 's-result') renderResultScreen();
+  if (screenId === 's-target') { renderZielGrid('alle'); }
+  if (screenId === 's-target-detail') { renderZielBloecke(zielCurrentStruktur); }
   if (screenId === 's-ist-detail') {
     renderIstBloecke(istCurrentStruktur);
     selectedProblems = new Set();
@@ -3155,6 +3216,245 @@ function toggleProblem(id) {
 
 /* ═══════════════════ END PROBLEMFÄLLE ═══════════════════ */
 
+/* ═══════════════════ ZIELFARBE LOGIC ═══════════════════ */
+
+const FARBLINIEN = {
+  wella:       ['Koleston Perfect ME+', 'Illumina Color', 'Color Touch', 'Blondor', 'Welloxon Perfect'],
+  loreal:      ['Majirel', 'INOA', 'Dia Richesse', 'Dia Light', 'Luo Color'],
+  schwarzkopf: ['Igora Royal', 'Igora Vibrance', 'Igora Color10', 'Blondme', 'Essensity'],
+  redken:      ['Shades EQ', 'Chromatics', 'Color Fusion', 'Flash Lift'],
+  gold:        ['GOLD Color', 'GOLD Balayage', 'GOLD Lightener']
+};
+
+let zielCurrentStruktur = 'global';
+let zielBlocks = {};
+let zielManualOverride = false;
+let zielbilder = [];
+
+function proceedToZielDetail() {
+  const refData = document.getElementById('ref-data')?.value;
+  const miniWrap = document.getElementById('ziel-mini-wrap');
+  const miniImg = document.getElementById('ziel-mini-img');
+  if (refData && miniWrap && miniImg) { miniImg.src = refData; miniWrap.style.display = 'flex'; }
+  else if (miniWrap) miniWrap.style.display = 'none';
+
+  const hersteller = currentSalon?.preferred_brand || '';
+  const display = document.getElementById('ziel-hersteller-display');
+  const override = document.getElementById('ziel-hersteller-override');
+  if (display) { display.textContent = (hersteller && NUANCEN_DB[hersteller]) ? NUANCEN_DB[hersteller].name : 'Kein Hersteller hinterlegt'; display.style.color = hersteller ? 'var(--charcoal)' : 'var(--muted)'; }
+  if (override) override.value = hersteller;
+  updateFarblinien(hersteller);
+  zielManualOverride = false; zielBlocks = {};
+  go('s-target-detail');
+  renderZielBloecke(zielCurrentStruktur);
+  if (refData && !zielManualOverride) setTimeout(() => analyzeZielbild(refData), 300);
+}
+
+function toggleHerstellerOverride() {
+  const ov = document.getElementById('ziel-hersteller-override');
+  const disp = document.getElementById('ziel-hersteller-display');
+  if (!ov) return;
+  const hidden = ov.style.display === 'none';
+  ov.style.display = hidden ? 'block' : 'none';
+  if (disp) disp.style.display = hidden ? 'none' : 'flex';
+}
+
+function onZielHerstellerChange() {
+  updateFarblinien(document.getElementById('ziel-hersteller-override')?.value || '');
+  zielManualOverride = true;
+  renderZielBloecke(zielCurrentStruktur);
+}
+
+function getActiveZielHersteller() {
+  const ov = document.getElementById('ziel-hersteller-override');
+  if (ov && ov.style.display !== 'none') return ov.value;
+  return currentSalon?.preferred_brand || '';
+}
+
+function updateFarblinien(h) {
+  const sel = document.getElementById('ziel-farblinie');
+  if (!sel) return;
+  const linien = (h && FARBLINIEN[h]) ? FARBLINIEN[h] : [];
+  sel.innerHTML = '<option value="">— Farblinie wählen —</option>' + linien.map(l => '<option>' + l + '</option>').join('');
+}
+
+function selectZielStruktur(btn, typ) {
+  document.querySelectorAll('#ziel-struktur-seg .seg-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  zielCurrentStruktur = typ; zielManualOverride = true;
+  renderZielBloecke(typ);
+}
+
+function renderZielBloecke(typ) {
+  const container = document.getElementById('ziel-farbbloecke');
+  if (!container) return;
+  const blocks = STRUKTUR_CONFIG[typ] || STRUKTUR_CONFIG.global;
+  const h = getActiveZielHersteller();
+  const nuancen = (h && NUANCEN_DB[h]) ? NUANCEN_DB[h].nuancen : [0,1,2,3,4,5,6,7,8];
+  container.innerHTML = blocks.map(block => {
+    const saved = zielBlocks[block.id] || { level: 7, nuance: 0 };
+    const pct = Math.round((saved.level - 1) / 9 * 100);
+    const code = saved.level + '.' + saved.nuance;
+    const opts = nuancen.map(n => '<option value="' + n + '"' + (n === saved.nuance ? ' selected' : '') + '>' + (n === 0 ? '0 — Natur/Rein' : '.' + n) + '</option>').join('');
+    return '<div class="ist-block">' +
+      '<div class="ist-block-header"><span class="ist-block-label">' + block.label + '</span><span class="ist-block-code" id="ziel-' + block.id + '-code">' + code + '</span></div>' +
+      '<div class="ist-block-body">' +
+        '<div class="lbl" style="margin-top:12px">Level</div>' +
+        '<div class="slider-wrap"><div class="slider-row">' +
+          '<span class="slider-val" id="ziel-' + block.id + '-lv">' + saved.level + '</span>' +
+          '<span id="ziel-' + block.id + '-ln" style="font-size:13px;font-weight:600;color:var(--mid);flex:1;margin-left:8px">' + (LEVEL_NAMES[saved.level]||'') + '</span>' +
+          '<input type="range" min="1" max="10" value="' + saved.level + '" style="--pct:' + pct + '%" oninput="onZielLvChange(this,\'' + block.id + '\')">' +
+        '</div><div class="slider-lbls"><span>1 Schwarz</span><span>5 Mittel</span><span>10 Hellstes</span></div></div>' +
+        '<div class="lbl">Nuance</div>' +
+        '<select class="inp" id="ziel-' + block.id + '-nu" onchange="onZielNuChange(this,\'' + block.id + '\')">' + opts + '</select>' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 14px;background:var(--bg);border-radius:var(--rs)">' +
+          '<span style="font-size:12px;color:var(--muted);font-weight:700">CODE:</span>' +
+          '<span style="font-size:18px;font-weight:900;color:var(--ink)" id="ziel-' + block.id + '-cd">' + code + '</span>' +
+        '</div>' +
+      '</div></div>';
+  }).join('');
+}
+
+function onZielLvChange(input, id) {
+  zielManualOverride = true;
+  const val = parseInt(input.value);
+  if (!zielBlocks[id]) zielBlocks[id] = { level: val, nuance: 0 };
+  zielBlocks[id].level = val;
+  input.style.setProperty('--pct', Math.round((val-1)/9*100) + '%');
+  const lv = document.getElementById('ziel-' + id + '-lv'); if(lv) lv.textContent = val;
+  const ln = document.getElementById('ziel-' + id + '-ln'); if(ln) ln.textContent = LEVEL_NAMES[val]||'';
+  const code = val + '.' + (zielBlocks[id].nuance||0);
+  const cd = document.getElementById('ziel-' + id + '-cd'); if(cd) cd.textContent = code;
+  const co = document.getElementById('ziel-' + id + '-code'); if(co) co.textContent = code;
+}
+
+function onZielNuChange(sel, id) {
+  zielManualOverride = true;
+  const val = parseInt(sel.value);
+  if (!zielBlocks[id]) zielBlocks[id] = { level: 7, nuance: val };
+  zielBlocks[id].nuance = val;
+  const code = (zielBlocks[id].level||7) + '.' + val;
+  const cd = document.getElementById('ziel-' + id + '-cd'); if(cd) cd.textContent = code;
+  const co = document.getElementById('ziel-' + id + '-code'); if(co) co.textContent = code;
+}
+
+async function analyzeZielbild(imageData) {
+  if (zielManualOverride) return;
+  const statusEl = document.getElementById('ziel-ai-status');
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = '🤖 KI analysiert Zielbild…'; }
+  try {
+    const result = await analyzeHairWithAI(imageData, 'soll');
+    if (result && !zielManualOverride) {
+      if (result.level) zielBlocks['block0'] = { level: Math.round(result.level), nuance: 0 };
+      renderZielBloecke(zielCurrentStruktur);
+      if (statusEl) statusEl.innerHTML = '✅ KI: Level ~' + Math.round(result.level||7) + ' erkannt';
+    }
+  } catch(e) { if (statusEl) statusEl.style.display = 'none'; }
+}
+
+function filterZielbilder(btn, typ) {
+  document.querySelectorAll('#ziel-filter-seg .seg-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderZielGrid(typ);
+}
+
+function renderZielGrid(filter) {
+  const container = document.getElementById('ziel-grid');
+  const emptyEl = document.getElementById('ziel-empty');
+  if (!container) return;
+  let imgs = [...zielbilder];
+  sessions.forEach(s => { if (s.afterPhoto && s.pinnedAsZiel) imgs.push({ id: 'sess_' + s.id, src: s.afterPhoto, type: 'ergebnis', clientName: clients.find(c=>String(c.id)===String(s.clientId))?.name||'' }); });
+  if (filter === 'ziel') imgs = imgs.filter(i => i.type === 'upload');
+  else if (filter === 'ergebnis') imgs = imgs.filter(i => i.type === 'ergebnis');
+  if (!imgs.length) { container.innerHTML = ''; if (emptyEl) emptyEl.style.display = 'block'; return; }
+  if (emptyEl) emptyEl.style.display = 'none';
+  const sel = document.getElementById('ref-data')?.value;
+  container.innerHTML = imgs.map(img =>
+    '<div onclick="selectZielbild(\'' + img.id + '\')" style="position:relative;aspect-ratio:1;cursor:pointer">' +
+    '<img src="' + img.src + '" style="width:100%;height:100%;object-fit:cover' + (img.src===sel?';outline:3px solid var(--pink);outline-offset:-3px':'') + '"/>' +
+    (img.src===sel ? '<div style="position:absolute;top:4px;right:4px;background:var(--pink);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">✓</div>' : '') +
+    (img.type==='ergebnis' ? '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);color:#fff;font-size:9px;font-weight:700;padding:3px 4px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap">✨ ' + (img.clientName||'Ergebnis') + '</div>' : '') +
+    '</div>'
+  ).join('');
+}
+
+function selectZielbild(id) {
+  const img = zielbilder.find(i => i.id === id);
+  const sessImg = id.startsWith('sess_') ? sessions.find(s => 'sess_' + s.id === id) : null;
+  const src = img?.src || sessImg?.afterPhoto;
+  if (!src) return;
+  document.getElementById('ref-data').value = src;
+  const wrap = document.getElementById('ziel-selected-wrap'); if (wrap) wrap.style.display = 'block';
+  const si = document.getElementById('ziel-selected-img'); if (si) si.src = src;
+  renderZielGrid('alle');
+}
+
+function clearZielbild() {
+  document.getElementById('ref-data').value = '';
+  const wrap = document.getElementById('ziel-selected-wrap'); if (wrap) wrap.style.display = 'none';
+  renderZielGrid('alle');
+}
+
+async function handleZielbildUpload(input) {
+  const file = input.files[0]; if (!file) return;
+  const url = await compressImage(file, 1200, 0.8);
+  const id = 'upload_' + Date.now();
+  zielbilder.unshift({ id, src: url, type: 'upload', clientName: 'Eigenes Bild' });
+  document.getElementById('ref-data').value = url;
+  const wrap = document.getElementById('ziel-selected-wrap'); if (wrap) wrap.style.display = 'block';
+  const si = document.getElementById('ziel-selected-img'); if (si) si.src = url;
+  renderZielGrid('alle');
+}
+
+function renderAccZielbilder() {
+  const grid = document.getElementById('acc-zielbilder-grid');
+  if (!grid) return;
+  if (!zielbilder.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;font-size:12px;color:var(--muted);text-align:center;padding:16px">Noch keine Zielbilder hochgeladen</div>';
+    return;
+  }
+  grid.innerHTML = zielbilder.filter(z => z.type === 'upload').map(img =>
+    '<div style="position:relative;aspect-ratio:1">' +
+    '<img src="' + img.src + '" style="width:100%;height:100%;object-fit:cover;border-radius:4px"/>' +
+    '<button onclick="removeZielbild(\'' + img.id + '\')" style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:11px;line-height:1">✕</button>' +
+    '</div>'
+  ).join('') || '<div style="grid-column:1/-1;font-size:12px;color:var(--muted);text-align:center;padding:16px">Noch keine eigenen Zielbilder</div>';
+}
+
+function removeZielbild(id) {
+  zielbilder = zielbilder.filter(z => z.id !== id);
+  renderAccZielbilder();
+}
+
+async function addZielbildFromAccount(input) {
+  const file = input.files[0]; if (!file) return;
+  const url = await compressImage(file, 1200, 0.8);
+  const id = 'upload_' + Date.now();
+  zielbilder.unshift({ id, src: url, type: 'upload', clientName: 'Eigenes Bild' });
+  renderAccZielbilder();
+}
+
+
+async function togglePinZielbild(sessionId) {
+  const sess = sessions.find(s => String(s.id) === String(sessionId));
+  if (!sess) return;
+  sess.pinnedAsZiel = !sess.pinnedAsZiel;
+  // Save to Supabase
+  if (currentSalon?.id) {
+    try {
+      await sb.from('sessions').update({ pinned_as_ziel: sess.pinnedAsZiel }).eq('id', sessionId);
+    } catch(e) { console.error(e); }
+  }
+  if (viewingClient?.id) await loadSessionsForClient(viewingClient.id);
+  renderProfile();
+  // Keep session open
+  setTimeout(() => {
+    const body = document.getElementById('sb-' + sessionId);
+    if (body) body.classList.add('open');
+    const arr = document.getElementById('arr-' + sessionId);
+    if (arr) arr.textContent = '∨';
+  }, 50);
+}
 
 
 
