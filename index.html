@@ -323,7 +323,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
       Mit Google anmelden
     </button>
     <button class="btn btn-dark btn-full" onclick="go('s-register')">✦ Kostenlos registrieren</button>
-    <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:16px">14 Tage kostenlos · Keine Kreditkarte nötig</div>
+    <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:16px">3 kostenlose Analysen · Keine Kreditkarte nötig</div>
     <div style="text-align:center;margin-top:12px">
       <a style="font-size:11px;color:var(--muted);cursor:pointer" onclick="goAdminLogin()">Admin-Zugang</a>
     </div>
@@ -456,21 +456,30 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   <div class="body">
     <div style="text-align:center;margin-bottom:20px">
       <div style="font-size:18px;font-weight:800;letter-spacing:-0.3px">Wähle dein Abo</div>
-      <div style="font-size:13px;color:var(--muted);margin-top:6px">Schritt 2 von 3 · 14 Tage kostenlos testen</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:6px">Schritt 2 von 3 · Kein Abo nötig zum Starten</div>
     </div>
+    <!-- Solo -->
     <div class="plan-card selected" id="plan-solo" onclick="selectPlan('solo')">
       <div class="plan-card-name">Solo</div>
-      <div class="plan-card-price">29€ <span>/ Monat</span></div>
+      <div class="plan-card-price">39€ <span>/ Monat</span></div>
       <div class="plan-card-feat">✅ 1 Nutzer (nur du)<br>✅ Unbegrenzte Kunden<br>✅ Alle Analysen & Farbdatenbank<br>✅ KI-Formelberechnung<br>❌ Kein Team-Zugang</div>
     </div>
+    <!-- Team S -->
     <div class="plan-card" id="plan-team" onclick="selectPlan('team')">
-      <div class="plan-badge">EMPFOHLEN</div>
-      <div class="plan-card-name">Team</div>
-      <div class="plan-card-price">69€ <span>/ Monat</span></div>
-      <div class="plan-card-feat">✅ Unbegrenzte Mitarbeiter<br>✅ Alle sehen Salon-Kunden<br>✅ Team-Einladungen per E-Mail<br>✅ Alle Analysen & Farbdatenbank<br>✅ KI-Formelberechnung</div>
+      <div class="plan-badge">BELIEBT</div>
+      <div class="plan-card-name">Team S</div>
+      <div class="plan-card-price">99€ <span>/ Monat</span></div>
+      <div class="plan-card-feat">✅ Bis zu 4 Nutzer inkl. Inhaber<br>✅ Alle sehen Salon-Kunden<br>✅ Team-Einladungen per E-Mail<br>✅ Alle Analysen & Farbdatenbank<br>✅ KI-Formelberechnung</div>
+    </div>
+    <!-- Team L -->
+    <div class="plan-card" id="plan-team-l" onclick="selectPlan('team_l')">
+      <div class="plan-badge" style="background:var(--ink)">STUDIO</div>
+      <div class="plan-card-name">Team L</div>
+      <div class="plan-card-price">199€ <span>/ Monat</span></div>
+      <div class="plan-card-feat">✅ Bis zu 10 Nutzer inkl. Inhaber<br>✅ Alle sehen Salon-Kunden<br>✅ Team-Einladungen per E-Mail<br>✅ Alle Analysen & Farbdatenbank<br>✅ KI-Formelberechnung<br>✅ Prioritäts-Support</div>
     </div>
     <div style="font-size:12px;color:var(--muted);text-align:center;margin:12px 0">Monatlich abrechenbar · Jederzeit kündbar</div>
-    <button class="btn btn-pink btn-full" onclick="completeOnboarding()">14 Tage kostenlos starten →</button>
+    <button class="btn btn-pink btn-full" onclick="completeOnboarding()">Abo aktivieren →</button>
     <div style="display:flex;align-items:center;gap:12px;margin:14px 0"><div style="flex:1;height:1px;background:var(--border)"></div><span style="font-size:11px;color:var(--muted);font-weight:600">ODER</span><div style="flex:1;height:1px;background:var(--border)"></div></div>
     <button class="btn btn-outline btn-full" onclick="go('s-voucher')">🎁 Gutschein-Code einlösen</button>
     <div style="height:24px"></div>
@@ -610,28 +619,84 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 
 <!-- ══════════════════ LANDING ══════════════════ -->
 <section class="screen" id="s-landing">
-  <div class="landing-hero">
-    <img class="hero-img" src="hero.jpg" alt="Friseursalon" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(0.45) saturate(0.85);"/>
+  <!-- Hero — großes Bild oben, Content darunter -->
+  <div class="landing-hero" style="position:relative;height:56vh;min-height:280px;max-height:400px;overflow:hidden;flex-shrink:0">
+    <img class="hero-img" src="hero.jpg" alt="Friseursalon" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;filter:brightness(0.5) saturate(0.8);"/>
     <div class="hero-noise"></div>
     <div class="hero-gradient"></div>
-    <div class="hero-content">
-      <div class="hero-logo">Color<span>Mix</span>AI</div>
-      <div class="hero-badge"><div class="hero-badge-dot"></div><span>KI-GESTÜTZT · FÜR PROFIS</span></div>
-      <div class="hero-headline">Die perfekte<br><em>Farbformel</em>,<br>in Sekunden.</div>
-      <div class="hero-sub">Foto aufnehmen, Zielfarbe definieren — ColorMixAI berechnet die exakte Formel für alle großen Marken.</div>
+    <!-- Logo oben links -->
+    <div style="position:absolute;top:20px;left:24px;z-index:3;font-family:'Outfit',sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.5px;color:#fff">Color<span style="color:var(--pink)">Mix</span>AI</div>
+    <!-- Content unten links -->
+    <div style="position:absolute;bottom:28px;left:24px;right:24px;z-index:3">
+      <div class="hero-badge" style="margin-bottom:12px"><div class="hero-badge-dot"></div><span>KI-GESTÜTZT · FÜR PROFIS</span></div>
+      <div class="hero-headline" style="font-size:36px">Die perfekte<br><em>Farbformel</em>.</div>
     </div>
   </div>
-  <div class="landing-bottom">
+
+  <!-- Content unter dem Bild -->
+  <div style="flex:1;overflow-y:auto;background:var(--surface)">
     <div id="landing-user-bar"></div>
-    <div class="landing-cta-row">
-      <button class="btn btn-pink btn-full" onclick="go('s-select-client')">Analyse starten</button>
-      <button class="btn btn-outline" style="min-width:90px" onclick="go('s-clients')">Kunden</button>
+
+    <!-- Logged in: Aktions-Buttons -->
+    <div id="landing-loggedin" style="display:none;padding:20px 20px 0">
+      <button class="btn btn-pink btn-full" onclick="go('s-select-client')" style="margin-bottom:8px;height:52px;font-size:16px;font-weight:800">✦ Neue Analyse starten</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px">
+        <button class="btn btn-outline btn-full" style="height:44px;font-size:12px;font-weight:700" onclick="go('s-clients')">👥 Kunden</button>
+        <button class="btn btn-outline btn-full" style="height:44px;font-size:12px;font-weight:700" onclick="go('s-account')">👤 Konto</button>
+        <button class="btn btn-outline btn-full" style="height:44px;font-size:12px;font-weight:700" onclick="openTeam()">🏢 Team</button>
+      </div>
     </div>
-    <div style="display:flex;gap:8px;margin-top:4px">
-      <button class="btn btn-ghost btn-full" style="height:36px;font-size:12px" onclick="go('s-account')">👤 Konto</button>
-      <button class="btn btn-ghost btn-full" style="height:36px;font-size:12px" onclick="openTeam()">👥 Team</button>
+
+    <!-- Nicht eingeloggt: CTA -->
+    <div id="landing-loggedout" style="display:none;padding:20px">
+      <div style="font-size:14px;color:var(--mid);line-height:1.7;margin-bottom:20px">
+        ColorMixAI erkennt die IST-Haarfarbe, vergleicht sie mit deiner Zielfarbe und berechnet die exakte Formel — für Wella, L'Oréal, Schwarzkopf, Redken, GOLD und mehr.
+      </div>
+      <button class="btn btn-pink btn-full" onclick="go('s-register')" style="height:52px;font-size:15px;font-weight:800;margin-bottom:10px">✦ Kostenlos testen →</button>
+      <button class="btn btn-outline btn-full" onclick="go('s-login')" style="margin-bottom:16px">Bereits registriert? Einloggen</button>
+      <div style="font-size:11px;color:var(--muted);text-align:center">3 kostenlose Analysen · Kein Abo nötig · Jederzeit kündbar</div>
     </div>
-    <div class="landing-note" onclick="adminTap()" style="cursor:default;user-select:none">Wella · L'Oréal · Schwarzkopf · Redken und mehr</div>
+
+    <!-- Features -->
+    <div style="padding:0 20px 16px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+        <div style="background:var(--bg);border-radius:var(--r);padding:14px">
+          <div style="font-size:22px;margin-bottom:4px">⚡</div>
+          <div style="font-size:13px;font-weight:800;margin-bottom:3px">In Sekunden</div>
+          <div style="font-size:11px;color:var(--muted)">Formel berechnet in unter 20 Sek.</div>
+        </div>
+        <div style="background:var(--bg);border-radius:var(--r);padding:14px">
+          <div style="font-size:22px;margin-bottom:4px">🎨</div>
+          <div style="font-size:13px;font-weight:800;margin-bottom:3px">500+ Farbtöne</div>
+          <div style="font-size:11px;color:var(--muted)">Alle großen Marken</div>
+        </div>
+        <div style="background:var(--bg);border-radius:var(--r);padding:14px">
+          <div style="font-size:22px;margin-bottom:4px">📋</div>
+          <div style="font-size:13px;font-weight:800;margin-bottom:3px">Kundenkartei</div>
+          <div style="font-size:11px;color:var(--muted)">Alle Formeln gespeichert</div>
+        </div>
+        <div style="background:var(--bg);border-radius:var(--r);padding:14px">
+          <div style="font-size:22px;margin-bottom:4px">🧠</div>
+          <div style="font-size:13px;font-weight:800;margin-bottom:3px">Lernende KI</div>
+          <div style="font-size:11px;color:var(--muted)">Wird mit jeder Analyse besser</div>
+        </div>
+      </div>
+
+      <!-- Marken -->
+      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:8px">UNTERSTÜTZTE MARKEN</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px">
+        <span style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;font-weight:700">Wella</span>
+        <span style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;font-weight:700">L'Oréal</span>
+        <span style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;font-weight:700">Schwarzkopf</span>
+        <span style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;font-weight:700">Redken</span>
+        <span style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;font-weight:700">GOLD</span>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="padding:0 20px 32px;text-align:center" onclick="adminTap()">
+      <div style="font-size:11px;color:var(--muted)">© 2026 ColorMixAI · Für professionelle Friseure</div>
+    </div>
   </div>
 </section>
 
@@ -1908,6 +1973,17 @@ function resetPhotoPreview(id) {
 
 /* ═══════════════════ ANALYSIS ═══════════════════ */
 async function startAnalysis() {
+  // Check free tier limit
+  if (currentSalon?.plan_status === 'free_tier' || currentSalon?.plan_status === 'trial') {
+    const sessionCount = sessions.filter(s => s.clientId || s.clientId === null).length;
+    if (sessionCount >= 3) {
+      go('s-onboarding');
+      setTimeout(() => {
+        alert('Du hast deine 3 kostenlosen Analysen verwendet. Bitte wähle ein Abo um weiterzumachen.');
+      }, 300);
+      return;
+    }
+  }
   go('s-analysis');
   const steps=[{d:'d1',t:'t1',c:'c1'},{d:'d2',t:'t2',c:'c2'},{d:'d3',t:'t3',c:'c3'},{d:'d4',t:'t4',c:'c4'}];
   steps.forEach(s=>{document.getElementById(s.d).className='dot';document.getElementById(s.t).className='step-txt';document.getElementById(s.c).className='step-chk';});
@@ -2664,16 +2740,26 @@ async function enforceSessionLimit(session) {
 
 /* ── User-Bar auf Startseite ── */
 function renderLandingUserBar() {
+  // Show correct landing section
+  const loggedIn = document.getElementById('landing-loggedin');
+  const loggedOut = document.getElementById('landing-loggedout');
+  if (currentUser) {
+    if (loggedIn) loggedIn.style.display = 'block';
+    if (loggedOut) loggedOut.style.display = 'none';
+  } else {
+    if (loggedIn) loggedIn.style.display = 'none';
+    if (loggedOut) loggedOut.style.display = 'block';
+  }
   const el = document.getElementById('landing-user-bar');
   if (!currentUser || !el) return;
   const initial = (currentUser.email || 'U')[0].toUpperCase();
   const plan = currentSalon?.plan || 'solo';
   const planLabel = plan === 'team' ? 'Team' : 'Solo';
-  const isTrial = currentSalon?.plan_status === 'trial';
+  const isFree = currentSalon?.plan_status === 'free_tier';
   el.innerHTML = `<div class="user-bar">
     <div class="user-bar-avatar">${initial}</div>
     <div class="user-bar-name">${currentSalon?.name || currentUser.email}</div>
-    <span class="user-bar-plan">${planLabel}${isTrial?' · Trial':''}</span>
+    <span class="user-bar-plan">${planLabel}${isFree?' · Testversion':''}</span>
   </div>`;
 }
 
@@ -2759,7 +2845,7 @@ async function completeOnboarding() {
     name: salonName,
     owner_id: currentUser.id,
     plan: selectedPlan,
-    plan_status: 'trial',
+    plan_status: 'free_tier',
     street: ob.street || null,
     zip: ob.zip || null,
     city: ob.city || null,
@@ -2768,7 +2854,7 @@ async function completeOnboarding() {
     listed_in_directory: ob.listed || false,
     lat, lng,
   }).select().single();
-  btn.textContent = '14 Tage kostenlos starten →'; btn.disabled = false;
+  btn.textContent = 'Abo aktivieren →'; btn.disabled = false;
   if (error) { alert('Fehler: ' + error.message); return; }
   currentSalon = salon;
   currentSalon.role = 'owner';
@@ -4416,19 +4502,35 @@ async function mlLoadGallery(filter) {
   grid.style.gap = '';
   grid.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Lade…</div>';
   try {
+    // First check if table exists at all
+    const { data: check, error: checkErr } = await sb.from('ml_training_images').select('id').limit(1);
+    if (checkErr) {
+      grid.innerHTML = '<div style="padding:16px;color:var(--danger);font-size:13px">⚠️ Tabelle fehlt — bitte ml_training_schema.sql in Supabase ausführen!<br><small>' + checkErr.message + '</small></div>';
+      return;
+    }
+    
     let q = sb.from('ml_training_images')
       .select('id, strukturtyp, quality_score, is_verified, notes, source, image_base64')
       .order('created_at', {ascending: false})
       .limit(60);
     if (filter) q = q.eq('strukturtyp', filter);
-    const {data: images} = await q;
+    const {data: images, error: loadErr} = await q;
+    
+    if (loadErr) {
+      grid.innerHTML = '<div style="padding:16px;color:var(--danger);font-size:13px">❌ Fehler: ' + loadErr.message + '</div>';
+      return;
+    }
 
     if (!images?.length) {
       grid.innerHTML = '';
-      if (empty) empty.style.display = 'block';
+      if (empty) {
+        empty.style.display = 'block';
+        empty.textContent = 'Noch keine Trainingsbilder in der Datenbank. Lade das erste Bild im "+ Neu" Tab hoch.';
+      }
       return;
     }
     if (empty) empty.style.display = 'none';
+    console.log('✅ Loaded ' + images.length + ' training images');
 
     // Cache images locally for display
     images.forEach(function(img) {
@@ -4436,6 +4538,8 @@ async function mlLoadGallery(filter) {
         mlTrainingImages.push({ id: img.id, src: img.image_base64 || '', strukturtyp: img.strukturtyp, quality_score: img.quality_score });
       }
     });
+
+    const imageIds = images.map(function(i){return i.id;});
     const {data: values} = await sb.from('ml_training_values')
       .select('*')
       .in('image_id', imageIds);
