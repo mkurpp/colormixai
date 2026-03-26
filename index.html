@@ -1387,41 +1387,63 @@ async function saveAfterPhotoToSession(input, sessionId) {
   const file = input.files[0];
   if (!file) return;
 
-  // Show loading state
-  const btn = input.previousElementSibling || input.parentElement?.querySelector('button');
+  // Compress image before saving (max 800px, 70% quality)
+  const dataUrl = await compressImage(file, 800, 0.7);
 
-  const reader = new FileReader();
-  reader.onload = async e => {
-    const dataUrl = e.target.result;
+  // Update local sessions array
+  const sess = sessions.find(s => String(s.id) === String(sessionId));
+  if (sess) sess.afterPhoto = dataUrl;
 
-    // Update in local sessions array (try both string and original ID)
-    const sess = sessions.find(s => String(s.id) === String(sessionId));
-    if (sess) sess.afterPhoto = dataUrl;
+  // Show immediately in UI without waiting for Supabase
+  renderProfile();
+  setTimeout(() => {
+    const body = document.getElementById('sb-' + sessionId);
+    if (body) body.classList.add('open');
+    const arr = document.getElementById('arr-' + sessionId);
+    if (arr) arr.textContent = '∨';
+  }, 50);
 
-    // Save to Supabase
-    if (currentSalon?.id) {
-      try {
-        await sb.from('sessions')
-          .update({ after_photo_url: dataUrl })
-          .eq('id', sessionId);
-      } catch(err) { console.error('After photo save error:', err); }
-    }
+  // Save to Supabase in background
+  if (currentSalon?.id) {
+    try {
+      const { error } = await sb.from('sessions')
+        .update({ after_photo_url: dataUrl })
+        .eq('id', sessionId);
+      if (error) console.error('After photo save error:', error);
+      else {
+        // Reload to confirm saved
+        await loadSessionsForClient(viewingClient.id);
+        renderProfile();
+        setTimeout(() => {
+          const body = document.getElementById('sb-' + sessionId);
+          if (body) body.classList.add('open');
+          const arr = document.getElementById('arr-' + sessionId);
+          if (arr) arr.textContent = '∨';
+        }, 50);
+      }
+    } catch(err) { console.error('After photo save error:', err); }
+  }
+}
 
-    // Force reload sessions from DB for this client then re-render
-    if (viewingClient?.id) {
-      await loadSessionsForClient(viewingClient.id);
-    }
-    renderProfile();
-
-    // Keep the session body open after re-render
-    setTimeout(() => {
-      const body = document.getElementById('sb-' + sessionId);
-      if (body) body.classList.add('open');
-      const arr = document.getElementById('arr-' + sessionId);
-      if (arr) arr.textContent = '∨';
-    }, 50);
-  };
-  reader.readAsDataURL(file);
+/* ── Bild komprimieren ── */
+function compressImage(file, maxPx, quality) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if (w > h && w > maxPx) { h = Math.round(h * maxPx / w); w = maxPx; }
+        else if (h > maxPx) { w = Math.round(w * maxPx / h); h = maxPx; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 async function saveSessionFeedback(sessionId, good) {
@@ -1465,29 +1487,22 @@ function triggerGallery(inputId) {
   inp.click();
 }
 
-function handlePhoto(input, previewId, dataId) {
+async function handlePhoto(input, previewId, dataId) {
   const file = input.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const url = e.target.result;
-    const prev = document.getElementById(previewId);
-    prev.classList.add('has-photo');
-    prev.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover"/>`;
-    if (dataId) document.getElementById(dataId).value = url;
-  };
-  reader.readAsDataURL(file);
+  const url = await compressImage(file, 1200, 0.8);
+  const prev = document.getElementById(previewId);
+  prev.classList.add('has-photo');
+  prev.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover"/>`;
+  if (dataId) document.getElementById(dataId).value = url;
 }
 
-function handleRefPhoto(input) {
+async function handleRefPhoto(input) {
   const file = input.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    document.getElementById('ref-preview').src = e.target.result;
-    document.getElementById('ref-preview-wrap').style.display = 'block';
-  };
-  reader.readAsDataURL(file);
+  const url = await compressImage(file, 800, 0.8);
+  document.getElementById('ref-preview').src = url;
+  document.getElementById('ref-preview-wrap').style.display = 'block';
 }
 
 /* ═══════════════════ UI HELPERS ═══════════════════ */
@@ -2140,7 +2155,7 @@ async function loadSalon(retries = 3) {
   for (let i = 0; i < retries; i++) {
     try {
       const { data, error } = await sb.from('salon_members')
-        .select('salon_id, role, salons(id, name, plan, plan_status, trial_ends_at, street, zip, city)')
+        .select('salon_id, role, salons(id, name, plan, plan_status, trial_ends_at, street, zip, city, phone, website, listed_in_directory, lat, lng)')
         .eq('user_id', currentUser.id)
         .eq('status', 'active')
         .maybeSingle(); // maybeSingle statt single — kein Fehler wenn leer
@@ -2418,20 +2433,40 @@ function renderAccountScreen() {
     if (settingsEl) settingsEl.style.display = currentSalon.role === 'owner' ? 'block' : 'none';
     if (noSalonEl) noSalonEl.style.display = 'none';
 
-    // Pre-fill fields
+    // Pre-fill fields — reload fresh from Supabase first
     if (currentSalon.role === 'owner') {
-      const f = (id, val) => { const el = document.getElementById(id); if(el) el.value = val||''; };
-      f('acc-salon-name', currentSalon.name);
-      f('acc-salon-phone', currentSalon.phone);
-      f('acc-salon-website', currentSalon.website);
-      f('acc-street', currentSalon.street);
-      f('acc-city', currentSalon.city);
-      f('acc-zip', currentSalon.zip);
-      const listedCb = document.getElementById('acc-salon-listed');
-      if (listedCb) {
-        listedCb.checked = currentSalon.listed_in_directory || false;
-        toggleAccountAddressFields(listedCb.checked);
-      }
+      // Reload full salon data directly from DB
+      sb.from('salons')
+        .select('*')
+        .eq('id', currentSalon.id)
+        .single()
+        .then(({ data }) => {
+          if (!data) return;
+          // Merge into currentSalon
+          Object.assign(currentSalon, data);
+          const f = (id, val) => { const el = document.getElementById(id); if(el) el.value = val||''; };
+          f('acc-salon-name', data.name);
+          f('acc-salon-phone', data.phone);
+          f('acc-salon-website', data.website);
+          // Split street into street + housenr if combined
+          const streetFull = data.street || '';
+          const match = streetFull.match(/^(.+?)\s+(\d+\S*)$/);
+          if (match) {
+            f('acc-street', match[1]);
+            f('acc-housenr', match[2]);
+          } else {
+            f('acc-street', streetFull);
+          }
+          f('acc-city', data.city);
+          f('acc-zip', data.zip);
+          const countryEl = document.getElementById('acc-country');
+          if (countryEl && data.country) countryEl.value = data.country;
+          const listedCb = document.getElementById('acc-salon-listed');
+          if (listedCb) {
+            listedCb.checked = data.listed_in_directory || false;
+            toggleAccountAddressFields(listedCb.checked);
+          }
+        });
     }
   } else {
     document.getElementById('account-plan').innerHTML = '<div style="font-size:13px;color:var(--muted)">Noch kein Abo aktiv</div>';
