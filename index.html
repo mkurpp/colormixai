@@ -378,67 +378,62 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 <section class="screen" id="s-onboarding-salon">
   <div class="hdr">
     <button class="hdr-back" onclick="doLogout()" style="font-size:12px;color:var(--muted)">Ausloggen</button>
-    <span class="hdr-title">Dein Salon</span>
+    <span class="hdr-title">Dein Profil</span>
     <span style="width:60px"></span>
   </div>
   <div class="prog"><div class="prog-fill" style="width:33%"></div></div>
   <div class="body">
     <div style="text-align:center;margin-bottom:24px">
       <div style="font-size:32px;margin-bottom:8px">✂️</div>
-      <div style="font-size:18px;font-weight:800;letter-spacing:-0.3px">Erzähl uns von deinem Salon</div>
-      <div style="font-size:13px;color:var(--muted);margin-top:6px">Schritt 1 von 3</div>
+      <div style="font-size:18px;font-weight:800;letter-spacing:-0.3px">Wie arbeitest du?</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:6px">Schritt 1 von 3 — alles optional</div>
     </div>
 
-    <div class="lbl" style="margin-top:0">Salon-Name *</div>
-    <input class="inp" type="text" placeholder="z.B. Salon Bella" id="ob-salon-name" style="margin-bottom:4px" oninput="clearFieldError('ob-salon-name')"/>
-    <div class="field-error" id="err-salon-name"></div>
+    <div class="lbl" style="margin-top:0">Name / Salon-Name</div>
+    <input class="inp" type="text" placeholder="z.B. Salon Bella oder Sarah K." id="ob-salon-name" style="margin-bottom:4px"/>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Mobil tätig? Kein Salon-Name nötig — einfach deinen Namen eintragen.</div>
 
-    <div class="lbl">Adresse *</div>
+    <input class="inp" type="tel" placeholder="Telefon (optional)" id="ob-phone" style="margin-bottom:8px"/>
+    <input class="inp" type="url" placeholder="Webseite (optional)" id="ob-website"/>
 
-    <!-- Autocomplete-Suchfeld -->
-    <div style="position:relative;margin-bottom:8px">
-      <input class="inp" type="text" placeholder="🔍 Adresse suchen…" id="ob-address-search"
-        oninput="searchAddress(this.value)"
-        autocomplete="off"
-        style="padding-right:40px"/>
-      <div id="ob-address-suggestions" style="display:none;position:absolute;top:52px;left:0;right:0;background:#fff;border:2px solid var(--pink);border-radius:var(--rs);z-index:50;box-shadow:var(--sh-md);max-height:200px;overflow-y:auto"></div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-bottom:8px">
-      <input class="inp" type="text" placeholder="Straße *" id="ob-street" oninput="clearFieldError('ob-street')"/>
-      <input class="inp" type="text" placeholder="Nr. *" id="ob-housenr" oninput="clearFieldError('ob-housenr')"/>
-    </div>
-    <div class="field-error" id="err-street"></div>
-
-    <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-bottom:8px">
-      <input class="inp" type="text" placeholder="PLZ *" id="ob-zip" oninput="validateZip(this)" maxlength="5"/>
-      <input class="inp" type="text" placeholder="Stadt *" id="ob-city" oninput="clearFieldError('ob-city')"/>
-    </div>
-    <div class="field-error" id="err-zip"></div>
-
-    <!-- Land — nur Deutschland -->
-    <select class="inp" id="ob-country" style="margin-bottom:8px">
-      <option value="DE" selected>🇩🇪 Deutschland</option>
-      <option value="AT">🇦🇹 Österreich</option>
-      <option value="CH">🇨🇭 Schweiz</option>
-    </select>
-
-    <input class="inp" type="url" placeholder="Webseite (optional)" id="ob-website" style="margin-bottom:8px"/>
-    <input class="inp" type="tel" placeholder="Telefon (optional)" id="ob-phone"/>
-
-    <!-- Directory opt-in -->
-    <div style="background:var(--pink-light);border:2px solid var(--pink-mid);border-radius:var(--rs);padding:14px;margin-top:16px">
+    <!-- Directory opt-in — togglet Adressfelder -->
+    <div style="background:var(--pink-light);border:2px solid var(--pink-mid);border-radius:var(--rs);padding:14px;margin-top:20px" id="ob-directory-wrap">
       <div style="display:flex;align-items:flex-start;gap:12px">
-        <input type="checkbox" id="ob-directory" style="width:20px;height:20px;margin-top:2px;accent-color:var(--pink);flex-shrink:0" checked/>
+        <input type="checkbox" id="ob-directory" style="width:20px;height:20px;margin-top:2px;accent-color:var(--pink);flex-shrink:0"
+          onchange="toggleAddressFields(this.checked)"/>
         <div>
-          <div style="font-size:13px;font-weight:800;margin-bottom:4px">📍 Salon auf ColorMixAI-Karte listen</div>
-          <div style="font-size:12px;color:var(--mid);line-height:1.6">Dein Salon wird auf unserer öffentlichen Salon-Karte angezeigt — kostenlos. Kundinnen in deiner Nähe finden dich einfacher.</div>
+          <div style="font-size:13px;font-weight:800;margin-bottom:4px">📍 Auf ColorMixAI-Karte listen</div>
+          <div style="font-size:12px;color:var(--mid);line-height:1.6">Dein Salon wird kostenlos auf unserer Karte angezeigt — Kundinnen in deiner Nähe finden dich einfacher. Nur wenn du einen festen Standort hast.</div>
         </div>
       </div>
     </div>
 
+    <!-- Adressfelder — nur sichtbar wenn Karte gewünscht -->
+    <div id="ob-address-wrap" style="display:none;margin-top:16px">
+      <div class="lbl" style="margin-top:0">Adresse</div>
+
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-bottom:8px">
+        <input class="inp" type="text" placeholder="Straße" id="ob-street" oninput="onAddressInput()"/>
+        <input class="inp" type="text" placeholder="Nr." id="ob-housenr" oninput="onAddressInput()"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-bottom:8px">
+        <input class="inp" type="text" placeholder="PLZ" id="ob-zip" oninput="onZipInput(this)" maxlength="5"/>
+        <input class="inp" type="text" placeholder="Stadt" id="ob-city" oninput="onAddressInput()"/>
+      </div>
+      <select class="inp" id="ob-country" onchange="onAddressInput()" style="margin-bottom:4px">
+        <option value="DE" selected>🇩🇪 Deutschland</option>
+        <option value="AT">🇦🇹 Österreich</option>
+        <option value="CH">🇨🇭 Schweiz</option>
+      </select>
+
+      <!-- Autocomplete erscheint UNTER den Feldern -->
+      <div id="ob-address-status" style="font-size:11px;color:var(--muted);margin-bottom:4px;min-height:16px"></div>
+      <div id="ob-address-suggestions" style="display:none;background:#fff;border:2px solid var(--pink);border-radius:var(--rs);z-index:50;box-shadow:var(--sh-md);max-height:220px;overflow-y:auto;margin-bottom:8px"></div>
+    </div>
+
     <div class="divider"></div>
     <button class="btn btn-pink btn-full" onclick="onboardingStep2()">Weiter →</button>
+    <button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="skipOnboardingSalon()">Später erledigen →</button>
     <div style="height:24px"></div>
   </div>
 </section>
@@ -523,10 +518,60 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   </div>
   <div class="body">
     <div id="account-info" style="margin-bottom:16px"></div>
+
     <div class="lbl" style="margin-top:0">Abo</div>
     <div class="admin-section" id="account-plan"></div>
-    <div class="lbl">Salon</div>
+
+    <div class="lbl">Salon / Profil</div>
     <div class="admin-section" id="account-salon"></div>
+
+    <!-- Salon-Einstellungen (nur wenn Salon vorhanden und Owner) -->
+    <div id="account-salon-settings" style="display:none;margin-top:12px">
+      <div class="lbl" style="margin-top:0">Salon-Name</div>
+      <input class="inp" type="text" id="acc-salon-name" placeholder="Salon-Name" style="margin-bottom:8px"/>
+      <div class="lbl">Telefon</div>
+      <input class="inp" type="tel" id="acc-salon-phone" placeholder="Telefon (optional)" style="margin-bottom:8px"/>
+      <div class="lbl">Webseite</div>
+      <input class="inp" type="url" id="acc-salon-website" placeholder="https://..." style="margin-bottom:12px"/>
+      <!-- Karte listing toggle -->
+      <div style="background:var(--pink-light);border:2px solid var(--pink-mid);border-radius:var(--rs);padding:14px;margin-bottom:12px">
+        <div style="display:flex;align-items:flex-start;gap:12px">
+          <input type="checkbox" id="acc-salon-listed" style="width:20px;height:20px;margin-top:2px;accent-color:var(--pink);flex-shrink:0"
+            onchange="toggleAccountAddressFields(this.checked)"/>
+          <div>
+            <div style="font-size:13px;font-weight:800;margin-bottom:4px">📍 Auf ColorMixAI-Karte anzeigen</div>
+            <div style="font-size:12px;color:var(--mid);line-height:1.5">Kostenlos auf unserer Salon-Karte listen lassen</div>
+          </div>
+        </div>
+      </div>
+      <!-- Adresse (nur wenn listing gewünscht) -->
+      <div id="acc-addr-wrap" style="display:none">
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-bottom:8px">
+          <input class="inp" type="text" id="acc-street" placeholder="Straße" oninput="onAccountAddressInput()"/>
+          <input class="inp" type="text" id="acc-housenr" placeholder="Nr." oninput="onAccountAddressInput()"/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-bottom:8px">
+          <input class="inp" type="text" id="acc-zip" placeholder="PLZ" oninput="onAccountAddressInput()" maxlength="5"/>
+          <input class="inp" type="text" id="acc-city" placeholder="Stadt" oninput="onAccountAddressInput()"/>
+        </div>
+        <select class="inp" id="acc-country" onchange="onAccountAddressInput()" style="margin-bottom:4px">
+          <option value="DE">🇩🇪 Deutschland</option>
+          <option value="AT">🇦🇹 Österreich</option>
+          <option value="CH">🇨🇭 Schweiz</option>
+        </select>
+        <div id="acc-addr-status" style="font-size:11px;color:var(--muted);margin-bottom:4px;min-height:16px"></div>
+        <div id="acc-addr-suggestions" style="display:none;background:#fff;border:2px solid var(--pink);border-radius:var(--rs);box-shadow:var(--sh-md);max-height:200px;overflow-y:auto;margin-bottom:8px"></div>
+      </div>
+      <button class="btn btn-pink btn-full" onclick="saveSalonSettings()">💾 Änderungen speichern</button>
+      <div id="acc-save-msg" style="display:none;text-align:center;font-size:13px;color:var(--success);margin-top:8px;font-weight:700">✓ Gespeichert!</div>
+    </div>
+
+    <!-- Kein Salon vorhanden -->
+    <div id="account-no-salon" style="display:none;margin-top:8px">
+      <p style="font-size:13px;color:var(--mid);margin-bottom:12px;line-height:1.6">Du hast noch kein Profil angelegt. Das kannst du jederzeit nachholen.</p>
+      <button class="btn btn-outline btn-full" onclick="go('s-onboarding-salon')">✂️ Profil anlegen</button>
+    </div>
+
     <div class="divider"></div>
     <button class="btn btn-danger btn-full" onclick="doLogout()">Ausloggen</button>
     <div style="height:24px"></div>
@@ -681,7 +726,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
     <button class="btn btn-outline btn-full" onclick="triggerGallery('ref-file')" style="margin-bottom:8px">🖼 Referenzbild hochladen</button>
     <input type="file" id="ref-file" accept="image/*" onchange="handleRefPhoto(this)"/>
     <div id="ref-preview-wrap" style="display:none;margin-bottom:12px">
-      <img id="ref-preview" style="width:100%;border-radius:var(--rs);max-height:110px;object-fit:cover"/>
+      <img id="ref-preview" style="width:100%;border-radius:var(--rs);aspect-ratio:3/4;object-fit:cover"/>
     </div>
 
     <div class="lbl">Farbstufe (1–10)</div>
@@ -1554,6 +1599,7 @@ function updateResultWithAI() {
 async function saveResult(e) {
   const btn = e.target;
   btn.textContent = 'Speichern…'; btn.disabled = true;
+  try {
 
   // Check if we should assign to a client from dropdown
   const assignSel = document.getElementById('result-assign-select');
@@ -1579,16 +1625,18 @@ async function saveResult(e) {
 
   // Save to Supabase if logged in
   if (currentSalon?.id && activeClient?.id) {
-    await sb.from('sessions').insert({
-      salon_id: currentSalon.id,
-      client_id: activeClient.id,
-      target_color: sessionData.target,
-      formula: sessionData.formula,
-      developer: sessionData.dev,
-      brand: sessionData.brand,
-      notes: sessionData.notes,
-      created_by: currentUser?.id,
-    }).catch(err => console.error('Session save error:', err));
+    try {
+      await sb.from('sessions').insert({
+        salon_id: currentSalon.id,
+        client_id: activeClient.id,
+        target_color: sessionData.target,
+        formula: sessionData.formula,
+        developer: sessionData.dev,
+        brand: sessionData.brand,
+        notes: sessionData.notes,
+        created_by: currentUser?.id,
+      });
+    } catch(err) { console.error('Session save error:', err); }
   }
 
   const lbl = activeClient ? 'Gespeichert für ' + activeClient.name + '!' : 'Gespeichert!';
@@ -1604,6 +1652,12 @@ async function saveResult(e) {
   if (fbWrap) fbWrap.style.display = 'block';
   if (newBtn) newBtn.style.display = 'none';
   setTimeout(() => { btn.textContent = '💾 In Kundenkartei speichern'; btn.style.cssText = ''; }, 3000);
+  } catch(err) {
+    console.error('saveResult error:', err);
+    btn.textContent = '💾 In Kundenkartei speichern';
+    btn.style.cssText = '';
+    btn.disabled = false;
+  }
 }
 
 /* ═══════════════════ DELETE ═══════════════════ */
@@ -2132,6 +2186,16 @@ function selectPlan(plan) {
   document.getElementById('plan-team').classList.toggle('selected', plan === 'team');
 }
 
+async function skipOnboardingSalon() {
+  // Create a minimal salon entry so the user can use the app
+  window._pendingOnboarding = {
+    name: currentUser?.email?.split('@')[0] || 'Mein Profil',
+    listed: false, street: null, zip: null, city: null, lat: null, lng: null
+  };
+  window._pendingSalonName = window._pendingOnboarding.name;
+  go('s-onboarding'); // Go to plan selection
+}
+
 async function completeOnboarding() {
   const btn = document.querySelector('#s-onboarding .btn-pink');
   btn.textContent = 'Wird eingerichtet…'; btn.disabled = true;
@@ -2256,21 +2320,159 @@ async function removeMember(userId) {
 
 /* ── KONTO-SCREEN ── */
 function renderAccountScreen() {
-  if (!currentUser || !currentSalon) return;
-  const plan = currentSalon.plan === 'team' ? 'Team' : 'Solo';
-  const status = currentSalon.plan_status === 'trial' ? '🟡 Testphase' : currentSalon.plan_status === 'active' ? '🟢 Aktiv' : '🔴 Inaktiv';
-  const trialEnd = currentSalon.trial_ends_at ? new Date(currentSalon.trial_ends_at).toLocaleDateString('de-DE') : '—';
+  if (!currentUser) return;
   document.getElementById('account-info').innerHTML = `<div class="user-bar">
     <div class="user-bar-avatar">${(currentUser.email||'U')[0].toUpperCase()}</div>
     <div style="flex:1"><div style="font-size:14px;font-weight:700">${currentUser.email}</div></div>
   </div>`;
-  document.getElementById('account-plan').innerHTML = `
-    <div style="font-size:14px;font-weight:700;margin-bottom:4px">${plan}-Abo · ${plan === 'Solo' ? '29€' : '69€'}/Monat</div>
-    <div style="font-size:12px;color:var(--mid)">${status}</div>
-    ${currentSalon.plan_status === 'trial' ? `<div style="font-size:12px;color:var(--mid);margin-top:2px">Testphase bis: ${trialEnd}</div>` : ''}`;
-  document.getElementById('account-salon').innerHTML = `
-    <div style="font-size:14px;font-weight:700">${currentSalon.name}</div>
-    <div style="font-size:12px;color:var(--mid);margin-top:2px">Rolle: ${currentSalon.role === 'owner' ? 'Inhaber' : 'Mitarbeiter'}</div>`;
+
+  if (currentSalon) {
+    const plan = currentSalon.plan === 'team' ? 'Team' : 'Solo';
+    const status = currentSalon.plan_status === 'trial' ? '🟡 Testphase' : currentSalon.plan_status === 'active' ? '🟢 Aktiv' : '🔴 Inaktiv';
+    const trialEnd = currentSalon.trial_ends_at ? new Date(currentSalon.trial_ends_at).toLocaleDateString('de-DE') : '';
+    document.getElementById('account-plan').innerHTML =
+      '<div style="font-size:14px;font-weight:700;margin-bottom:4px">' + plan + '-Abo · ' + (plan==='Solo'?'29€':'69€') + '/Monat</div>' +
+      '<div style="font-size:12px;color:var(--mid)">' + status + (trialEnd ? ' · bis ' + trialEnd : '') + '</div>';
+
+    document.getElementById('account-salon').innerHTML =
+      '<div style="font-size:14px;font-weight:700">' + currentSalon.name + '</div>' +
+      '<div style="font-size:12px;color:var(--mid);margin-top:2px">' + (currentSalon.role==='owner'?'Inhaber':'Mitarbeiter') + '</div>';
+
+    // Show edit fields only for owner
+    const settingsEl = document.getElementById('account-salon-settings');
+    const noSalonEl = document.getElementById('account-no-salon');
+    if (settingsEl) settingsEl.style.display = currentSalon.role === 'owner' ? 'block' : 'none';
+    if (noSalonEl) noSalonEl.style.display = 'none';
+
+    // Pre-fill fields
+    if (currentSalon.role === 'owner') {
+      const f = (id, val) => { const el = document.getElementById(id); if(el) el.value = val||''; };
+      f('acc-salon-name', currentSalon.name);
+      f('acc-salon-phone', currentSalon.phone);
+      f('acc-salon-website', currentSalon.website);
+      f('acc-street', currentSalon.street);
+      f('acc-city', currentSalon.city);
+      f('acc-zip', currentSalon.zip);
+      const listedCb = document.getElementById('acc-salon-listed');
+      if (listedCb) {
+        listedCb.checked = currentSalon.listed_in_directory || false;
+        toggleAccountAddressFields(listedCb.checked);
+      }
+    }
+  } else {
+    document.getElementById('account-plan').innerHTML = '<div style="font-size:13px;color:var(--muted)">Noch kein Abo aktiv</div>';
+    document.getElementById('account-salon').innerHTML = '';
+    const settingsEl = document.getElementById('account-salon-settings');
+    const noSalonEl = document.getElementById('account-no-salon');
+    if (settingsEl) settingsEl.style.display = 'none';
+    if (noSalonEl) noSalonEl.style.display = 'block';
+  }
+}
+
+function toggleAccountAddressFields(show) {
+  const wrap = document.getElementById('acc-addr-wrap');
+  if (wrap) wrap.style.display = show ? 'block' : 'none';
+}
+
+let _accAddrTimer = null;
+function onAccountAddressInput() {
+  clearTimeout(_accAddrTimer);
+  const street = (document.getElementById('acc-street')?.value||'').trim();
+  const housenr = (document.getElementById('acc-housenr')?.value||'').trim();
+  const zip = (document.getElementById('acc-zip')?.value||'').trim();
+  const city = (document.getElementById('acc-city')?.value||'').trim();
+  const country = document.getElementById('acc-country')?.value || 'DE';
+  const query = [street+(housenr?' '+housenr:''), zip, city].filter(Boolean).join(', ');
+  if (query.length < 5) return;
+  _accAddrTimer = setTimeout(() => searchAccountAddress(query, country), 700);
+}
+
+async function searchAccountAddress(query, country) {
+  const sug = document.getElementById('acc-addr-suggestions');
+  const status = document.getElementById('acc-addr-status');
+  if (!sug) return;
+  try {
+    const url = 'https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(query)+
+      '&countrycodes='+country.toLowerCase()+'&format=json&addressdetails=1&limit=4';
+    const res = await fetch(url, {headers:{'Accept-Language':'de'}});
+    const data = await res.json();
+    window._accAddrResults = data;
+    if (!data.length) { if(status) status.textContent='⚠️ Keine Treffer'; sug.style.display='none'; return; }
+    if (status) status.textContent = data.length + ' Vorschläge:';
+    sug.innerHTML = data.map((item,idx) => {
+      const a = item.address||{};
+      const line1 = [a.road,a.house_number].filter(Boolean).join(' ') || item.display_name.split(',')[0];
+      const line2 = [a.postcode,a.city||a.town||a.village].filter(Boolean).join(' ');
+      return '<div onclick="selectAccountAddress('+idx+')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #E8E8E8;font-size:13px">' +
+        '<div style="font-weight:700;color:#0A0A0A">'+line1+'</div>' +
+        '<div style="font-size:11px;color:#666;margin-top:2px">'+line2+'</div></div>';
+    }).join('');
+    sug.style.display = 'block';
+  } catch(e) {}
+}
+
+function selectAccountAddress(idx) {
+  const item = window._accAddrResults && window._accAddrResults[idx];
+  if (!item) return;
+  const a = item.address||{};
+  if (a.road) document.getElementById('acc-street').value = a.road;
+  if (a.house_number) document.getElementById('acc-housenr').value = a.house_number;
+  if (a.postcode) document.getElementById('acc-zip').value = a.postcode;
+  const city = a.city||a.town||a.village||'';
+  if (city) document.getElementById('acc-city').value = city;
+  window._accLat = parseFloat(item.lat);
+  window._accLng = parseFloat(item.lon);
+  const sug = document.getElementById('acc-addr-suggestions');
+  if (sug) sug.style.display = 'none';
+  const status = document.getElementById('acc-addr-status');
+  if (status) status.innerHTML = '<span style="color:#0A7C55;font-weight:700">✓ Adresse übernommen</span>';
+}
+
+async function saveSalonSettings() {
+  if (!currentSalon?.id) return;
+  const btn = document.querySelector('[onclick="saveSalonSettings()"]');
+  if (btn) { btn.textContent = 'Speichern…'; btn.disabled = true; }
+
+  const listed = document.getElementById('acc-salon-listed')?.checked || false;
+  const street = (document.getElementById('acc-street')?.value||'').trim();
+  const housenr = (document.getElementById('acc-housenr')?.value||'').trim();
+  const zip = (document.getElementById('acc-zip')?.value||'').trim();
+  const city = (document.getElementById('acc-city')?.value||'').trim();
+
+  // Geocode if listed and address changed
+  let lat = window._accLat || currentSalon.lat || null;
+  let lng = window._accLng || currentSalon.lng || null;
+  if (listed && street && city && !window._accLat) {
+    try {
+      const q = encodeURIComponent(street+(housenr?' '+housenr:'')+', '+zip+' '+city);
+      const res = await fetch('https://nominatim.openstreetmap.org/search?q='+q+'&format=json&limit=1');
+      const data = await res.json();
+      if (data[0]) { lat = parseFloat(data[0].lat); lng = parseFloat(data[0].lon); }
+    } catch(e) {}
+  }
+
+  const updates = {
+    name: document.getElementById('acc-salon-name')?.value.trim() || currentSalon.name,
+    phone: document.getElementById('acc-salon-phone')?.value.trim() || null,
+    website: document.getElementById('acc-salon-website')?.value.trim() || null,
+    listed_in_directory: listed,
+    street: street + (housenr ? ' ' + housenr : '') || null,
+    zip: zip || null,
+    city: city || null,
+    lat, lng,
+  };
+
+  const { error } = await sb.from('salons').update(updates).eq('id', currentSalon.id);
+  if (btn) { btn.textContent = '💾 Änderungen speichern'; btn.disabled = false; }
+
+  if (!error) {
+    Object.assign(currentSalon, updates);
+    renderLandingUserBar();
+    const msg = document.getElementById('acc-save-msg');
+    if (msg) { msg.style.display='block'; setTimeout(()=>msg.style.display='none', 3000); }
+  } else {
+    alert('Fehler: ' + error.message);
+  }
 }
 
 /* ── HILFSFUNKTIONEN ── */
@@ -2313,99 +2515,116 @@ go = function(screenId) {
 
 /* ── Onboarding Step 1 → 2 ── */
 
-/* ── Adresse Autocomplete (OpenStreetMap Nominatim) ── */
+
+/* ── Adressfelder toggle ── */
+function toggleAddressFields(show) {
+  const wrap = document.getElementById('ob-address-wrap');
+  if (wrap) wrap.style.display = show ? 'block' : 'none';
+  if (!show) { window._pendingLat = null; window._pendingLng = null; }
+}
+
+/* ── Adress-Autocomplete: reagiert auf Eingabe ── */
 let _addrTimer = null;
-function searchAddress(query) {
+function onAddressInput() {
   clearTimeout(_addrTimer);
+  const street = (document.getElementById('ob-street')?.value||'').trim();
+  const housenr = (document.getElementById('ob-housenr')?.value||'').trim();
+  const zip = (document.getElementById('ob-zip')?.value||'').trim();
+  const city = (document.getElementById('ob-city')?.value||'').trim();
+  const country = document.getElementById('ob-country')?.value || 'DE';
+  const query = [street+(housenr?' '+housenr:''), zip, city].filter(Boolean).join(', ');
+  if (query.length < 5) return;
+  const status = document.getElementById('ob-address-status');
+  if (status) status.textContent = '🔍 Suche…';
+  _addrTimer = setTimeout(() => searchAddressInline(query, country), 700);
+}
+
+function onZipInput(input) {
+  input.value = input.value.replace(/\D/g,'');
+  onAddressInput();
+}
+
+async function searchAddressInline(query, country) {
   const sug = document.getElementById('ob-address-suggestions');
-  if (!query || query.length < 4) { if(sug) sug.style.display='none'; return; }
-  _addrTimer = setTimeout(async () => {
-    try {
-      const country = document.getElementById('ob-country')?.value || 'DE';
-      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&countrycodes=${country.toLowerCase()}&format=json&addressdetails=1&limit=5`;
-      const res = await fetch(url, {headers:{'Accept-Language':'de'}});
-      const data = await res.json();
-      if (!sug) return;
-      if (!data.length) { sug.style.display='none'; return; }
-      // Store results globally for selection
-      window._addrResults = data;
-      sug.innerHTML = data.map((item, idx) => {
-        const parts = [item.address?.road, item.address?.house_number, item.address?.postcode, 
-          item.address?.city||item.address?.town||item.address?.village].filter(Boolean).join(', ');
-        return '<div onclick="selectAddressByIdx(' + idx + ')" ' +
-          'style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #E0E0E8;font-size:13px" ' +
-          '>' +
-          '📍 ' + parts + '</div>';
-      }).join('');
-      sug.style.display = 'block';
-    } catch(e) {}
-  }, 400);
+  const status = document.getElementById('ob-address-status');
+  if (!sug) return;
+  try {
+    const url = 'https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(query)+
+      '&countrycodes='+country.toLowerCase()+'&format=json&addressdetails=1&limit=4';
+    const res = await fetch(url, {headers:{'Accept-Language':'de'}});
+    const data = await res.json();
+    window._addrResults = data;
+    if (!data.length) {
+      if (status) status.textContent = '⚠️ Keine Treffer — Adresse prüfen';
+      sug.style.display = 'none'; return;
+    }
+    if (status) status.textContent = data.length + ' Vorschläge:';
+    sug.innerHTML = data.map((item,idx) => {
+      const a = item.address||{};
+      const line1 = [a.road,a.house_number].filter(Boolean).join(' ') || item.display_name.split(',')[0];
+      const line2 = [a.postcode, a.city||a.town||a.village].filter(Boolean).join(' ');
+      return '<div onclick="selectAddressByIdx('+idx+')" '+
+        'style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #E8E8E8;font-size:13px">'+
+        '<div style="font-weight:700;color:#0A0A0A">'+line1+'</div>'+
+        '<div style="font-size:11px;color:#666;margin-top:2px">'+line2+'</div>'+
+        '</div>';
+    }).join('');
+    sug.style.display = 'block';
+  } catch(e) { if(status) status.textContent=''; }
 }
 
 function selectAddressByIdx(idx) {
   const item = window._addrResults && window._addrResults[idx];
   if (!item) return;
-  document.getElementById('ob-street').value = item.address?.road || '';
-  document.getElementById('ob-housenr').value = item.address?.house_number || '';
-  document.getElementById('ob-zip').value = item.address?.postcode || '';
-  document.getElementById('ob-city').value = item.address?.city || item.address?.town || item.address?.village || '';
-  document.getElementById('ob-address-search').value = '';
+  const a = item.address||{};
+  if (a.road) document.getElementById('ob-street').value = a.road;
+  if (a.house_number) document.getElementById('ob-housenr').value = a.house_number;
+  if (a.postcode) document.getElementById('ob-zip').value = a.postcode;
+  const city = a.city||a.town||a.village||'';
+  if (city) document.getElementById('ob-city').value = city;
   window._pendingLat = parseFloat(item.lat);
   window._pendingLng = parseFloat(item.lon);
   const sug = document.getElementById('ob-address-suggestions');
   if (sug) sug.style.display = 'none';
-  ['ob-street','ob-housenr','ob-zip','ob-city'].forEach(clearFieldError);
+  const status = document.getElementById('ob-address-status');
+  if (status) status.innerHTML = '<span style="color:#0A7C55;font-weight:700">✓ Adresse übernommen</span>';
 }
 
-function selectAddress(el) { selectAddressByIdx(0); } // fallback
+function searchAddress(q) { onAddressInput(); }
+function selectAddress(el) { selectAddressByIdx(0); }
+function validateZip(input) { onZipInput(input); }
+function clearFieldError(id) {}
+function showFieldError(id, msg) { const el=document.getElementById(id); if(el) el.textContent=msg; }
 
-function validateZip(input) {
-  input.value = input.value.replace(/\D/g,'');
-  const country = document.getElementById('ob-country')?.value || 'DE';
-  const el = document.getElementById('err-zip');
-  const len = (country==='DE') ? 5 : 4;
-  if (el) el.textContent = (input.value.length > 0 && input.value.length !== len) ? `⚠️ PLZ muss ${len} Ziffern haben` : '';
-}
-
-function clearFieldError(id) {
-  const map = {'ob-salon-name':'err-salon-name','ob-street':'err-street','ob-housenr':'err-street','ob-zip':'err-zip','ob-city':'err-zip'};
-  const el = document.getElementById(map[id]||'');
-  if (el) el.textContent = '';
-}
-
-function showFieldError(errId, msg) {
-  const el = document.getElementById(errId);
-  if (el) { el.textContent = msg; el.scrollIntoView({behavior:'smooth',block:'center'}); }
-}
 
 function onboardingStep2() {
-  const name = document.getElementById('ob-salon-name').value.trim();
-  const street = document.getElementById('ob-street').value.trim();
-  const housenr = document.getElementById('ob-housenr')?.value.trim() || '';
-  const zip = document.getElementById('ob-zip').value.trim();
-  const city = document.getElementById('ob-city').value.trim();
+  const name = (document.getElementById('ob-salon-name')?.value || '').trim();
+  const listed = document.getElementById('ob-directory')?.checked || false;
+  const street = (document.getElementById('ob-street')?.value || '').trim();
+  const housenr = (document.getElementById('ob-housenr')?.value || '').trim();
+  const zip = (document.getElementById('ob-zip')?.value || '').trim();
+  const city = (document.getElementById('ob-city')?.value || '').trim();
   const country = document.getElementById('ob-country')?.value || 'DE';
 
-  let valid = true;
-  if (!name) { showFieldError('err-salon-name','⚠️ Salon-Name ist Pflicht'); valid=false; }
-  if (!street || !housenr) { showFieldError('err-street','⚠️ Straße und Hausnummer sind Pflicht'); valid=false; }
-  if (!zip) { showFieldError('err-zip','⚠️ PLZ ist Pflicht'); valid=false; }
-  else if (country==='DE' && zip.length!==5) { showFieldError('err-zip','⚠️ Deutsche PLZ muss 5 Ziffern haben'); valid=false; }
-  else if ((country==='AT'||country==='CH') && zip.length!==4) { showFieldError('err-zip','⚠️ PLZ muss 4 Ziffern haben'); valid=false; }
-  if (!city) { showFieldError('err-zip','⚠️ Stadt ist Pflicht'); valid=false; }
-  if (!valid) return;
+  // Only validate address if user wants to be listed
+  if (listed && (!street || !city)) {
+    const status = document.getElementById('ob-address-status');
+    if (status) status.innerHTML = '<span style="color:var(--danger);font-weight:700">⚠️ Für die Karte bitte Adresse angeben</span>';
+    document.getElementById('ob-address-wrap').scrollIntoView({behavior:'smooth'});
+    return;
+  }
 
   window._pendingOnboarding = {
-    name,
+    name: name || currentUser?.email?.split('@')[0] || 'Mein Salon',
     street: street + (housenr ? ' ' + housenr : ''),
     zip, city, country,
-    website: document.getElementById('ob-website').value.trim(),
-    phone: document.getElementById('ob-phone').value.trim(),
-    listed: document.getElementById('ob-directory').checked,
+    website: (document.getElementById('ob-website')?.value || '').trim(),
+    phone: (document.getElementById('ob-phone')?.value || '').trim(),
+    listed,
     lat: window._pendingLat || null,
     lng: window._pendingLng || null,
   };
-  window._pendingSalonName = name;
+  window._pendingSalonName = window._pendingOnboarding.name;
   go('s-onboarding');
 }
 
