@@ -3063,10 +3063,14 @@ go = function(screenId) {
   _goOrigAuth(screenId);
   if (screenId === 's-account') renderAccountScreen();
   if (screenId === 's-result') renderResultScreen();
-  if (screenId === 's-target') { renderZielGrid('trends'); }
+  if (screenId === 's-target') {
+    // Load pinned sessions for this salon
+    loadPinnedSessionsForZiel().then(function() { renderZielGrid('trends'); });
+  }
   if (screenId === 's-target-detail') { renderZielBloecke(zielCurrentStruktur); }
   if (screenId === 's-ml-training') {
     if (!adminMode) { go('s-landing'); return; }
+    mlTrainingImages = []; // clear cache so fresh load happens
     mlRenderHerstellerTabs();
     mlRenderFarbBlocks();
     mlLoadStats();
@@ -3089,6 +3093,14 @@ go = function(screenId) {
     istBlocks = {};
     const btn = document.getElementById('ist-analyse-btn');
     if (btn) { btn.textContent = '🤖 Analysieren'; btn.style.boxShadow = ''; btn.disabled = false; }
+    // Reset photo
+    const currData = document.getElementById('curr-data');
+    if (currData) currData.value = '';
+    const currPrev = document.getElementById('curr-preview');
+    if (currPrev) {
+      currPrev.classList.remove('has-photo');
+      currPrev.innerHTML = '<div class="photo-placeholder"><div class="ico">📷</div><p>Foto wird hier angezeigt</p></div>';
+    }
     preSelectHersteller();
   }
 };
@@ -3873,9 +3885,47 @@ async function analyzeZielbild(imageData) {
   } catch(e) { if (statusEl) statusEl.style.display = 'none'; }
 }
 
+/* ── Gepinnte Sessions für Zielbild-Tab laden ── */
+async function loadPinnedSessionsForZiel() {
+  if (!currentSalon?.id) return;
+  try {
+    const { data } = await sb.from('sessions')
+      .select('id, client_id, after_photo_url, target_color, pinned_as_ziel')
+      .eq('salon_id', currentSalon.id)
+      .eq('pinned_as_ziel', true);
+    if (data) {
+      data.forEach(function(s) {
+        const exists = sessions.find(function(x) { return String(x.id) === String(s.id); });
+        if (!exists) {
+          sessions.push({ id: s.id, clientId: s.client_id, afterPhoto: s.after_photo_url || '', target: s.target_color || '', pinnedAsZiel: true });
+        } else {
+          exists.pinnedAsZiel = true;
+          exists.afterPhoto = exists.afterPhoto || s.after_photo_url || '';
+        }
+      });
+    }
+  } catch(e) { console.error('loadPinnedSessions error:', e); }
+}
+
 function filterZielbilder(btn, typ) {
   document.querySelectorAll('#ziel-filter-seg .seg-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  // When switching away from trends, clear trend selection so grid shows correctly
+  if (typ !== 'trends' && window._selectedTrend) {
+    // Keep the selected image data but clear trend marker
+    const refData = document.getElementById('ref-data');
+    if (refData && refData.value === (window._selectedTrend?.id || '')) {
+      // Trend was selected, clear it when switching to other tabs
+      refData.value = '';
+      window._selectedTrend = null;
+      const wrap = document.getElementById('ziel-selected-wrap');
+      const swatch = document.getElementById('trend-swatch-preview');
+      const selImg = document.getElementById('ziel-selected-img');
+      if (wrap) wrap.style.display = 'none';
+      if (swatch) swatch.remove();
+      if (selImg) selImg.style.display = '';
+    }
+  }
   renderZielGrid(typ);
 }
 
@@ -4380,8 +4430,12 @@ async function mlLoadGallery(filter) {
     }
     if (empty) empty.style.display = 'none';
 
-    // Load values for all images
-    const imageIds = images.map(i => i.id);
+    // Cache images locally for display
+    images.forEach(function(img) {
+      if (!mlTrainingImages.find(function(m){return m.id===img.id;})) {
+        mlTrainingImages.push({ id: img.id, src: img.image_base64 || '', strukturtyp: img.strukturtyp, quality_score: img.quality_score });
+      }
+    });
     const {data: values} = await sb.from('ml_training_values')
       .select('*')
       .in('image_id', imageIds);
