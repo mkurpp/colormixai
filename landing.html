@@ -2,6 +2,21 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="ColorMixAI"/>
+<meta name="theme-color" content="#FFFFFF"/>
+<link rel="manifest" href="manifest.webmanifest"/>
+<link rel="apple-touch-icon" href="icons/icon-180.png"/>
+<script>
+/* ── Standalone-Erkennung: wenn bereits installiert → direkt in App ── */
+(function(){
+  var sa = window.navigator.standalone === true ||
+            window.matchMedia('(display-mode: standalone)').matches;
+  if(sa){ window.location.replace('app.html'); }
+})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>ColorMixAI — Die perfekte Farbformel, in Sekunden.</title>
 <meta name="description" content="KI-gestützte Haarfarb-Formelberechnung für professionelle Friseure."/>
@@ -32,6 +47,16 @@
   --sh-pink:0 4px 20px rgba(200,19,78,.20);
   --r:14px;--rs:10px;
 }
+
+/* ── PWA Install Banner ── */
+.pwa-banner{display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:200;background:#fff;border:1px solid var(--border-light);border-radius:18px;box-shadow:0 8px 32px rgba(0,0,0,0.13);padding:16px 20px;max-width:360px;width:calc(100% - 40px);align-items:center;gap:14px}
+.pwa-banner.show{display:flex}
+.pwa-banner-icon{width:44px;height:44px;border-radius:12px;background:var(--pink-light);border:1px solid rgba(200,19,78,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px}
+.pwa-banner-text{flex:1}
+.pwa-banner-title{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:2px}
+.pwa-banner-sub{font-size:12px;color:var(--mid);font-weight:300;line-height:1.4}
+.pwa-banner-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;padding:0 0 0 4px;line-height:1;flex-shrink:0}
+
 html{scroll-behavior:smooth}
 body{font-family:'Outfit',sans-serif;color:var(--ink);background:var(--white);-webkit-font-smoothing:antialiased;overflow-x:hidden}
 
@@ -259,7 +284,7 @@ footer{padding:60px 6% 36px;background:#1A1410}
     <a href="#pricing">Preise</a>
     <a href="#salons">Salons</a>
     <a href="#faq">FAQ</a>
-    <a href="index.html" class="nav-cta">App öffnen</a>
+    <a href="app.html" class="nav-cta">App öffnen</a>
   </div>
   <button class="nav-mob-btn" onclick="toggleMenu()" aria-label="Menü">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -270,7 +295,7 @@ footer{padding:60px 6% 36px;background:#1A1410}
   <a href="#how" onclick="toggleMenu()">So funktioniert's</a>
   <a href="#pricing" onclick="toggleMenu()">Preise</a>
   <a href="#faq" onclick="toggleMenu()">FAQ</a>
-  <a href="index.html" class="nav-cta" onclick="toggleMenu()">App öffnen</a>
+  <a href="app.html" class="nav-cta" onclick="toggleMenu()">App öffnen</a>
 </div>
 
 <section class="hero">
@@ -281,7 +306,7 @@ footer{padding:60px 6% 36px;background:#1A1410}
     <h1 class="hero-hl">Die perfekte<br><em>Farbformel</em>,<br>in Sekunden.</h1>
     <p class="hero-sub">Foto hochladen, Zielfarbe wählen — ColorMixAI berechnet die exakte Haarfarb-Formel für Wella, GOLD, L'Oréal, Schwarzkopf und mehr. In unter 20 Sekunden.</p>
     <div class="hero-ctas">
-      <a href="index.html" class="btn-pink">Kostenlos starten</a>
+      <a href="app.html" class="btn-pink">Kostenlos starten</a>
       <a href="#how" class="btn-outline">So funktioniert's</a>
     </div>
     <p class="hero-note">3 Analysen kostenlos · Keine Kreditkarte · Jederzeit kündbar</p>
@@ -343,9 +368,9 @@ footer{padding:60px 6% 36px;background:#1A1410}
   <div class="sw">
     <div class="reveal" style="text-align:center"><div class="sec-label" style="text-align:center">Preise</div><h2 class="sec-title" style="text-align:center">Einfach. Transparent.<br><em>Fair.</em></h2><p class="sec-sub" style="margin:0 auto;text-align:center">3 kostenlose Analysen. Kein Abo. Keine Kreditkarte. Monatlich kündbar.</p></div>
     <div class="price-grid reveal">
-      <div class="price-card"><div class="price-name">Solo</div><div class="price-amount">39€ <span>/ Monat</span></div><div class="price-desc">Für selbstständige Friseure</div><div class="price-div"></div><ul class="price-feats"><li><span class="chk">✓</span>1 Nutzer-Zugang</li><li><span class="chk">✓</span>Unbegrenzte Kunden</li><li><span class="chk">✓</span>Alle KI-Analysen</li><li><span class="chk">✓</span>Komplette Farbdatenbank</li><li><span class="chk">✓</span>Kundenkartei &amp; Verlauf</li><li><span class="crs">—</span><span style="color:var(--muted)">Kein Team-Zugang</span></li></ul><a href="index.html" class="price-btn btn-ol">Kostenlos testen</a></div>
-      <div class="price-card feat"><div class="price-badge bg-gold">BELIEBT</div><div class="price-name">Team S</div><div class="price-amount">99€ <span>/ Monat</span></div><div class="price-desc">Für Salons bis 4 Personen</div><div class="price-div"></div><ul class="price-feats"><li><span class="chk">✓</span>Bis zu 4 Nutzer</li><li><span class="chk">✓</span>Gemeinsame Kundenkartei</li><li><span class="chk">✓</span>Alle KI-Analysen</li><li><span class="chk">✓</span>Komplette Farbdatenbank</li><li><span class="chk">✓</span>Team-Einladungen per Mail</li><li><span class="chk">✓</span>Eigene Zielbilder &amp; Trends</li></ul><a href="index.html" class="price-btn btn-gold-grad">Kostenlos testen</a></div>
-      <div class="price-card"><div class="price-badge bg-dark">STUDIO</div><div class="price-name">Team L</div><div class="price-amount">199€ <span>/ Monat</span></div><div class="price-desc">Für große Salons &amp; Studios</div><div class="price-div"></div><ul class="price-feats"><li><span class="chk">✓</span>Bis zu 10 Nutzer</li><li><span class="chk">✓</span>Gemeinsame Kundenkartei</li><li><span class="chk">✓</span>Alle KI-Analysen</li><li><span class="chk">✓</span>Komplette Farbdatenbank</li><li><span class="chk">✓</span>Team-Einladungen per Mail</li><li><span class="chk">✓</span>Prioritäts-Support</li></ul><a href="index.html" class="price-btn btn-ol">Kostenlos testen</a></div>
+      <div class="price-card"><div class="price-name">Solo</div><div class="price-amount">39€ <span>/ Monat</span></div><div class="price-desc">Für selbstständige Friseure</div><div class="price-div"></div><ul class="price-feats"><li><span class="chk">✓</span>1 Nutzer-Zugang</li><li><span class="chk">✓</span>Unbegrenzte Kunden</li><li><span class="chk">✓</span>Alle KI-Analysen</li><li><span class="chk">✓</span>Komplette Farbdatenbank</li><li><span class="chk">✓</span>Kundenkartei &amp; Verlauf</li><li><span class="crs">—</span><span style="color:var(--muted)">Kein Team-Zugang</span></li></ul><a href="app.html" class="price-btn btn-ol">Kostenlos testen</a></div>
+      <div class="price-card feat"><div class="price-badge bg-gold">BELIEBT</div><div class="price-name">Team S</div><div class="price-amount">99€ <span>/ Monat</span></div><div class="price-desc">Für Salons bis 4 Personen</div><div class="price-div"></div><ul class="price-feats"><li><span class="chk">✓</span>Bis zu 4 Nutzer</li><li><span class="chk">✓</span>Gemeinsame Kundenkartei</li><li><span class="chk">✓</span>Alle KI-Analysen</li><li><span class="chk">✓</span>Komplette Farbdatenbank</li><li><span class="chk">✓</span>Team-Einladungen per Mail</li><li><span class="chk">✓</span>Eigene Zielbilder &amp; Trends</li></ul><a href="app.html" class="price-btn btn-gold-grad">Kostenlos testen</a></div>
+      <div class="price-card"><div class="price-badge bg-dark">STUDIO</div><div class="price-name">Team L</div><div class="price-amount">199€ <span>/ Monat</span></div><div class="price-desc">Für große Salons &amp; Studios</div><div class="price-div"></div><ul class="price-feats"><li><span class="chk">✓</span>Bis zu 10 Nutzer</li><li><span class="chk">✓</span>Gemeinsame Kundenkartei</li><li><span class="chk">✓</span>Alle KI-Analysen</li><li><span class="chk">✓</span>Komplette Farbdatenbank</li><li><span class="chk">✓</span>Team-Einladungen per Mail</li><li><span class="chk">✓</span>Prioritäts-Support</li></ul><a href="app.html" class="price-btn btn-ol">Kostenlos testen</a></div>
     </div>
     <p style="font-size:12px;color:var(--muted);margin-top:20px;text-align:center;font-weight:300" class="reveal">Alle Preise zzgl. MwSt. · Monatlich abrechenbar · Jederzeit kündbar</p>
   </div>
@@ -388,12 +413,12 @@ footer{padding:60px 6% 36px;background:#1A1410}
         </button>
         <div id="loc-st" style="font-size:11px;color:var(--muted);text-align:center;min-height:14px;margin-bottom:4px"></div>
         <div id="salon-list" style="display:none;flex-direction:column"></div>
-        <div style="margin-top:10px;font-size:11px;color:var(--muted)">Salon-Inhaberin? <a href="index.html" style="color:var(--gold);font-weight:600">Jetzt listen lassen</a></div>
+        <div style="margin-top:10px;font-size:11px;color:var(--muted)">Salon-Inhaberin? <a href="app.html" style="color:var(--gold);font-weight:600">Jetzt listen lassen</a></div>
       </div>
     </div>
     <div class="reveal" style="text-align:center;margin-top:32px">
       <p style="color:rgba(255,255,255,.4);font-size:15px;margin-bottom:18px;font-weight:300">Du betreibst einen Salon? Werde Teil des Verzeichnisses — kostenlos.</p>
-      <a href="index.html" class="btn-gold">Salon listen lassen</a>
+      <a href="app.html" class="btn-gold">Salon listen lassen</a>
     </div>
   </div>
 </section>
@@ -402,7 +427,7 @@ footer{padding:60px 6% 36px;background:#1A1410}
   <div class="cta-inner reveal">
     <h2>Bereit für die perfekte<br><em>Farbformel</em>?</h2>
     <p>Starte kostenlos — keine Kreditkarte, kein Risiko. Professionelle Friseurinnen vertrauen auf ColorMixAI.</p>
-    <a href="index.html" class="btn-gold">Jetzt kostenlos starten</a>
+    <a href="app.html" class="btn-gold">Jetzt kostenlos starten</a>
   </div>
 </section>
 
@@ -411,8 +436,8 @@ footer{padding:60px 6% 36px;background:#1A1410}
     <div class="ft-top">
       <div class="ft-brand"><a class="ft-logo" href="#">Color<span>Mix</span>AI</a><p>KI-gestützte Haarfarb-Formelberechnung für professionelle Friseurinnen im DACH-Raum.</p></div>
       <div class="ft-links">
-        <div class="ft-col"><h4>Produkt</h4><a href="#features">Features</a><a href="#pricing">Preise</a><a href="index.html">App öffnen</a></div>
-        <div class="ft-col"><h4>Support</h4><a href="#faq">FAQ</a><a href="mailto:hallo@colormixai.com">Kontakt</a></div>
+        <div class="ft-col"><h4>Produkt</h4><a href="#features">Features</a><a href="#pricing">Preise</a><a href="app.html">App öffnen</a></div>
+        <div class="ft-col"><h4>Support</h4><a href="#faq">FAQ</a><a href="/cdn-cgi/l/email-protection#7d151c1111123d1e1211120f1014051c14531e1210">Kontakt</a></div>
         <div class="ft-col"><h4>Rechtliches</h4><a href="#">Datenschutz</a><a href="#">Impressum</a><a href="#">AGB</a></div>
       </div>
     </div>
@@ -421,7 +446,7 @@ footer{padding:60px 6% 36px;background:#1A1410}
   </div>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 window.addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('scrolled',scrollY>20));
 function toggleMenu(){document.getElementById('mob-menu').classList.toggle('open')}
 function toggleFaq(btn){const i=btn.closest('.faq-item'),o=i.classList.contains('open');document.querySelectorAll('.faq-item').forEach(x=>x.classList.remove('open'));if(!o)i.classList.add('open')}
@@ -460,8 +485,4 @@ function findNear(){
   },()=>{btn.textContent='Salons in meiner Nähe';renderSalons(salons)},{timeout:8000})
 }
 loadSalons();
-const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:.08});
-document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
-</script>
-</body>
-</html>
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersec
