@@ -10,12 +10,12 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   /* ── Warm sand & cream base ── */
-  --bg:#F0EBE3;
-  --bg-warm:#E8E0D5;
-  --bg-card:#FAF7F3;
-  --surface:#FDFAF6;
-  --surface-2:#F5F0E8;
-  --glass:rgba(253,250,246,0.90);
+  --bg:#F5F5F5;
+  --bg-warm:#EEEEEE;
+  --bg-card:#FFFFFF;
+  --surface:#FFFFFF;
+  --surface-2:#F7F7F7;
+  --glass:rgba(255,255,255,0.92);
 
   /* ── Ink — warm near-black ── */
   --ink:#1A1410;
@@ -32,7 +32,7 @@
   /* ── GOLD system — the premium accent ── */
   --gold:#B8922A;
   --gold-light:#C8A84A;
-  --gold-pale:#F7F0DC;
+  --gold-pale:#FBF6E8;
   --gold-mid:#D4B870;
   --gold-shimmer:linear-gradient(135deg,#C8A84A 0%,#E8D090 40%,#C8A84A 60%,#A07820 100%);
   --gold-glow:0 4px 20px rgba(184,146,42,0.22);
@@ -67,11 +67,11 @@
   --sh-hover:0 8px 28px rgba(26,20,16,0.13);
 }
 html,body{
-  height:100%;background:var(--bg);
+  height:100%;background:#FFFFFF;
   font-family:'Outfit',sans-serif;color:var(--ink);
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
 }
-#app{min-height:100vh;display:flex;flex-direction:column;align-items:center;width:100%;overflow-x:hidden}
+#app{min-height:100vh;display:flex;flex-direction:column;align-items:center;width:100%;overflow-x:hidden;background:#FFFFFF}
 
 /* ── SCREENS ── */
 .screen{display:none;width:100%;max-width:min(430px,100vw);min-height:100vh;flex-direction:column;background:var(--surface);position:relative}
@@ -336,7 +336,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 ════════════════════════════════════════════ */
 
 /* ── Base overrides ── */
-#app{min-height:100vh;display:flex;flex-direction:column;align-items:center;width:100%;overflow-x:hidden}
+#app{min-height:100vh;display:flex;flex-direction:column;align-items:center;width:100%;overflow-x:hidden;background:#FFFFFF}
 .screen{display:none;width:100%;max-width:min(430px,100vw);min-height:100vh;flex-direction:column;background:var(--surface);position:relative}
 .screen.active{display:flex;animation:fadeUp .3s cubic-bezier(.16,1,.3,1)}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
@@ -1055,52 +1055,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
     </div>
   </div>
 
-  <!-- ── BELOW HERO ── -->
-  <div style="flex:1;overflow-y:auto;background:var(--surface)">
-    <div id="landing-user-bar"></div>
 
-    <!-- Features -->
-    <div style="padding:0 20px 16px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
-        <div style="background:var(--bg);border-radius:var(--r);padding:14px">
-          <div style="font-size:22px;margin-bottom:4px"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
-          <div style="font-size:13px;font-weight:800;margin-bottom:3px">In Sekunden</div>
-          <div style="font-size:11px;color:var(--muted)">Formel berechnet in unter 20 Sek.</div>
-        </div>
-        <div style="background:var(--bg);border-radius:var(--r);padding:14px">
-          <div style="font-size:22px;margin-bottom:4px"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="0.5" fill="currentColor"/><circle cx="17.5" cy="10.5" r="0.5" fill="currentColor"/><circle cx="8.5" cy="7.5" r="0.5" fill="currentColor"/><circle cx="6.5" cy="12.5" r="0.5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg></div>
-          <div style="font-size:13px;font-weight:800;margin-bottom:3px">500+ Farbtöne</div>
-          <div style="font-size:11px;color:var(--muted)">Alle großen Marken</div>
-        </div>
-        <div style="background:var(--bg);border-radius:var(--r);padding:14px">
-          <div style="font-size:22px;margin-bottom:4px"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div>
-          <div style="font-size:13px;font-weight:800;margin-bottom:3px">Kundenkartei</div>
-          <div style="font-size:11px;color:var(--muted)">Alle Formeln gespeichert</div>
-        </div>
-        <div style="background:var(--bg);border-radius:var(--r);padding:14px">
-          <div style="font-size:22px;margin-bottom:4px"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-1.14"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-1.14"/></svg></div>
-          <div style="font-size:13px;font-weight:800;margin-bottom:3px">Lernende KI</div>
-          <div style="font-size:11px;color:var(--muted)">Wird mit jeder Analyse besser</div>
-        </div>
-      </div>
-
-      <!-- Marken -->
-      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;margin-bottom:8px">UNTERSTÜTZTE MARKEN</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px">
-        <span style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;font-weight:700">Wella</span>
-        <span style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;font-weight:700">L'Oréal</span>
-        <span style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;font-weight:700">Schwarzkopf</span>
-        <span style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;font-weight:700">Redken</span>
-        <span style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;font-weight:700">GOLD</span>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <div style="padding:0 20px 32px;text-align:center" onclick="adminTap()">
-      <div style="font-size:11px;color:var(--muted)">© 2026 ColorMixAI · Für professionelle Friseure</div>
-    </div>
-  </div>
 </section>
+
 
 <!-- ══════════════════ SELECT CLIENT ══════════════════ -->
 <section class="screen" id="s-select-client">
@@ -2828,19 +2785,17 @@ function confirmDeleteSess(sessId){
 
 /* ═══════════════════ ADMIN ═══════════════════ */
 const ADMIN_PASSWORD = 'colormix2024';
-let adminTapCount = 0;
-let adminTapTimer = null;
 let adminMode = false;
 
-function adminTap() {
-  adminTapCount++;
-  clearTimeout(adminTapTimer);
-  adminTapTimer = setTimeout(() => { adminTapCount = 0; }, 2000);
-  if (adminTapCount >= 5) {
-    adminTapCount = 0;
-    document.getElementById('admin-pw-input').value = '';
-    document.getElementById('admin-pw-error').style.display = 'none';
-    go('s-admin-login');
+function adminTap() {} // no longer used
+
+// Admin via URL: index.html?admin
+function checkAdminUrl() {
+  if (window.location.search.includes('admin') || window.location.hash === '#admin') {
+    goAdminLogin();
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
   }
 }
 
@@ -3161,6 +3116,7 @@ let selectedPlan = 'solo';
 
 /* ── App initialisieren ── */
 async function initApp() {
+  checkAdminUrl();
   try {
     const { data: { session }, error: sessErr } = await sb.auth.getSession();
     if (sessErr) throw sessErr;
