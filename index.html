@@ -48,14 +48,21 @@
   --r:14px;--rs:10px;
 }
 
-/* ── PWA Install Banner ── */
-.pwa-banner{display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:200;background:#fff;border:1px solid var(--border-light);border-radius:18px;box-shadow:0 8px 32px rgba(0,0,0,0.13);padding:16px 20px;max-width:360px;width:calc(100% - 40px);align-items:center;gap:14px}
-.pwa-banner.show{display:flex}
-.pwa-banner-icon{width:44px;height:44px;border-radius:12px;background:var(--pink-light);border:1px solid rgba(200,19,78,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px}
-.pwa-banner-text{flex:1}
-.pwa-banner-title{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:2px}
-.pwa-banner-sub{font-size:12px;color:var(--mid);font-weight:300;line-height:1.4}
-.pwa-banner-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;padding:0 0 0 4px;line-height:1;flex-shrink:0}
+/* ── PWA Install Modal ── */
+.install-overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:24px}
+.install-overlay.show{display:flex}
+.install-modal{background:#fff;border-radius:24px;padding:32px 28px;max-width:380px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,0.2);position:relative}
+.install-close{position:absolute;top:16px;right:18px;background:none;border:none;cursor:pointer;color:var(--muted);font-size:22px;line-height:1}
+.install-icon{font-size:48px;text-align:center;margin-bottom:16px}
+.install-title{font-size:20px;font-weight:800;color:var(--ink);text-align:center;margin-bottom:8px}
+.install-sub{font-size:14px;color:var(--mid);text-align:center;line-height:1.6;margin-bottom:24px}
+.install-steps{display:flex;flex-direction:column;gap:14px;margin-bottom:28px}
+.install-step{display:flex;align-items:flex-start;gap:12px}
+.install-step-num{width:28px;height:28px;border-radius:50%;background:var(--pink);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.install-step-text{font-size:14px;color:var(--ink);line-height:1.5}
+.install-step-text strong{font-weight:700}
+.install-step-text span{color:var(--mid);font-size:12px;display:block}
+.install-note{font-size:12px;color:var(--muted);text-align:center;line-height:1.5}
 
 html{scroll-behavior:smooth}
 body{font-family:'Outfit',sans-serif;color:var(--ink);background:var(--white);-webkit-font-smoothing:antialiased;overflow-x:hidden}
@@ -284,7 +291,7 @@ footer{padding:60px 6% 36px;background:#1A1410}
     <a href="#pricing">Preise</a>
     <a href="#salons">Salons</a>
     <a href="#faq">FAQ</a>
-    <a href="app.html" class="nav-cta">App öffnen</a>
+    <a href="#" onclick="showInstall(event)" class="nav-cta">App öffnen</a>
   </div>
   <button class="nav-mob-btn" onclick="toggleMenu()" aria-label="Menü">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -295,7 +302,7 @@ footer{padding:60px 6% 36px;background:#1A1410}
   <a href="#how" onclick="toggleMenu()">So funktioniert's</a>
   <a href="#pricing" onclick="toggleMenu()">Preise</a>
   <a href="#faq" onclick="toggleMenu()">FAQ</a>
-  <a href="app.html" class="nav-cta" onclick="toggleMenu()">App öffnen</a>
+  <a href="#" onclick="showInstall(event)" class="nav-cta" onclick="toggleMenu()">App öffnen</a>
 </div>
 
 <section class="hero">
@@ -306,7 +313,7 @@ footer{padding:60px 6% 36px;background:#1A1410}
     <h1 class="hero-hl">Die perfekte<br><em>Farbformel</em>,<br>in Sekunden.</h1>
     <p class="hero-sub">Foto hochladen, Zielfarbe wählen — ColorMixAI berechnet die exakte Haarfarb-Formel für Wella, GOLD, L'Oréal, Schwarzkopf und mehr. In unter 20 Sekunden.</p>
     <div class="hero-ctas">
-      <a href="app.html" class="btn-pink">Kostenlos starten</a>
+      <a href="#" onclick="showInstall(event)" class="btn-pink">Kostenlos starten</a>
       <a href="#how" class="btn-outline">So funktioniert's</a>
     </div>
     <p class="hero-note">3 Analysen kostenlos · Keine Kreditkarte · Jederzeit kündbar</p>
@@ -368,9 +375,9 @@ footer{padding:60px 6% 36px;background:#1A1410}
   <div class="sw">
     <div class="reveal" style="text-align:center"><div class="sec-label" style="text-align:center">Preise</div><h2 class="sec-title" style="text-align:center">Einfach. Transparent.<br><em>Fair.</em></h2><p class="sec-sub" style="margin:0 auto;text-align:center">3 kostenlose Analysen. Kein Abo. Keine Kreditkarte. Monatlich kündbar.</p></div>
     <div class="price-grid reveal">
-      <div class="price-card"><div class="price-name">Solo</div><div class="price-amount">39€ <span>/ Monat</span></div><div class="price-desc">Für selbstständige Friseure</div><div class="price-div"></div><ul class="price-feats"><li><span class="chk">✓</span>1 Nutzer-Zugang</li><li><span class="chk">✓</span>Unbegrenzte Kunden</li><li><span class="chk">✓</span>Alle KI-Analysen</li><li><span class="chk">✓</span>Komplette Farbdatenbank</li><li><span class="chk">✓</span>Kundenkartei &amp; Verlauf</li><li><span class="crs">—</span><span style="color:var(--muted)">Kein Team-Zugang</span></li></ul><a href="app.html" class="price-btn btn-ol">Kostenlos testen</a></div>
-      <div class="price-card feat"><div class="price-badge bg-gold">BELIEBT</div><div class="price-name">Team S</div><div class="price-amount">99€ <span>/ Monat</span></div><div class="price-desc">Für Salons bis 4 Personen</div><div class="price-div"></div><ul class="price-feats"><li><span class="chk">✓</span>Bis zu 4 Nutzer</li><li><span class="chk">✓</span>Gemeinsame Kundenkartei</li><li><span class="chk">✓</span>Alle KI-Analysen</li><li><span class="chk">✓</span>Komplette Farbdatenbank</li><li><span class="chk">✓</span>Team-Einladungen per Mail</li><li><span class="chk">✓</span>Eigene Zielbilder &amp; Trends</li></ul><a href="app.html" class="price-btn btn-gold-grad">Kostenlos testen</a></div>
-      <div class="price-card"><div class="price-badge bg-dark">STUDIO</div><div class="price-name">Team L</div><div class="price-amount">199€ <span>/ Monat</span></div><div class="price-desc">Für große Salons &amp; Studios</div><div class="price-div"></div><ul class="price-feats"><li><span class="chk">✓</span>Bis zu 10 Nutzer</li><li><span class="chk">✓</span>Gemeinsame Kundenkartei</li><li><span class="chk">✓</span>Alle KI-Analysen</li><li><span class="chk">✓</span>Komplette Farbdatenbank</li><li><span class="chk">✓</span>Team-Einladungen per Mail</li><li><span class="chk">✓</span>Prioritäts-Support</li></ul><a href="app.html" class="price-btn btn-ol">Kostenlos testen</a></div>
+      <div class="price-card"><div class="price-name">Solo</div><div class="price-amount">39€ <span>/ Monat</span></div><div class="price-desc">Für selbstständige Friseure</div><div class="price-div"></div><ul class="price-feats"><li><span class="chk">✓</span>1 Nutzer-Zugang</li><li><span class="chk">✓</span>Unbegrenzte Kunden</li><li><span class="chk">✓</span>Alle KI-Analysen</li><li><span class="chk">✓</span>Komplette Farbdatenbank</li><li><span class="chk">✓</span>Kundenkartei &amp; Verlauf</li><li><span class="crs">—</span><span style="color:var(--muted)">Kein Team-Zugang</span></li></ul><a href="#" onclick="showInstall(event)" class="price-btn btn-ol">Kostenlos testen</a></div>
+      <div class="price-card feat"><div class="price-badge bg-gold">BELIEBT</div><div class="price-name">Team S</div><div class="price-amount">99€ <span>/ Monat</span></div><div class="price-desc">Für Salons bis 4 Personen</div><div class="price-div"></div><ul class="price-feats"><li><span class="chk">✓</span>Bis zu 4 Nutzer</li><li><span class="chk">✓</span>Gemeinsame Kundenkartei</li><li><span class="chk">✓</span>Alle KI-Analysen</li><li><span class="chk">✓</span>Komplette Farbdatenbank</li><li><span class="chk">✓</span>Team-Einladungen per Mail</li><li><span class="chk">✓</span>Eigene Zielbilder &amp; Trends</li></ul><a href="#" onclick="showInstall(event)" class="price-btn btn-gold-grad">Kostenlos testen</a></div>
+      <div class="price-card"><div class="price-badge bg-dark">STUDIO</div><div class="price-name">Team L</div><div class="price-amount">199€ <span>/ Monat</span></div><div class="price-desc">Für große Salons &amp; Studios</div><div class="price-div"></div><ul class="price-feats"><li><span class="chk">✓</span>Bis zu 10 Nutzer</li><li><span class="chk">✓</span>Gemeinsame Kundenkartei</li><li><span class="chk">✓</span>Alle KI-Analysen</li><li><span class="chk">✓</span>Komplette Farbdatenbank</li><li><span class="chk">✓</span>Team-Einladungen per Mail</li><li><span class="chk">✓</span>Prioritäts-Support</li></ul><a href="#" onclick="showInstall(event)" class="price-btn btn-ol">Kostenlos testen</a></div>
     </div>
     <p style="font-size:12px;color:var(--muted);margin-top:20px;text-align:center;font-weight:300" class="reveal">Alle Preise zzgl. MwSt. · Monatlich abrechenbar · Jederzeit kündbar</p>
   </div>
@@ -413,12 +420,12 @@ footer{padding:60px 6% 36px;background:#1A1410}
         </button>
         <div id="loc-st" style="font-size:11px;color:var(--muted);text-align:center;min-height:14px;margin-bottom:4px"></div>
         <div id="salon-list" style="display:none;flex-direction:column"></div>
-        <div style="margin-top:10px;font-size:11px;color:var(--muted)">Salon-Inhaberin? <a href="app.html" style="color:var(--gold);font-weight:600">Jetzt listen lassen</a></div>
+        <div style="margin-top:10px;font-size:11px;color:var(--muted)">Salon-Inhaberin? <a href="#" onclick="showInstall(event)" style="color:var(--gold);font-weight:600">Jetzt listen lassen</a></div>
       </div>
     </div>
     <div class="reveal" style="text-align:center;margin-top:32px">
       <p style="color:rgba(255,255,255,.4);font-size:15px;margin-bottom:18px;font-weight:300">Du betreibst einen Salon? Werde Teil des Verzeichnisses — kostenlos.</p>
-      <a href="app.html" class="btn-gold">Salon listen lassen</a>
+      <a href="#" onclick="showInstall(event)" class="btn-gold">Salon listen lassen</a>
     </div>
   </div>
 </section>
@@ -427,7 +434,7 @@ footer{padding:60px 6% 36px;background:#1A1410}
   <div class="cta-inner reveal">
     <h2>Bereit für die perfekte<br><em>Farbformel</em>?</h2>
     <p>Starte kostenlos — keine Kreditkarte, kein Risiko. Professionelle Friseurinnen vertrauen auf ColorMixAI.</p>
-    <a href="app.html" class="btn-gold">Jetzt kostenlos starten</a>
+    <a href="#" onclick="showInstall(event)" class="btn-gold">Jetzt kostenlos starten</a>
   </div>
 </section>
 
@@ -436,7 +443,7 @@ footer{padding:60px 6% 36px;background:#1A1410}
     <div class="ft-top">
       <div class="ft-brand"><a class="ft-logo" href="#">Color<span>Mix</span>AI</a><p>KI-gestützte Haarfarb-Formelberechnung für professionelle Friseurinnen im DACH-Raum.</p></div>
       <div class="ft-links">
-        <div class="ft-col"><h4>Produkt</h4><a href="#features">Features</a><a href="#pricing">Preise</a><a href="app.html">App öffnen</a></div>
+        <div class="ft-col"><h4>Produkt</h4><a href="#features">Features</a><a href="#pricing">Preise</a><a href="#" onclick="showInstall(event)">App öffnen</a></div>
         <div class="ft-col"><h4>Support</h4><a href="#faq">FAQ</a><a href="/cdn-cgi/l/email-protection#7d151c1111123d1e1211120f1014051c14531e1210">Kontakt</a></div>
         <div class="ft-col"><h4>Rechtliches</h4><a href="#">Datenschutz</a><a href="#">Impressum</a><a href="#">AGB</a></div>
       </div>
@@ -489,25 +496,60 @@ const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.targ
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 </script>
 
-<!-- PWA Install Banner -->
-<div class="pwa-banner" id="pwa-banner">
-  <div class="pwa-banner-icon">💇‍♀️</div>
-  <div class="pwa-banner-text">
-    <div class="pwa-banner-title">App zum Home Screen hinzufügen</div>
-    <div class="pwa-banner-sub">Tippe auf <strong>Teilen</strong> → <strong>Zum Home-Bildschirm</strong> für das beste Erlebnis.</div>
+<!-- PWA Install Modal -->
+<div class="install-overlay" id="install-overlay" onclick="hideInstall(event)">
+  <div class="install-modal">
+    <button class="install-close" onclick="hideInstallModal()">×</button>
+    <div class="install-icon">💇‍♀️</div>
+    <div class="install-title">App installieren</div>
+    <div class="install-sub">ColorMixAI läuft als App direkt auf deinem Homescreen — kein App Store nötig.</div>
+    <div class="install-steps">
+      <div class="install-step">
+        <div class="install-step-num">1</div>
+        <div class="install-step-text">
+          <strong>Teilen-Symbol tippen</strong>
+          <span>Das Rechteck mit dem Pfeil nach oben in der Browser-Leiste</span>
+        </div>
+      </div>
+      <div class="install-step">
+        <div class="install-step-num">2</div>
+        <div class="install-step-text">
+          <strong>„Zum Home-Bildschirm"</strong>
+          <span>Im Menü nach unten scrollen und antippen</span>
+        </div>
+      </div>
+      <div class="install-step">
+        <div class="install-step-num">3</div>
+        <div class="install-step-text">
+          <strong>App öffnen &amp; loslegen</strong>
+          <span>ColorMixAI erscheint wie eine normale App auf deinem Homescreen</span>
+        </div>
+      </div>
+    </div>
+    <div class="install-note">Funktioniert auf iPhone (Safari) und Android (Chrome).<br>Kein Download, kein App Store.</div>
   </div>
-  <button class="pwa-banner-close" onclick="document.getElementById('pwa-banner').classList.remove('show')" aria-label="Schließen">×</button>
 </div>
+
 <script>
+function showInstall(e){
+  if(e) e.preventDefault();
+  // Wenn bereits als PWA installiert → direkt zur App
+  var sa = window.navigator.standalone === true ||
+            window.matchMedia('(display-mode: standalone)').matches;
+  if(sa){ window.location.href='app.html'; return; }
+  document.getElementById('install-overlay').classList.add('show');
+}
+function hideInstallModal(){
+  document.getElementById('install-overlay').classList.remove('show');
+}
+function hideInstall(e){
+  if(e.target === document.getElementById('install-overlay')) hideInstallModal();
+}
+// Auto-show banner nach 4 Sek wenn nicht installiert
 (function(){
   var sa = window.navigator.standalone === true ||
             window.matchMedia('(display-mode: standalone)').matches;
-  if(!sa && !sessionStorage.getItem('pwa-banner-dismissed')){
-    setTimeout(function(){
-      var b = document.getElementById('pwa-banner');
-      if(b) b.classList.add('show');
-    }, 2500);
-  }
+  if(sa){ window.location.replace('app.html'); return; }
 })();
 </script>
 </body>
