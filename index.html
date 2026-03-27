@@ -263,7 +263,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 .landing-hero{
   position:relative;flex:1;display:flex;flex-direction:column;justify-content:flex-end;
   background:linear-gradient(160deg,#1A0A10 0%,#2D0F20 60%,#1A0A10 100%);
-  overflow:hidden;min-height:0;max-height:calc(100dvh - 180px);
+  overflow:hidden;min-height:0;
 }
 .hero-img{position:absolute;inset:0;width:100%;height:100%;}
 .hero-noise{
@@ -566,7 +566,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 .modal-handle{width:32px;height:3px;border-radius:2px;background:var(--border-gold);opacity:0.4;margin:0 auto 22px}
 
 /* ══ LANDING HERO ══ */
-.landing-hero{position:relative;flex:1;display:flex;flex-direction:column;justify-content:flex-end;background:linear-gradient(160deg,#0E0608 0%,#1C0C12 60%,#0E0608 100%);overflow:hidden;min-height:0;max-height:calc(100dvh - 180px)}
+.landing-hero{position:relative;flex:1;display:flex;flex-direction:column;justify-content:flex-end;background:linear-gradient(160deg,#0E0608 0%,#1C0C12 60%,#0E0608 100%);overflow:hidden;min-height:0}
 .hero-img{position:absolute;inset:0;width:100%;height:100%}
 .hero-noise{position:absolute;inset:0;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")}
 .hero-gradient{position:absolute;inset:0;background:linear-gradient(to top,rgba(14,6,8,0.98) 0%,rgba(14,6,8,0.35) 55%,transparent 100%)}
@@ -678,7 +678,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 </section>
 
 <!-- ══════════════════ LOGIN ══════════════════ -->
-<section class="screen" id="s-login" style="background:#0E0608;min-height:100dvh;flex-direction:column">
+<section class="screen" id="s-login" style="background:#0E0608">
   <!-- Background image with overlay -->
   <div style="position:absolute;inset:0;background:linear-gradient(160deg,#0E0608 0%,#1C0C12 60%,#0E0608 100%);z-index:0"></div>
   <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 60% 0%,rgba(200,19,78,0.12) 0%,transparent 60%);z-index:0"></div>
@@ -750,7 +750,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 </section>
 
 <!-- ══════════════════ REGISTRIERUNG ══════════════════ -->
-<section class="screen" id="s-register" style="background:#0E0608;min-height:100dvh;flex-direction:column">
+<section class="screen" id="s-register" style="background:#0E0608">
   <div style="position:absolute;inset:0;background:linear-gradient(160deg,#0E0608 0%,#1C0C12 60%,#0E0608 100%);z-index:0"></div>
   <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 40% 0%,rgba(200,19,78,0.10) 0%,transparent 60%);z-index:0"></div>
 
@@ -1079,7 +1079,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 </section>
 
 <!-- ══════════════════ LANDING ══════════════════ -->
-<section class="screen" id="s-landing">
+<section class="screen" id="s-landing" style="height:100dvh;height:100vh;overflow:hidden">
 
   <!-- ── HERO: 80vh, brighter, embedded CTA ── -->
   <div style="position:relative;height:100dvh;height:100vh;min-height:500px;max-height:none;overflow:hidden;flex-shrink:0;display:flex;flex-direction:column">
