@@ -1510,20 +1510,10 @@ let activeClient = null;
 let viewingClient = null;
 let nextId = 20;
 
-let clients = [
-  { id:1, name:'Sophie Müller',  notes:'Prefers cool tones',    hairHistory:'Colored 3× this year', hairState:'Colored',  photo:'' },
-  { id:2, name:'Lena Fischer',   notes:'Sensitive scalp',        hairHistory:'Bleached ends',         hairState:'Bleached', photo:'' },
-  { id:3, name:'Marie Weber',    notes:'',                       hairHistory:'Natural, first color',  hairState:'Natural',  photo:'' },
-  { id:4, name:'Jana Becker',    notes:'Loves Wella products',   hairHistory:'Colored',               hairState:'Colored',  photo:'' },
-];
+let clients = [];
 
-let sessions = [
-  { id:1, clientId:1, date:'2024-11-14', target:'Cool Beige Blonde', formula:'8/13 – 60g, 9/13 – 20g', dev:'9%',  brand:'Wella',        notes:'Perfect result',     hairPhoto:'' },
-  { id:2, clientId:2, date:'2024-10-20', target:'Warm Copper',       formula:'7.4 – 50g, 6.43 – 30g',  dev:'20%', brand:'L\'Oréal',      notes:'',                   hairPhoto:'' },
-  { id:3, clientId:3, date:'2024-10-15', target:'Ash Brown',         formula:'5-1 – 70g, 4-0 – 10g',   dev:'10%', brand:'Schwarzkopf',   notes:'',                   hairPhoto:'' },
-  { id:4, clientId:4, date:'2024-10-10', target:'Platinum Blonde',   formula:'10/0 – 80g, 0/1 – 5g',   dev:'30%', brand:'Wella',         notes:'Pre-lightened first', hairPhoto:'' },
-  { id:5, clientId:1, date:'2024-08-04', target:'Warm Blonde',       formula:'8/3 – 80g',               dev:'9%',  brand:'Wella',         notes:'',                   hairPhoto:'' },
-];
+let sessions = [];
+
 
 /* ═══════════════════ NAVIGATION ═══════════════════ */
 function go(id) {
@@ -2773,11 +2763,14 @@ async function initApp() {
       currentUser = session.user;
       await loadSalon();
       if (currentSalon) {
-        await ensureDBColumns(); await loadClientsFromDB();
-  loadHerstellerFromDB(); // Load custom brands if configured
+        await ensureDBColumns();
+        await loadClientsFromDB();
+        loadHerstellerFromDB();
         await enforceSessionLimit(session);
         renderLandingUserBar();
         go('s-landing');
+        // Re-render client list in case it was opened before data loaded
+        renderClientsList('');
       } else {
         // Eingeloggt aber kein Salon → Onboarding
         go('s-onboarding-salon');
@@ -2930,6 +2923,9 @@ async function doLogin() {
   currentUser = data.user;
   await loadSalon();
   if (!currentSalon) { go('s-onboarding-salon'); return; }
+  await ensureDBColumns();
+  await loadClientsFromDB();
+  loadHerstellerFromDB();
   await enforceSessionLimit(data.session);
   renderLandingUserBar();
   go('s-landing');
