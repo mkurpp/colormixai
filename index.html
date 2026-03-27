@@ -5,7 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>ColorMixAI</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Cormorant:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+<script>
+/* Supabase Loader — lädt zuverlässig auch auf langsamen Mobilverbindungen */
+(function() {
+  var PRIMARY = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js';
+  var FALLBACK = 'https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.js';
+  var s = document.createElement('script');
+  s.src = PRIMARY;
+  s.onerror = function() {
+    var s2 = document.createElement('script');
+    s2.src = FALLBACK;
+    s2.onload = function() { window._supabaseReady = true; };
+    s2.onerror = function() { window._supabaseLoadFailed = true; };
+    document.head.appendChild(s2);
+  };
+  s.onload = function() { window._supabaseReady = true; };
+  document.head.appendChild(s);
+})();
+</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -665,10 +682,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 
 
 <!-- ══════════════════ LOADING ══════════════════ -->
-<section class="screen active" id="s-loading">
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--surface)">
-    <div style="font-family:Outfit,sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.5px;margin-bottom:20px;color:var(--ink)">Color<span style="color:var(--pink)">Mix</span>AI</div>
-    <div style="width:36px;height:36px;border:1.5px solid var(--border);border-top:1.5px solid var(--gold-light);border-radius:50%;animation:spin .9s linear infinite"></div>
+<section class="screen active" id="s-loading" style="background:#F5F5F5">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#F5F5F5;min-height:100vh">
+    <div style="font-family:Outfit,sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.5px;margin-bottom:20px;color:#0A0A0A">Color<span style="color:#C8A84A">Mix</span>AI</div>
+    <div style="width:36px;height:36px;border:1.5px solid #E0E0E0;border-top:1.5px solid #C8A84A;border-radius:50%;animation:spin .9s linear infinite"></div>
   </div>
 </section>
 
@@ -3747,31 +3764,45 @@ go = function(screenId) {
 };
 
 /* ── App starten ── */
-/* Script is at end of body — DOM already ready, call directly */
-(async () => {
-  // Hard timeout: if app doesn't start within 10s, go to login
-  const loadingTimeout = setTimeout(() => {
-    const loading = document.getElementById('s-loading');
-    if (loading && loading.classList.contains('active')) {
-      console.warn('App startup timeout — redirecting to login');
-      go('s-login');
-    }
-  }, 10000);
+(function startWhenReady() {
+  var MAX_WAIT = 12000; // 12s max auf langsamem Mobilnetz
+  var CHECK_INTERVAL = 80;
+  var elapsed = 0;
 
-  if (typeof supabase === 'undefined') {
-    clearTimeout(loadingTimeout);
-    console.error('Supabase nicht geladen');
-    go('s-login');
-    return;
+  function tryStart() {
+    elapsed += CHECK_INTERVAL;
+
+    // Supabase noch nicht da — warten
+    if (typeof supabase === 'undefined') {
+      if (elapsed >= MAX_WAIT) {
+        console.error('Supabase Timeout nach ' + MAX_WAIT + 'ms');
+        go('s-login');
+        return;
+      }
+      setTimeout(tryStart, CHECK_INTERVAL);
+      return;
+    }
+
+    // Supabase ist da — App starten
+    var loadingTimeout = setTimeout(function() {
+      var loading = document.getElementById('s-loading');
+      if (loading && loading.classList.contains('active')) {
+        console.warn('initApp Timeout — weiter zu Login');
+        go('s-login');
+      }
+    }, 10000);
+
+    initApp()
+      .then(function() { clearTimeout(loadingTimeout); })
+      .catch(function(e) {
+        clearTimeout(loadingTimeout);
+        console.error('initApp Fehler:', e);
+        go('s-login');
+      });
   }
-  try {
-    await initApp();
-    clearTimeout(loadingTimeout);
-  } catch(e) {
-    clearTimeout(loadingTimeout);
-    console.error('initApp Fehler:', e);
-    go('s-login');
-  }
+
+  // Kleines Initial-Delay damit DOM 100% bereit ist
+  setTimeout(tryStart, 50);
 })();
 
 
