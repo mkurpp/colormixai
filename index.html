@@ -485,4 +485,30 @@ function findNear(){
   },()=>{btn.textContent='Salons in meiner Nähe';renderSalons(salons)},{timeout:8000})
 }
 loadSalons();
-const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersec
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+
+<!-- PWA Install Banner -->
+<div class="pwa-banner" id="pwa-banner">
+  <div class="pwa-banner-icon">💇‍♀️</div>
+  <div class="pwa-banner-text">
+    <div class="pwa-banner-title">App zum Home Screen hinzufügen</div>
+    <div class="pwa-banner-sub">Tippe auf <strong>Teilen</strong> → <strong>Zum Home-Bildschirm</strong> für das beste Erlebnis.</div>
+  </div>
+  <button class="pwa-banner-close" onclick="document.getElementById('pwa-banner').classList.remove('show')" aria-label="Schließen">×</button>
+</div>
+<script>
+(function(){
+  var sa = window.navigator.standalone === true ||
+            window.matchMedia('(display-mode: standalone)').matches;
+  if(!sa && !sessionStorage.getItem('pwa-banner-dismissed')){
+    setTimeout(function(){
+      var b = document.getElementById('pwa-banner');
+      if(b) b.classList.add('show');
+    }, 2500);
+  }
+})();
+</script>
+</body>
+</html>
